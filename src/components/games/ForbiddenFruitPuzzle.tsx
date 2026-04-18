@@ -211,6 +211,7 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
             {graphUnlocked && (
               <KnightGraph
                 pieceBySq={pieceBySq}
+                fruitBySq={fruitBySq}
                 selectedId={selectedId}
                 size={boardSize}
               />
@@ -709,13 +710,25 @@ function graphPos(sq: number, size: number): { x: number; y: number } {
   };
 }
 
+function outwardDir(sq: number): { x: number; y: number } {
+  const cycleIdx = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
+  if (cycleIdx >= 0) {
+    const angle = -cycleIdx * (Math.PI / 4);
+    return { x: Math.cos(angle), y: Math.sin(angle) };
+  }
+  if (sq === 1) return { x: 1, y: 0 };
+  return { x: 0, y: -1 };
+}
+
 function KnightGraph({
   pieceBySq,
+  fruitBySq,
   selectedId,
   size,
   faded = false,
 }: {
   pieceBySq: Map<number, Piece>;
+  fruitBySq?: Map<number, Fruit>;
   selectedId: number | null;
   size: number;
   faded?: boolean;
@@ -723,6 +736,8 @@ function KnightGraph({
   const nodeR = Math.max(9, Math.round(size * 0.055));
   const fontSize = Math.max(9, Math.round(size * 0.05));
   const edgeWidth = Math.max(3, Math.round(size * 0.016));
+  const fruitR = Math.max(6, Math.round(size * 0.032));
+  const fruitGap = nodeR + fruitR + Math.round(size * 0.012);
 
   return (
     <svg
@@ -806,6 +821,35 @@ function KnightGraph({
           </g>
         );
       })}
+
+      {fruitBySq &&
+        Array.from(fruitBySq.values()).map((f) => {
+          const { x, y } = graphPos(f.sq, size);
+          const dir = outwardDir(f.sq);
+          const fx = x + dir.x * fruitGap;
+          const fy = y + dir.y * fruitGap;
+          const fill = f.color === "red" ? "#c0392b" : "#2563eb";
+          const stroke = f.color === "red" ? "#7a1d13" : "#1e3a8a";
+          return (
+            <g key={`fruit-${f.sq}`}>
+              <circle
+                cx={fx}
+                cy={fy}
+                r={fruitR}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth={1.6}
+              />
+              <path
+                d={`M ${fx} ${fy - fruitR} Q ${fx + fruitR * 0.3} ${fy - fruitR * 1.6} ${fx + fruitR * 0.8} ${fy - fruitR * 1.4}`}
+                fill="none"
+                stroke="#3a2a1a"
+                strokeWidth={1.3}
+                strokeLinecap="round"
+              />
+            </g>
+          );
+        })}
     </svg>
   );
 }
