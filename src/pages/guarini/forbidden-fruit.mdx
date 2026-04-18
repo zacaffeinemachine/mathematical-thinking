@@ -1,0 +1,43 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Forbidden Fruit
+order: 6
+chapter: guarini
+chapterTitle: Guarini's Puzzle
+blurb: Four knights, two fruits, and colours that cannot be mixed.
+description: The Forbidden Fruit puzzle — an irregular board with poisonous fruits that kill any knight of the wrong colour.
+---
+import ForbiddenFruitPuzzle from "../../components/games/ForbiddenFruitPuzzle.tsx";
+
+Four knights sit on a strange board: two blue knights on the top
+corners of the central 3×3, two red knights on the bottom corners.
+Between them, on the middle of each row, sits a **fruit**. The fruit
+on the top row is blue; the fruit on the bottom row is red.
+
+Knights are hungry creatures and not very discerning. The moment a
+knight lands on a square containing a fruit, it eats the fruit —
+without pausing to check its colour. This matters, because the two
+fruits are not safe for every palate.
+
+- A **red** knight can safely eat a **red** fruit.
+- A **blue** knight can safely eat a **blue** fruit.
+- But a red knight that lands on the **blue** fruit **dies on the
+  spot**, and likewise a blue knight that lands on the red fruit
+  dies.
+
+Your task is the usual one: move the knights, one knight-jump at a
+time, until the two blues occupy the bottom corners and the two reds
+occupy the top corners. No two knights may share a square. The
+squares marked with a cross cannot be landed on, though knights may
+jump over them without trouble.
+
+<ForbiddenFruitPuzzle
+  client:visible
+  title="Swap the knights without losing any"
+  hint="Red starts at squares 8 and 10. Blue starts at squares 2 and 4. A red fruit sits at 9; a blue fruit at 3."
+/>
+
+Keep every knight alive. If one of them eats a fruit of the wrong
+colour, press **Reset** and start over. The fruits, of course, do
+not move, and the two of them sit right in the middle of the
+corridors you will most want to use.
