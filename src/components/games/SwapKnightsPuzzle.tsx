@@ -52,6 +52,22 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
 
+  const [riddleOpen, setRiddleOpen] = useState(false);
+  const [riddleAnswer, setRiddleAnswer] = useState("");
+  const [riddleError, setRiddleError] = useState(false);
+  const [graphUnlocked, setGraphUnlocked] = useState(false);
+
+  const submitRiddle = () => {
+    const normalized = riddleAnswer.trim().toLowerCase();
+    if (normalized === "graph" || normalized === "graphs") {
+      setGraphUnlocked(true);
+      setRiddleOpen(false);
+      setRiddleError(false);
+    } else {
+      setRiddleError(true);
+    }
+  };
+
   const pieceAt = useMemo(() => {
     const map = new Map<string, Piece>();
     for (const p of pieces) map.set(keyOf(p.pos[0], p.pos[1]), p);
@@ -130,6 +146,12 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
               faded
             />
           </BoardFrame>
+
+          {graphUnlocked && (
+            <BoardFrame label="Knight graph">
+              <KnightGraph pieceAt={pieceAt} selectedId={selectedId} />
+            </BoardFrame>
+          )}
         </div>
 
         <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
@@ -142,12 +164,77 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          {!graphUnlocked && (
+            <button
+              onClick={() => {
+                setRiddleOpen((v) => !v);
+                setRiddleError(false);
+              }}
+              className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
+            >
+              Mind over matter
+            </button>
+          )}
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
             </span>
           )}
         </div>
+
+        {riddleOpen && !graphUnlocked && (
+          <div
+            className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
+          >
+            <p className="text-sm mb-3">
+              I have no body, yet I show connections.
+              I have no legs, yet I can walk in cycles.
+              I am the mathematician's friend when puzzles grow heavy.
+              <br />
+              <em className="text-[var(--muted)]">One word. What am I?</em>
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitRiddle();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={riddleAnswer}
+                onChange={(e) => {
+                  setRiddleAnswer(e.target.value);
+                  setRiddleError(false);
+                }}
+                placeholder="your answer"
+                aria-label="Riddle answer"
+                autoFocus
+                className="flex-1 px-3 py-1.5 rounded-md border border-[var(--rule)] bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--accent)]"
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] text-sm transition-colors"
+              >
+                Answer
+              </button>
+            </form>
+            {riddleError && (
+              <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
+                Not quite — think about what mathematicians draw when they want
+                to see connections between things.
+              </p>
+            )}
+          </div>
+        )}
+
+        {graphUnlocked && (
+          <p className="text-sm text-[var(--muted)] max-w-lg text-center">
+            Each square is a vertex; an edge joins two squares whenever a knight
+            can jump between them. The knights on the graph move in lockstep
+            with those on the board.
+          </p>
+        )}
       </div>
     </figure>
   );
@@ -346,6 +433,127 @@ function Knight({
           strokeWidth="1.5"
         />
       </g>
+    </svg>
+  );
+}
+
+// Knight-move graph on the 3x3 board: an 8-cycle around the outer squares
+// (1-6-7-2-9-4-3-8-1) plus the isolated centre vertex 5.
+const GRAPH_CYCLE = [1, 6, 7, 2, 9, 4, 3, 8] as const;
+
+const GRAPH_SIZE = 260;
+const GRAPH_CENTER = GRAPH_SIZE / 2;
+const GRAPH_RADIUS = GRAPH_CENTER - 34;
+const GRAPH_NODE_R = 18;
+
+function squareToCoord(sq: number): Coord {
+  const idx = sq - 1;
+  return [Math.floor(idx / COLS), idx % COLS];
+}
+
+function graphPos(sq: number): { x: number; y: number } {
+  if (sq === 5) return { x: GRAPH_CENTER, y: GRAPH_CENTER };
+  const i = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
+  const angle = (-Math.PI / 2) + (i * 2 * Math.PI) / GRAPH_CYCLE.length;
+  return {
+    x: GRAPH_CENTER + GRAPH_RADIUS * Math.cos(angle),
+    y: GRAPH_CENTER + GRAPH_RADIUS * Math.sin(angle),
+  };
+}
+
+function KnightGraph({
+  pieceAt,
+  selectedId,
+}: {
+  pieceAt: Map<string, Piece>;
+  selectedId: number | null;
+}) {
+  const edges: Array<[number, number]> = [];
+  for (let i = 0; i < GRAPH_CYCLE.length; i++) {
+    const a = GRAPH_CYCLE[i];
+    const b = GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length];
+    edges.push([a, b]);
+  }
+
+  return (
+    <svg
+      width={GRAPH_SIZE}
+      height={GRAPH_SIZE}
+      viewBox={`0 0 ${GRAPH_SIZE} ${GRAPH_SIZE}`}
+      role="img"
+      aria-label="Knight-move graph"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--rule)",
+        borderRadius: 12,
+      }}
+    >
+      {edges.map(([a, b], i) => {
+        const pa = graphPos(a);
+        const pb = graphPos(b);
+        return (
+          <line
+            key={i}
+            x1={pa.x}
+            y1={pa.y}
+            x2={pb.x}
+            y2={pb.y}
+            stroke="var(--rule)"
+            strokeWidth={2}
+          />
+        );
+      })}
+
+      {Array.from({ length: 9 }, (_, i) => {
+        const sq = i + 1;
+        const { x, y } = graphPos(sq);
+        const [r, c] = squareToCoord(sq);
+        const here = pieceAt.get(keyOf(r, c));
+        const isSelected = here != null && selectedId === here.id;
+
+        const fill = here
+          ? here.color === "red" ? "#c0392b" : "#2563eb"
+          : "var(--surface)";
+        const stroke = here
+          ? here.color === "red" ? "#7a1d13" : "#1e3a8a"
+          : "var(--muted)";
+        const textColor = here ? "#ffffff" : "var(--muted)";
+
+        return (
+          <g key={sq}>
+            <circle
+              cx={x}
+              cy={y}
+              r={GRAPH_NODE_R}
+              fill={fill}
+              stroke={stroke}
+              strokeWidth={isSelected ? 3 : 1.8}
+            />
+            {isSelected && (
+              <circle
+                cx={x}
+                cy={y}
+                r={GRAPH_NODE_R + 5}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth={2}
+              />
+            )}
+            <text
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={13}
+              fontWeight={600}
+              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+              fill={textColor}
+            >
+              {sq}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
