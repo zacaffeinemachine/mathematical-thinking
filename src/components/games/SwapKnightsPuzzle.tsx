@@ -480,8 +480,9 @@ function KnightGraph({
   size: number;
   faded?: boolean;
 }) {
-  const nodeR = Math.max(12, Math.round(size * 0.085));
-  const fontSize = Math.max(10, Math.round(size * 0.06));
+  const nodeR = Math.max(9, Math.round(size * 0.055));
+  const fontSize = Math.max(9, Math.round(size * 0.05));
+  const edgeWidth = Math.max(3, Math.round(size * 0.016));
 
   const edges: Array<[number, number]> = [];
   for (let i = 0; i < GRAPH_CYCLE.length; i++) {
@@ -513,8 +514,10 @@ function KnightGraph({
             y1={pa.y}
             x2={pb.x}
             y2={pb.y}
-            stroke="var(--rule)"
-            strokeWidth={2}
+            stroke="var(--ink)"
+            strokeOpacity={0.7}
+            strokeWidth={edgeWidth}
+            strokeLinecap="round"
           />
         );
       })}
