@@ -1,0 +1,19 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  blurb: string;
+  number: number;
+}
+const { href, title, blurb, number } = Astro.props;
+---
+<a
+  href={href}
+  class="block p-6 border border-[var(--rule)] rounded-lg hover:border-[var(--accent)] transition-colors"
+>
+  <div class="text-xs uppercase tracking-wider text-[var(--muted)] mb-2">
+    Chapter {number}
+  </div>
+  <h2 class="text-xl font-semibold mb-2 tracking-tight">{title}</h2>
+  <p class="text-sm text-[var(--muted)] leading-relaxed">{blurb}</p>
+</a>

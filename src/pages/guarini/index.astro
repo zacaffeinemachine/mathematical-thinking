@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+
+const base = import.meta.env.BASE_URL;
+const chapter = "guarini";
+const chapterTitle = "Guarini's Puzzle";
+
+const pages = import.meta.glob("./*.mdx", { eager: true }) as Record<
+  string,
+  { frontmatter?: { title: string; order: number; blurb?: string } }
+>;
+
+const subpages = Object.entries(pages)
+  .map(([path, mod]) => ({
+    slug: path.replace(/^\.\//, "").replace(/\.mdx$/, ""),
+    title: mod.frontmatter?.title ?? "",
+    order: mod.frontmatter?.order ?? 0,
+    blurb: mod.frontmatter?.blurb ?? "",
+  }))
+  .sort((a, b) => a.order - b.order);
+---
+<Base title={`${chapterTitle} — Mathematical Thinking`}>
+  <nav class="chapter-nav text-sm mb-8">
+    <a href={base + "/"}>Chapters</a>
+    <span class="mx-2">·</span>
+    <span>{chapterTitle}</span>
+  </nav>
+
+  <h1 class="text-4xl font-semibold tracking-tight mb-4">{chapterTitle}</h1>
+  <p class="prose text-lg text-[var(--muted)] mb-12">
+    A puzzle from 1512 that looks impossible — and becomes trivial once you
+    see it through the right lens.
+  </p>
+
+  <ol class="space-y-3">
+    {subpages.map((p, i) => (
+      <li>
+        <a
+          href={`${base}/${chapter}/${p.slug}/`}
+          class="block p-5 border border-[var(--rule)] rounded-lg hover:border-[var(--accent)] transition-colors"
+        >
+          <div class="flex items-baseline gap-3">
+            <span class="text-sm text-[var(--muted)] tabular-nums">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span class="font-medium">{p.title}</span>
+          </div>
+          {p.blurb && (
+            <p class="text-sm text-[var(--muted)] mt-1 ml-8">{p.blurb}</p>
+          )}
+        </a>
+      </li>
+    ))}
+  </ol>
+</Base>

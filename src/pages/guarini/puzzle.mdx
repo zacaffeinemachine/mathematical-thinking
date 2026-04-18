@@ -1,0 +1,27 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Puzzle
+order: 1
+chapter: guarini
+chapterTitle: Guarini's Puzzle
+blurb: Meet the puzzle. Try it yourself. Notice how your intuition fails.
+description: Interactive introduction to Paolo Guarini's 1512 knight-swap puzzle.
+---
+import GuariniBoard from "../../components/games/GuariniBoard.tsx";
+
+In 1512, Paolo Guarini di Forlì posed the following problem. Place two
+white knights in the top corners of a $3 \times 3$ board, and two black
+knights in the bottom corners. Using only legal knight moves, swap them
+— black on top, white on bottom.
+
+It looks modest. Four pieces, nine squares. Try it.
+
+<GuariniBoard client:visible />
+
+If you played for a few minutes, you probably noticed something odd.
+The knights seem to *orbit*. Each one keeps returning to the same set
+of squares. The centre of the board never helps you. And no matter
+what order you make the moves in, progress feels elusive.
+
+This is the puzzle. The shift in perspective that solves it — almost
+effortlessly — is the subject of the next page.

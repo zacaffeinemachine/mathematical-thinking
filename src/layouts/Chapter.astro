@@ -1,0 +1,61 @@
+---
+import Base from "./Base.astro";
+
+interface Props {
+  title: string;
+  chapter: string;        // slug, e.g. "guarini"
+  chapterTitle: string;   // display name, e.g. "Guarini's Puzzle"
+  order: number;          // sub-page order within chapter
+  description?: string;
+}
+
+const { title, chapter, chapterTitle, order, description } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+// Collect sibling sub-pages for prev/next nav.
+const allPages = import.meta.glob("../pages/**/*.mdx", { eager: true }) as Record<
+  string,
+  { frontmatter?: { title: string; order: number; chapter?: string } }
+>;
+
+const siblings = Object.entries(allPages)
+  .filter(([path]) => path.includes(`/pages/${chapter}/`))
+  .map(([path, mod]) => ({
+    path,
+    slug: path.split(`/pages/${chapter}/`)[1].replace(/\.mdx$/, ""),
+    title: mod.frontmatter?.title ?? "",
+    order: mod.frontmatter?.order ?? 0,
+  }))
+  .sort((a, b) => a.order - b.order);
+
+const currentIdx = siblings.findIndex((s) => s.order === order);
+const prev = currentIdx > 0 ? siblings[currentIdx - 1] : null;
+const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[currentIdx + 1] : null;
+---
+<Base title={`${title} — ${chapterTitle}`} description={description}>
+  <nav class="chapter-nav text-sm mb-8">
+    <a href={base + "/"}>Chapters</a>
+    <span class="mx-2">·</span>
+    <a href={`${base}/${chapter}/`}>{chapterTitle}</a>
+  </nav>
+
+  <article class="prose">
+    <h1>{title}</h1>
+    <slot />
+  </article>
+
+  <nav class="chapter-nav flex justify-between gap-6 mt-16 pt-6 border-t border-[var(--rule)] text-sm">
+    {prev ? (
+      <a href={`${base}/${chapter}/${prev.slug}/`} class="max-w-xs">
+        <div class="text-xs uppercase tracking-wider">Previous</div>
+        <div>{prev.title}</div>
+      </a>
+    ) : <span />}
+    {next ? (
+      <a href={`${base}/${chapter}/${next.slug}/`} class="max-w-xs text-right">
+        <div class="text-xs uppercase tracking-wider">Next</div>
+        <div>{next.title}</div>
+      </a>
+    ) : <span />}
+  </nav>
+</Base>

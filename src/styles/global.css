@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+:root {
+  --bg: #fafaf7;
+  --ink: #1a1a1a;
+  --accent: #8b2c2c;
+  --muted: #6b6b6b;
+  --rule: #e6e4de;
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.prose {
+  max-width: 68ch;
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.prose h1 { font-size: 2rem; margin-top: 0; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+.prose h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: 0.75rem; font-weight: 600; }
+.prose p  { margin: 1rem 0; }
+.prose a  { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.prose strong { font-weight: 600; }
+
+.chapter-nav a { color: var(--muted); }
+.chapter-nav a:hover { color: var(--ink); }

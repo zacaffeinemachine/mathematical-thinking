@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import ChapterCard from "../components/ChapterCard.astro";
+
+const base = import.meta.env.BASE_URL;
+
+// Hand-curated chapter list — order and blurbs matter pedagogically.
+const chapters = [
+  {
+    slug: "guarini",
+    title: "Guarini's Puzzle",
+    blurb: "Four knights on a 3×3 board. Can they trade places? A 500-year-old puzzle that teaches us to think in graphs.",
+  },
+  // More chapters will be added here as they're built.
+];
+---
+<Base title="Mathematical Thinking" description="A puzzle-driven course in how mathematicians think.">
+  <section class="mb-16">
+    <h1 class="text-4xl font-semibold tracking-tight mb-4">Mathematical Thinking</h1>
+    <p class="prose text-lg text-[var(--muted)]">
+      A course taught through puzzles. Each chapter presents a question that looks simple,
+      resists solution, and rewards you with a new way of thinking.
+    </p>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-2">
+    {chapters.map((c, i) => (
+      <ChapterCard
+        href={`${base}/${c.slug}/`}
+        title={c.title}
+        blurb={c.blurb}
+        number={i + 1}
+      />
+    ))}
+  </section>
+</Base>
