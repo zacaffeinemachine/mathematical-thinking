@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 
 type Coord = [number, number];
 type Color = "red" | "blue";
-type Variant = "diagonal" | "classical";
+type Variant = "diagonal" | "rowpair" | "classical";
 
 interface Piece {
   id: number;
@@ -75,7 +75,7 @@ const VARIANTS: Record<Variant, VariantConfig> = {
         "Not quite — think of what Ryuk craves on every page of the death god's ledger.",
     },
   },
-  classical: {
+  rowpair: {
     start: [
       { id: 1, color: "red",  pos: [0, 0] },
       { id: 2, color: "red",  pos: [0, 2] },
@@ -110,6 +110,43 @@ const VARIANTS: Record<Variant, VariantConfig> = {
       answers: ["kira"],
       wrongHint:
         "Not quite — this is the alias Light Yagami takes, the name whispered across every news broadcast in the series.",
+    },
+  },
+  classical: {
+    start: [
+      { id: 1, color: "red",  pos: [0, 0] },
+      { id: 2, color: "red",  pos: [0, 2] },
+      { id: 3, color: "blue", pos: [2, 0] },
+      { id: 4, color: "blue", pos: [2, 2] },
+    ],
+    goal: [
+      { id: 1, color: "blue", pos: [0, 0] },
+      { id: 2, color: "red",  pos: [0, 2] },
+      { id: 3, color: "red",  pos: [2, 0] },
+      { id: 4, color: "blue", pos: [2, 2] },
+    ],
+    target: {
+      [keyOf(0, 0)]: "blue",
+      [keyOf(2, 2)]: "blue",
+      [keyOf(0, 2)]: "red",
+      [keyOf(2, 0)]: "red",
+    },
+    riddle: {
+      prompt: (
+        <>
+          Among the shinigami, one bore a heart. Tall as a mast, her body all
+          bone and silver, she loved a human girl in defiance of every rule
+          her kind obeys. When the detectives' noose tightened around her
+          beloved, she took up her ledger and struck down two men to save
+          her — and was undone on the instant, crumbling to dust the moment
+          the ink dried. What was her name?
+          <br />
+          <em className="text-[var(--muted)]">One word.</em>
+        </>
+      ),
+      answers: ["rem"],
+      wrongHint:
+        "Not quite — the answer is the tall shinigami who gave her notebook to Misa and who was undone by her own love.",
     },
   },
 };

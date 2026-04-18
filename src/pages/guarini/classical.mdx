@@ -1,33 +1,33 @@
 ---
 layout: ../../layouts/Chapter.astro
 title: The Classical Puzzle
-order: 3
+order: 4
 chapter: guarini
 chapterTitle: Guarini's Puzzle
-blurb: Four knights on a 3×3 board, as Guarini posed them in 1512. Red on top, blue on the bottom.
-description: The original 1512 Guarini puzzle on a 3×3 board, posed without spoilers.
+blurb: Four knights on a 3×3 board, as Guarini posed them in 1512.
+description: The 1512 Guarini puzzle — same starting arrangement, a different goal.
 ---
 import SwapKnightsPuzzle from "../../components/games/SwapKnightsPuzzle.tsx";
 
-Before we move on to stranger boards, here is the puzzle the Italian
-mathematician Paolo Guarini di Forlì set down in 1512 — the one that
-started this whole line of thought.
+At last, here is the puzzle the Italian mathematician Paolo Guarini
+di Forlì set down in 1512 — the one that started this whole line of
+thought.
 
-It looks almost the same as the previous one: a 3×3 board, four
-knights, swap the colours. The difference is small. The two red
-knights now sit on the top two corners instead of on a diagonal; the
-two blue knights sit on the bottom two.
+The starting position will look familiar from the previous page:
+red knights across the top row, blue knights across the bottom. What
+has changed is the goal. Guarini did not want the colours merely
+interchanged row-for-row. He asked for the knights to be rearranged
+into a very particular pattern: the two blue knights on one diagonal
+of the board, and the two red knights on the other.
 
 <SwapKnightsPuzzle
   client:visible
   variant="classical"
   title="The 1512 puzzle"
-  hint="Red starts on squares 1 and 3. Blue starts on squares 7 and 9. Swap them."
+  hint="Red starts on squares 1 and 3. Blue starts on squares 7 and 9. End with blue on squares 1 and 9, red on squares 3 and 7."
 />
 
-Try it and see what changes.
-
-If you have begun to believe that knight-swap puzzles are all much the
-same, this one will test that belief gently. The move count, in
-particular, is worth paying attention to — when it climbs higher than
-you expected, ask yourself *why*.
+Take your time. Try short sequences and long ones. If you find
+yourself retracing your steps, that is not a sign that you are
+losing — quite the opposite. The patterns you notice, and the
+patterns you *cannot* seem to find, are both telling you something.

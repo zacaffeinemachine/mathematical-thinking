@@ -1,0 +1,32 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Row Swap
+order: 3
+chapter: guarini
+chapterTitle: Guarini's Puzzle
+blurb: Red across the top row, blue across the bottom. Swap them.
+description: A 3×3 knight-swap puzzle where the two colours begin on opposite rows.
+---
+import SwapKnightsPuzzle from "../../components/games/SwapKnightsPuzzle.tsx";
+
+Another 3×3 knight-swap puzzle, with a small change of starting
+position. The red knights now sit side by side on the top row, and
+the blue knights side by side on the bottom row. Your task is the
+familiar one: rearrange the knights, one legal knight-jump at a time,
+until the reds occupy the squares where the blues started, and the
+blues occupy the squares where the reds did. Two knights may never
+share a square.
+
+<SwapKnightsPuzzle
+  client:visible
+  variant="rowpair"
+  title="Rows, not diagonals"
+  hint="Red starts on squares 1 and 3. Blue starts on squares 7 and 9. Swap them."
+/>
+
+Try it and see what changes.
+
+If you have begun to believe that knight-swap puzzles are all much
+the same, this one will test that belief gently. The move count, in
+particular, is worth paying attention to — when it climbs higher
+than you expected, ask yourself *why*.
