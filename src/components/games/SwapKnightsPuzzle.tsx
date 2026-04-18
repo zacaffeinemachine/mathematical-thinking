@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 type Coord = [number, number];
 type Color = "red" | "blue";
+type Variant = "diagonal" | "classical";
 
 interface Piece {
   id: number;
@@ -9,9 +10,23 @@ interface Piece {
   pos: Coord;
 }
 
+interface RiddleConfig {
+  prompt: ReactNode;
+  answers: string[];
+  wrongHint: ReactNode;
+}
+
+interface VariantConfig {
+  start: Piece[];
+  goal: Piece[];
+  target: Record<string, Color>;
+  riddle: RiddleConfig;
+}
+
 interface Props {
   title?: string;
   hint?: string;
+  variant?: Variant;
 }
 
 const ROWS = 3;
@@ -24,28 +39,91 @@ const KNIGHT_DELTAS: Coord[] = [
 
 const keyOf = (r: number, c: number) => `${r},${c}`;
 
-const START_PIECES: Piece[] = [
-  { id: 1, color: "red",  pos: [0, 0] },
-  { id: 2, color: "red",  pos: [2, 2] },
-  { id: 3, color: "blue", pos: [0, 2] },
-  { id: 4, color: "blue", pos: [2, 0] },
-];
-
-const GOAL_PIECES: Piece[] = [
-  { id: 1, color: "blue", pos: [0, 0] },
-  { id: 2, color: "blue", pos: [2, 2] },
-  { id: 3, color: "red",  pos: [0, 2] },
-  { id: 4, color: "red",  pos: [2, 0] },
-];
-
-const TARGET: Record<string, Color> = {
-  [keyOf(0, 0)]: "blue",
-  [keyOf(2, 2)]: "blue",
-  [keyOf(0, 2)]: "red",
-  [keyOf(2, 0)]: "red",
+const VARIANTS: Record<Variant, VariantConfig> = {
+  diagonal: {
+    start: [
+      { id: 1, color: "red",  pos: [0, 0] },
+      { id: 2, color: "red",  pos: [2, 2] },
+      { id: 3, color: "blue", pos: [0, 2] },
+      { id: 4, color: "blue", pos: [2, 0] },
+    ],
+    goal: [
+      { id: 1, color: "blue", pos: [0, 0] },
+      { id: 2, color: "blue", pos: [2, 2] },
+      { id: 3, color: "red",  pos: [0, 2] },
+      { id: 4, color: "red",  pos: [2, 0] },
+    ],
+    target: {
+      [keyOf(0, 0)]: "blue",
+      [keyOf(2, 2)]: "blue",
+      [keyOf(0, 2)]: "red",
+      [keyOf(2, 0)]: "red",
+    },
+    riddle: {
+      prompt: (
+        <>
+          In the bone-dry realm where the shinigami drift, one withered
+          fruit is prized above all others — Ryuk would trade a name in the
+          notebook for a single taste. Wrinkled, sweet, and coveted even by
+          gods of death: name this dessicated fruit of their dreary world.
+          <br />
+          <em className="text-[var(--muted)]">One word.</em>
+        </>
+      ),
+      answers: ["apple", "apples"],
+      wrongHint:
+        "Not quite — think of what Ryuk craves on every page of the death god's ledger.",
+    },
+  },
+  classical: {
+    start: [
+      { id: 1, color: "red",  pos: [0, 0] },
+      { id: 2, color: "red",  pos: [0, 2] },
+      { id: 3, color: "blue", pos: [2, 0] },
+      { id: 4, color: "blue", pos: [2, 2] },
+    ],
+    goal: [
+      { id: 1, color: "blue", pos: [0, 0] },
+      { id: 2, color: "blue", pos: [0, 2] },
+      { id: 3, color: "red",  pos: [2, 0] },
+      { id: 4, color: "red",  pos: [2, 2] },
+    ],
+    target: {
+      [keyOf(0, 0)]: "blue",
+      [keyOf(0, 2)]: "blue",
+      [keyOf(2, 0)]: "red",
+      [keyOf(2, 2)]: "red",
+    },
+    riddle: {
+      prompt: (
+        <>
+          A young genius finds a black notebook fallen from the sky. With it
+          he begins a secret crusade — judging criminals from the safety of
+          his study, striking them down by name alone. The world soon learns
+          of this invisible judge and christens him with a single word that
+          means &ldquo;killer&rdquo; in the tongue of the island that bore
+          him. By what name does the world come to know him?
+          <br />
+          <em className="text-[var(--muted)]">One word.</em>
+        </>
+      ),
+      answers: ["kira"],
+      wrongHint:
+        "Not quite — this is the alias Light Yagami takes, the name whispered across every news broadcast in the series.",
+    },
+  },
 };
 
-export default function SwapKnightsPuzzle({ title, hint }: Props) {
+export default function SwapKnightsPuzzle({
+  title,
+  hint,
+  variant = "diagonal",
+}: Props) {
+  const config = VARIANTS[variant];
+  const START_PIECES = config.start;
+  const GOAL_PIECES = config.goal;
+  const TARGET = config.target;
+  const RIDDLE = config.riddle;
   const [pieces, setPieces] = useState<Piece[]>(() =>
     START_PIECES.map((p) => ({ ...p, pos: [...p.pos] as Coord })),
   );
@@ -59,7 +137,7 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
 
   const submitRiddle = () => {
     const normalized = riddleAnswer.trim().toLowerCase();
-    if (normalized === "apple" || normalized === "apples") {
+    if (RIDDLE.answers.includes(normalized)) {
       setGraphUnlocked(true);
       setRiddleOpen(false);
       setRiddleError(false);
@@ -195,15 +273,7 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
           <div
             className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
           >
-            <p className="text-sm mb-3">
-              In the bone-dry realm where the shinigami drift, one withered
-              fruit is prized above all others — Ryuk would trade a name in
-              the notebook for a single taste. Wrinkled, sweet, and coveted
-              even by gods of death: name this dessicated fruit of their
-              dreary world.
-              <br />
-              <em className="text-[var(--muted)]">One word.</em>
-            </p>
+            <p className="text-sm mb-3">{RIDDLE.prompt}</p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -232,8 +302,7 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
             </form>
             {riddleError && (
               <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
-                Not quite — think of what Ryuk craves on every page of the
-                death god's ledger.
+                {RIDDLE.wrongHint}
               </p>
             )}
           </div>

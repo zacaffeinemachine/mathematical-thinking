@@ -1,0 +1,43 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Classical Puzzle
+order: 4
+chapter: guarini
+chapterTitle: Guarini's Puzzle
+blurb: Four knights on a 3×3 board, as Guarini posed them in 1512. Red on top, blue on the bottom.
+description: The original 1512 Guarini puzzle on a 3×3 board, posed without spoilers.
+---
+import SwapKnightsPuzzle from "../../components/games/SwapKnightsPuzzle.tsx";
+
+You have met two knight-swap puzzles so far, and both yielded to
+patience: first the 3×3 diagonal swap, then the ten-square irregular
+board. So here, at last, is the puzzle that started it all — the one
+Italian mathematician Paolo Guarini di Forlì set down in 1512.
+
+Four knights on a 3×3 board. The two red knights sit on the top two
+corners; the two blue knights on the bottom two corners. Your task is
+the one Guarini himself posed: rearrange the knights, one legal
+knight-jump at a time, until the reds occupy the squares where the
+blues started, and the blues occupy the squares where the reds did.
+Two knights may never share a square.
+
+<SwapKnightsPuzzle
+  client:visible
+  variant="classical"
+  title="The 1512 puzzle"
+  hint="Red starts on squares 1 and 3. Blue starts on squares 7 and 9. Swap them."
+/>
+
+Guarini did not say whether it can be done.
+
+Play with it for as long as you like before reading on. Try short
+sequences, try long ones, try reasoning about where any given knight
+could possibly go. Count moves, count dead ends, notice patterns. If
+you find a solution, excellent — you have out-done half a millennium
+of puzzlers. If you begin to suspect there is no solution at all,
+that is interesting in its own right: how would you *prove* such a
+thing, without testing every sequence of moves?
+
+If you would like a hand, the **Mind over matter** button reveals a
+visual aid that has helped mathematicians crack many puzzles like this
+one. Whether or not it reveals the answer is for you to decide.
