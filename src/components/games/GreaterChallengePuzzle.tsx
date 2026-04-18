@@ -216,23 +216,26 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
-          {!graphUnlocked && (
-            <button
-              onClick={() => {
-                setRiddleOpen((v) => !v);
-                setRiddleError(false);
-              }}
-              className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
-            >
-              Mind over matter
-            </button>
-          )}
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
             </span>
           )}
         </div>
+
+        {!graphUnlocked && (
+          <button
+            onClick={() => {
+              setRiddleOpen((v) => !v);
+              setRiddleError(false);
+            }}
+            className="text-[10px] tracking-wider uppercase text-[var(--muted)] hover:text-[var(--ink)] transition-colors mt-2 opacity-40 hover:opacity-80"
+            style={{ background: "none", border: "none", padding: "2px 4px", cursor: "pointer" }}
+            aria-label="Reveal hint"
+          >
+            mind over matter
+          </button>
+        )}
 
         {riddleOpen && !graphUnlocked && (
           <div

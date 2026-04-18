@@ -1,7 +1,7 @@
 ---
 layout: ../../layouts/Chapter.astro
 title: A Greater Challenge
-order: 3
+order: 4
 chapter: guarini
 chapterTitle: Guarini's Puzzle
 blurb: A ten-square board, four knights, and a swap that is no longer impossible.
@@ -9,28 +9,19 @@ description: The tree-shaped variant of Guarini's puzzle on a ten-square board.
 ---
 import GreaterChallengePuzzle from "../../components/games/GreaterChallengePuzzle.tsx";
 
-On the 3×3 board the knights were beads on a closed string: they could
-slide around the cycle, but they could never pass each other. No
-sequence of moves could ever swap the colours.
-
-The culprit was not the board — it was the *graph*. The knight-move
-graph on a 3×3 happens to be a single cycle, and cycles are mean.
-
-So what happens on a different board, with a different graph?
-
-Here is a ten-square board, irregular in shape. Two red knights sit at
-the top of the board; two blue knights sit at the bottom. The task is
-the same: swap the colours, one knight-jump at a time, with no two
-knights ever on the same square.
+Here is a knight-swap puzzle on a stranger board: ten squares,
+arranged in an irregular shape. Two red knights sit near the top; two
+blue knights sit near the bottom. The task is the same as before —
+swap the colours, one legal knight-jump at a time, with no two knights
+ever on the same square.
 
 <GreaterChallengePuzzle
   client:visible
   title="Swap the four knights"
-  hint="Red starts at squares 10 and 6. Blue starts at squares 1 and 3. Pass the mind-over-matter trial to summon the graph — it is a different shape this time."
+  hint="Red starts at squares 10 and 6. Blue starts at squares 1 and 3."
 />
 
-The knight-move graph of this board is not a cycle. That alone changes
-the game. If you can find a sequence of moves that works, you will have
-discovered on your own the same idea the chapter develops next: two
-puzzles that look almost identical on the surface can live or die by
-the shape of the graph underneath.
+Keep track of how many moves you need. Compare it with what the
+earlier puzzles required. Notice, too, which squares act as
+bottlenecks and which act as side-streets. Everything you observe here
+is fuel for the chapter that follows.
