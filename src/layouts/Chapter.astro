@@ -1,7 +1,7 @@
 ---
 import Base from "./Base.astro";
 
-interface Props {
+interface Frontmatter {
   title: string;
   chapter: string;        // slug, e.g. "guarini"
   chapterTitle: string;   // display name, e.g. "Guarini's Puzzle"
@@ -9,7 +9,9 @@ interface Props {
   description?: string;
 }
 
-const { title, chapter, chapterTitle, order, description } = Astro.props;
+// MDX layouts receive frontmatter under Astro.props.frontmatter.
+const fm = (Astro.props as { frontmatter: Frontmatter }).frontmatter;
+const { title, chapter, chapterTitle, order, description } = fm;
 const base = import.meta.env.BASE_URL;
 
 // Collect sibling sub-pages for prev/next nav and the chapter TOC.
@@ -84,28 +86,20 @@ const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[curr
     <slot />
   </article>
 
-  <nav class="chapter-nav flex justify-between gap-6 mt-16 pt-6 border-t border-[var(--rule)] text-sm">
-    {prev ? (
-      <a href={`${base}/${chapter}/${prev.slug}/`} class="max-w-xs">
-        <div class="text-xs uppercase tracking-wider">Previous</div>
-        <div>{prev.title}</div>
-      </a>
-    ) : (
-      <a href={`${base}/${chapter}/`} class="max-w-xs">
-        <div class="text-xs uppercase tracking-wider">Up</div>
-        <div>{chapterTitle} overview</div>
-      </a>
-    )}
-    {next ? (
-      <a href={`${base}/${chapter}/${next.slug}/`} class="max-w-xs text-right">
-        <div class="text-xs uppercase tracking-wider">Next</div>
-        <div>{next.title}</div>
-      </a>
-    ) : (
-      <a href={`${base}/${chapter}/`} class="max-w-xs text-right">
-        <div class="text-xs uppercase tracking-wider">Up</div>
-        <div>{chapterTitle} overview</div>
-      </a>
-    )}
-  </nav>
+  {(prev || next) && (
+    <nav class="chapter-nav flex justify-between gap-6 mt-16 pt-6 border-t border-[var(--rule)] text-sm">
+      {prev ? (
+        <a href={`${base}/${chapter}/${prev.slug}/`} class="max-w-xs">
+          <div class="text-xs uppercase tracking-wider">Previous</div>
+          <div>{prev.title}</div>
+        </a>
+      ) : <span />}
+      {next ? (
+        <a href={`${base}/${chapter}/${next.slug}/`} class="max-w-xs text-right">
+          <div class="text-xs uppercase tracking-wider">Next</div>
+          <div>{next.title}</div>
+        </a>
+      ) : <span />}
+    </nav>
+  )}
 </Base>
