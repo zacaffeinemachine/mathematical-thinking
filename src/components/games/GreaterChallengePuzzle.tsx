@@ -92,6 +92,22 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
 
+  const [riddleOpen, setRiddleOpen] = useState(false);
+  const [riddleAnswer, setRiddleAnswer] = useState("");
+  const [riddleError, setRiddleError] = useState(false);
+  const [graphUnlocked, setGraphUnlocked] = useState(false);
+
+  const submitRiddle = () => {
+    const normalized = riddleAnswer.trim().toLowerCase();
+    if (normalized === "face" || normalized === "faces") {
+      setGraphUnlocked(true);
+      setRiddleOpen(false);
+      setRiddleError(false);
+    } else {
+      setRiddleError(true);
+    }
+  };
+
   const pieceBySq = useMemo(() => {
     const m = new Map<number, Piece>();
     for (const p of pieces) m.set(p.sq, p);
@@ -164,11 +180,13 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
               onSquareClick={handleSquareClick}
               cellPx={boardCellPx}
             />
-            <KnightGraph
-              pieceBySq={pieceBySq}
-              selectedId={selectedId}
-              size={boardSize}
-            />
+            {graphUnlocked && (
+              <KnightGraph
+                pieceBySq={pieceBySq}
+                selectedId={selectedId}
+                size={boardSize}
+              />
+            )}
           </BoardFrame>
 
           <BoardFrame label="Goal" faded>
@@ -177,12 +195,14 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
               cellPx={goalCellPx}
               faded
             />
-            <KnightGraph
-              pieceBySq={piecesToMap(GOAL_PIECES)}
-              selectedId={null}
-              size={goalSize}
-              faded
-            />
+            {graphUnlocked && (
+              <KnightGraph
+                pieceBySq={piecesToMap(GOAL_PIECES)}
+                selectedId={null}
+                size={goalSize}
+                faded
+              />
+            )}
           </BoardFrame>
         </div>
 
@@ -196,12 +216,72 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          {!graphUnlocked && (
+            <button
+              onClick={() => {
+                setRiddleOpen((v) => !v);
+                setRiddleError(false);
+              }}
+              className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
+            >
+              Mind over matter
+            </button>
+          )}
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
             </span>
           )}
         </div>
+
+        {riddleOpen && !graphUnlocked && (
+          <div
+            className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
+          >
+            <p className="text-sm mb-3">
+              In the shinigami's dreadful gift, a name alone will not kill. The
+              writer must summon, in the theatre of the mind, that which the
+              name adorns — a single portrait, clear enough for the god of
+              death to recognise. Without this second vision, every page of
+              the cursed ledger is dead ink, and no soul falls. In a single
+              word: what must the writer picture?
+              <br />
+              <em className="text-[var(--muted)]">One word.</em>
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitRiddle();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={riddleAnswer}
+                onChange={(e) => {
+                  setRiddleAnswer(e.target.value);
+                  setRiddleError(false);
+                }}
+                placeholder="your answer"
+                aria-label="Riddle answer"
+                autoFocus
+                className="flex-1 px-3 py-1.5 rounded-md border border-[var(--rule)] bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--accent)]"
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] text-sm transition-colors"
+              >
+                Answer
+              </button>
+            </form>
+            {riddleError && (
+              <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
+                Not quite — recall the rule that forces Light to hunt for
+                something before he can write.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </figure>
   );
