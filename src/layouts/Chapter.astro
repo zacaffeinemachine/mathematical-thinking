@@ -12,7 +12,7 @@ interface Props {
 const { title, chapter, chapterTitle, order, description } = Astro.props;
 const base = import.meta.env.BASE_URL;
 
-// Collect sibling sub-pages for prev/next nav.
+// Collect sibling sub-pages for prev/next nav and the chapter TOC.
 const allPages = import.meta.glob("../pages/**/*.mdx", { eager: true }) as Record<
   string,
   { frontmatter?: { title: string; order: number; chapter?: string } }
@@ -33,11 +33,51 @@ const prev = currentIdx > 0 ? siblings[currentIdx - 1] : null;
 const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[currentIdx + 1] : null;
 ---
 <Base title={`${title} — ${chapterTitle}`} description={description}>
-  <nav class="chapter-nav text-sm mb-8">
+  <nav class="chapter-nav text-sm mb-6">
     <a href={base + "/"}>Chapters</a>
     <span class="mx-2">·</span>
     <a href={`${base}/${chapter}/`}>{chapterTitle}</a>
+    <span class="mx-2">·</span>
+    <span class="text-[var(--ink)]">{title}</span>
   </nav>
+
+  {siblings.length > 1 && (
+    <aside
+      class="mb-10 p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
+      aria-label={`Pages in ${chapterTitle}`}
+    >
+      <div class="text-xs uppercase tracking-wider text-[var(--muted)] mb-2">
+        In this chapter
+      </div>
+      <ol class="space-y-1 text-sm">
+        {siblings.map((s, i) => {
+          const isCurrent = s.order === order;
+          const num = String(i + 1).padStart(2, "0");
+          return (
+            <li class="flex items-baseline gap-3">
+              <span class="text-[var(--muted)] tabular-nums text-xs">{num}</span>
+              {isCurrent ? (
+                <span
+                  class="font-medium"
+                  style="color: var(--accent)"
+                  aria-current="page"
+                >
+                  {s.title}
+                </span>
+              ) : (
+                <a
+                  href={`${base}/${chapter}/${s.slug}/`}
+                  class="hover:text-[var(--accent)] transition-colors"
+                >
+                  {s.title}
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </aside>
+  )}
 
   <article class="prose">
     <h1>{title}</h1>
@@ -50,12 +90,22 @@ const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[curr
         <div class="text-xs uppercase tracking-wider">Previous</div>
         <div>{prev.title}</div>
       </a>
-    ) : <span />}
+    ) : (
+      <a href={`${base}/${chapter}/`} class="max-w-xs">
+        <div class="text-xs uppercase tracking-wider">Up</div>
+        <div>{chapterTitle} overview</div>
+      </a>
+    )}
     {next ? (
       <a href={`${base}/${chapter}/${next.slug}/`} class="max-w-xs text-right">
         <div class="text-xs uppercase tracking-wider">Next</div>
         <div>{next.title}</div>
       </a>
-    ) : <span />}
+    ) : (
+      <a href={`${base}/${chapter}/`} class="max-w-xs text-right">
+        <div class="text-xs uppercase tracking-wider">Up</div>
+        <div>{chapterTitle} overview</div>
+      </a>
+    )}
   </nav>
 </Base>
