@@ -137,6 +137,13 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
               onClick={handleClick}
               cellPx={72}
             />
+            {graphUnlocked && (
+              <KnightGraph
+                pieceAt={pieceAt}
+                selectedId={selectedId}
+                size={COLS * 72 + 16}
+              />
+            )}
           </BoardFrame>
 
           <BoardFrame label="Goal" faded>
@@ -145,13 +152,15 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
               cellPx={56}
               faded
             />
+            {graphUnlocked && (
+              <KnightGraph
+                pieceAt={pieceMapOf(GOAL_PIECES)}
+                selectedId={null}
+                size={COLS * 56 + 16}
+                faded
+              />
+            )}
           </BoardFrame>
-
-          {graphUnlocked && (
-            <BoardFrame label="Knight graph">
-              <KnightGraph pieceAt={pieceAt} selectedId={selectedId} />
-            </BoardFrame>
-          )}
         </div>
 
         <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
@@ -441,56 +450,60 @@ function Knight({
 // (1-6-7-2-9-4-3-8-1) plus the isolated centre vertex 5.
 const GRAPH_CYCLE = [1, 6, 7, 2, 9, 4, 3, 8] as const;
 
-const GRAPH_SIZE = 260;
-const GRAPH_CENTER = GRAPH_SIZE / 2;
-const GRAPH_RADIUS = GRAPH_CENTER - 34;
-const GRAPH_NODE_R = 18;
-
 function squareToCoord(sq: number): Coord {
   const idx = sq - 1;
   return [Math.floor(idx / COLS), idx % COLS];
 }
 
-function graphPos(sq: number): { x: number; y: number } {
-  if (sq === 5) return { x: GRAPH_CENTER, y: GRAPH_CENTER };
+function graphPos(sq: number, size: number): { x: number; y: number } {
+  const center = size / 2;
+  const radius = center - Math.max(24, size * 0.13);
+  if (sq === 5) return { x: center, y: center };
   const i = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
   const angle = (-Math.PI / 2) + (i * 2 * Math.PI) / GRAPH_CYCLE.length;
   return {
-    x: GRAPH_CENTER + GRAPH_RADIUS * Math.cos(angle),
-    y: GRAPH_CENTER + GRAPH_RADIUS * Math.sin(angle),
+    x: center + radius * Math.cos(angle),
+    y: center + radius * Math.sin(angle),
   };
 }
 
 function KnightGraph({
   pieceAt,
   selectedId,
+  size,
+  faded = false,
 }: {
   pieceAt: Map<string, Piece>;
   selectedId: number | null;
+  size: number;
+  faded?: boolean;
 }) {
+  const nodeR = Math.max(12, Math.round(size * 0.085));
+  const fontSize = Math.max(10, Math.round(size * 0.06));
+
   const edges: Array<[number, number]> = [];
   for (let i = 0; i < GRAPH_CYCLE.length; i++) {
-    const a = GRAPH_CYCLE[i];
-    const b = GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length];
-    edges.push([a, b]);
+    edges.push([GRAPH_CYCLE[i], GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length]]);
   }
 
   return (
     <svg
-      width={GRAPH_SIZE}
-      height={GRAPH_SIZE}
-      viewBox={`0 0 ${GRAPH_SIZE} ${GRAPH_SIZE}`}
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
       role="img"
-      aria-label="Knight-move graph"
+      aria-label={faded ? "Knight-move graph, goal state" : "Knight-move graph"}
       style={{
         background: "var(--surface)",
-        border: "1px solid var(--rule)",
+        border: `1px ${faded ? "dashed" : "solid"} var(--rule)`,
         borderRadius: 12,
+        opacity: faded ? 0.75 : 1,
+        filter: faded ? "saturate(0.55)" : "none",
       }}
     >
       {edges.map(([a, b], i) => {
-        const pa = graphPos(a);
-        const pb = graphPos(b);
+        const pa = graphPos(a, size);
+        const pb = graphPos(b, size);
         return (
           <line
             key={i}
@@ -506,7 +519,7 @@ function KnightGraph({
 
       {Array.from({ length: 9 }, (_, i) => {
         const sq = i + 1;
-        const { x, y } = graphPos(sq);
+        const { x, y } = graphPos(sq, size);
         const [r, c] = squareToCoord(sq);
         const here = pieceAt.get(keyOf(r, c));
         const isSelected = here != null && selectedId === here.id;
@@ -524,7 +537,7 @@ function KnightGraph({
             <circle
               cx={x}
               cy={y}
-              r={GRAPH_NODE_R}
+              r={nodeR}
               fill={fill}
               stroke={stroke}
               strokeWidth={isSelected ? 3 : 1.8}
@@ -533,7 +546,7 @@ function KnightGraph({
               <circle
                 cx={x}
                 cy={y}
-                r={GRAPH_NODE_R + 5}
+                r={nodeR + 5}
                 fill="none"
                 stroke="var(--accent)"
                 strokeWidth={2}
@@ -544,7 +557,7 @@ function KnightGraph({
               y={y}
               textAnchor="middle"
               dominantBaseline="central"
-              fontSize={13}
+              fontSize={fontSize}
               fontWeight={600}
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
               fill={textColor}
