@@ -31,6 +31,13 @@ const START_PIECES: Piece[] = [
   { id: 4, color: "blue", pos: [2, 0] },
 ];
 
+const GOAL_PIECES: Piece[] = [
+  { id: 1, color: "blue", pos: [0, 0] },
+  { id: 2, color: "blue", pos: [2, 2] },
+  { id: 3, color: "red",  pos: [0, 2] },
+  { id: 4, color: "red",  pos: [2, 0] },
+];
+
 const TARGET: Record<string, Color> = {
   [keyOf(0, 0)]: "blue",
   [keyOf(2, 2)]: "blue",
@@ -94,8 +101,6 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
     setMoves(0);
   };
 
-  const cellPx = 72;
-
   return (
     <figure className="not-prose my-10">
       {title && (
@@ -106,94 +111,25 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
       )}
 
       <div className="flex flex-col items-center gap-5">
-        <div
-          className="rounded-xl"
-          style={{
-            padding: 8,
-            background: "var(--surface)",
-            border: "1px solid var(--rule)",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-            display: "grid",
-            gridTemplateColumns: `repeat(${COLS}, ${cellPx}px)`,
-            gridTemplateRows: `repeat(${ROWS}, ${cellPx}px)`,
-            gap: 0,
-            width: COLS * cellPx + 16,
-            maxWidth: "95vw",
-          }}
-        >
-          {Array.from({ length: ROWS * COLS }, (_, idx) => {
-            const r = Math.floor(idx / COLS);
-            const c = idx % COLS;
-            const label = idx + 1;
-            const here = pieceAt.get(keyOf(r, c));
-            const isLight = (r + c) % 2 === 0;
-            const isLegal = isLegalMove(r, c);
-            const isSelected = selected?.id === here?.id && here != null;
+        <div className="flex flex-wrap items-start justify-center gap-8">
+          <BoardFrame label="Board">
+            <Board
+              pieceAt={pieceAt}
+              selectedId={selectedId}
+              isLegalMove={isLegalMove}
+              solved={solved}
+              onClick={handleClick}
+              cellPx={72}
+            />
+          </BoardFrame>
 
-            const interactive = !solved && (here != null || isLegal);
-
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleClick(r, c)}
-                disabled={!interactive}
-                aria-label={
-                  here
-                    ? `${here.color} knight on square ${label}`
-                    : `square ${label}`
-                }
-                style={{
-                  position: "relative",
-                  background: isLight ? "var(--sq-light)" : "var(--sq-dark)",
-                  border: "none",
-                  padding: 0,
-                  cursor: interactive ? "pointer" : "default",
-                  outline: isSelected ? "2px solid var(--accent)" : "none",
-                  outlineOffset: -2,
-                  transition: "background 120ms, outline 120ms",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    top: 4,
-                    left: 6,
-                    fontSize: 11,
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    color: isLight
-                      ? "rgba(0,0,0,0.55)"
-                      : "rgba(255,255,255,0.75)",
-                    fontWeight: 600,
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  {label}
-                </span>
-
-                {here && <Knight color={here.color} />}
-
-                {isLegal && !here && (
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "50%",
-                      background: "var(--accent)",
-                      opacity: 0.55,
-                      position: "absolute",
-                    }}
-                  />
-                )}
-              </button>
-            );
-          })}
+          <BoardFrame label="Goal" faded>
+            <Board
+              pieceAt={pieceMapOf(GOAL_PIECES)}
+              cellPx={56}
+              faded
+            />
+          </BoardFrame>
         </div>
 
         <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
@@ -217,15 +153,182 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
   );
 }
 
-function Knight({ color }: { color: Color }) {
+function pieceMapOf(pieces: Piece[]): Map<string, Piece> {
+  const map = new Map<string, Piece>();
+  for (const p of pieces) map.set(keyOf(p.pos[0], p.pos[1]), p);
+  return map;
+}
+
+function BoardFrame({
+  label,
+  faded = false,
+  children,
+}: {
+  label: string;
+  faded?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <span
+        className="text-xs uppercase tracking-wider"
+        style={{
+          color: faded ? "var(--muted)" : "var(--ink)",
+          fontWeight: 600,
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+interface BoardProps {
+  pieceAt: Map<string, Piece>;
+  cellPx: number;
+  selectedId?: number | null;
+  isLegalMove?: (r: number, c: number) => boolean;
+  solved?: boolean;
+  onClick?: (r: number, c: number) => void;
+  faded?: boolean;
+}
+
+function Board({
+  pieceAt,
+  cellPx,
+  selectedId = null,
+  isLegalMove,
+  solved = false,
+  onClick,
+  faded = false,
+}: BoardProps) {
+  return (
+    <div
+      className="rounded-xl"
+      style={{
+        padding: 8,
+        background: "var(--surface)",
+        border: `1px ${faded ? "dashed" : "solid"} var(--rule)`,
+        boxShadow: faded ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
+        display: "grid",
+        gridTemplateColumns: `repeat(${COLS}, ${cellPx}px)`,
+        gridTemplateRows: `repeat(${ROWS}, ${cellPx}px)`,
+        gap: 0,
+        width: COLS * cellPx + 16,
+        maxWidth: "95vw",
+        opacity: faded ? 0.75 : 1,
+      }}
+    >
+      {Array.from({ length: ROWS * COLS }, (_, idx) => {
+        const r = Math.floor(idx / COLS);
+        const c = idx % COLS;
+        const label = idx + 1;
+        const here = pieceAt.get(keyOf(r, c));
+        const isLight = (r + c) % 2 === 0;
+        const legal = !faded && isLegalMove ? isLegalMove(r, c) : false;
+        const isSelected =
+          !faded && here != null && selectedId != null && here.id === selectedId;
+
+        const interactive =
+          !faded && !solved && onClick != null && (here != null || legal);
+
+        const bg = isLight ? "var(--sq-light)" : "var(--sq-dark)";
+
+        return (
+          <button
+            key={idx}
+            type="button"
+            onClick={onClick ? () => onClick(r, c) : undefined}
+            disabled={!interactive}
+            tabIndex={faded ? -1 : 0}
+            aria-disabled={faded || undefined}
+            aria-label={
+              here
+                ? `${here.color} knight on square ${label}`
+                : `square ${label}`
+            }
+            style={{
+              position: "relative",
+              background: bg,
+              filter: faded ? "saturate(0.55) brightness(1.05)" : "none",
+              border: "none",
+              padding: 0,
+              cursor: interactive ? "pointer" : "default",
+              outline: isSelected ? "2px solid var(--accent)" : "none",
+              outlineOffset: -2,
+              transition: "background 120ms, outline 120ms",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: 3,
+                left: 5,
+                fontSize: Math.round(cellPx * 0.16),
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
+                color: isLight
+                  ? "rgba(0,0,0,0.55)"
+                  : "rgba(255,255,255,0.75)",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+              }}
+            >
+              {label}
+            </span>
+
+            {here && (
+              <Knight
+                color={here.color}
+                size={Math.round(cellPx * 0.6)}
+                faded={faded}
+              />
+            )}
+
+            {legal && !here && (
+              <span
+                aria-hidden="true"
+                style={{
+                  width: Math.round(cellPx * 0.22),
+                  height: Math.round(cellPx * 0.22),
+                  borderRadius: "50%",
+                  background: "var(--accent)",
+                  opacity: 0.55,
+                  position: "absolute",
+                }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Knight({
+  color,
+  size = 44,
+  faded = false,
+}: {
+  color: Color;
+  size?: number;
+  faded?: boolean;
+}) {
   const fill = color === "red" ? "#c0392b" : "#2563eb";
   const stroke = color === "red" ? "#7a1d13" : "#1e3a8a";
   return (
     <svg
-      width="44"
-      height="44"
+      width={size}
+      height={size}
       viewBox="0 0 45 45"
       aria-hidden="true"
+      style={{ opacity: faded ? 0.85 : 1 }}
     >
       <g
         fill={fill}
