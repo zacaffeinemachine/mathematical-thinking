@@ -1,0 +1,248 @@
+import { useMemo, useState } from "react";
+
+type Coord = [number, number];
+type Color = "red" | "blue";
+
+interface Piece {
+  id: number;
+  color: Color;
+  pos: Coord;
+}
+
+interface Props {
+  title?: string;
+  hint?: string;
+}
+
+const ROWS = 3;
+const COLS = 3;
+
+const KNIGHT_DELTAS: Coord[] = [
+  [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+  [1, -2], [1, 2], [2, -1], [2, 1],
+];
+
+const keyOf = (r: number, c: number) => `${r},${c}`;
+
+const START_PIECES: Piece[] = [
+  { id: 1, color: "red",  pos: [0, 0] },
+  { id: 2, color: "red",  pos: [2, 2] },
+  { id: 3, color: "blue", pos: [0, 2] },
+  { id: 4, color: "blue", pos: [2, 0] },
+];
+
+const TARGET: Record<string, Color> = {
+  [keyOf(0, 0)]: "blue",
+  [keyOf(2, 2)]: "blue",
+  [keyOf(0, 2)]: "red",
+  [keyOf(2, 0)]: "red",
+};
+
+export default function SwapKnightsPuzzle({ title, hint }: Props) {
+  const [pieces, setPieces] = useState<Piece[]>(() =>
+    START_PIECES.map((p) => ({ ...p, pos: [...p.pos] as Coord })),
+  );
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [moves, setMoves] = useState(0);
+
+  const pieceAt = useMemo(() => {
+    const map = new Map<string, Piece>();
+    for (const p of pieces) map.set(keyOf(p.pos[0], p.pos[1]), p);
+    return map;
+  }, [pieces]);
+
+  const selected = selectedId != null
+    ? pieces.find((p) => p.id === selectedId) ?? null
+    : null;
+
+  const solved = pieces.every(
+    (p) => TARGET[keyOf(p.pos[0], p.pos[1])] === p.color,
+  );
+
+  const isLegalMove = (r: number, c: number): boolean => {
+    if (!selected) return false;
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return false;
+    if (pieceAt.has(keyOf(r, c))) return false;
+    const dr = r - selected.pos[0];
+    const dc = c - selected.pos[1];
+    return KNIGHT_DELTAS.some(([a, b]) => a === dr && b === dc);
+  };
+
+  const handleClick = (r: number, c: number) => {
+    if (solved) return;
+    const here = pieceAt.get(keyOf(r, c));
+
+    if (here) {
+      setSelectedId((cur) => (cur === here.id ? null : here.id));
+      return;
+    }
+
+    if (selected && isLegalMove(r, c)) {
+      setPieces((prev) =>
+        prev.map((p) =>
+          p.id === selected.id ? { ...p, pos: [r, c] as Coord } : p,
+        ),
+      );
+      setMoves((m) => m + 1);
+      setSelectedId(null);
+    }
+  };
+
+  const reset = () => {
+    setPieces(START_PIECES.map((p) => ({ ...p, pos: [...p.pos] as Coord })));
+    setSelectedId(null);
+    setMoves(0);
+  };
+
+  const cellPx = 72;
+
+  return (
+    <figure className="not-prose my-10">
+      {title && (
+        <figcaption className="text-sm font-medium mb-1">{title}</figcaption>
+      )}
+      {hint && (
+        <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
+      )}
+
+      <div className="flex flex-col items-center gap-5">
+        <div
+          className="rounded-xl"
+          style={{
+            padding: 8,
+            background: "var(--surface)",
+            border: "1px solid var(--rule)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            display: "grid",
+            gridTemplateColumns: `repeat(${COLS}, ${cellPx}px)`,
+            gridTemplateRows: `repeat(${ROWS}, ${cellPx}px)`,
+            gap: 0,
+            width: COLS * cellPx + 16,
+            maxWidth: "95vw",
+          }}
+        >
+          {Array.from({ length: ROWS * COLS }, (_, idx) => {
+            const r = Math.floor(idx / COLS);
+            const c = idx % COLS;
+            const label = idx + 1;
+            const here = pieceAt.get(keyOf(r, c));
+            const isLight = (r + c) % 2 === 0;
+            const isLegal = isLegalMove(r, c);
+            const isSelected = selected?.id === here?.id && here != null;
+
+            const interactive = !solved && (here != null || isLegal);
+
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleClick(r, c)}
+                disabled={!interactive}
+                aria-label={
+                  here
+                    ? `${here.color} knight on square ${label}`
+                    : `square ${label}`
+                }
+                style={{
+                  position: "relative",
+                  background: isLight ? "var(--sq-light)" : "var(--sq-dark)",
+                  border: "none",
+                  padding: 0,
+                  cursor: interactive ? "pointer" : "default",
+                  outline: isSelected ? "2px solid var(--accent)" : "none",
+                  outlineOffset: -2,
+                  transition: "background 120ms, outline 120ms",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    left: 6,
+                    fontSize: 11,
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    color: isLight
+                      ? "rgba(0,0,0,0.55)"
+                      : "rgba(255,255,255,0.75)",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {label}
+                </span>
+
+                {here && <Knight color={here.color} />}
+
+                {isLegal && !here && (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: "50%",
+                      background: "var(--accent)",
+                      opacity: 0.55,
+                      position: "absolute",
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
+          <span className="text-[var(--muted)]">
+            Moves: <strong className="text-[var(--ink)]">{moves}</strong>
+          </span>
+          <button
+            onClick={reset}
+            className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
+          >
+            Reset
+          </button>
+          {solved && (
+            <span className="font-medium" style={{ color: "var(--accent)" }}>
+              Swapped in {moves} {moves === 1 ? "move" : "moves"}.
+            </span>
+          )}
+        </div>
+      </div>
+    </figure>
+  );
+}
+
+function Knight({ color }: { color: Color }) {
+  const fill = color === "red" ? "#c0392b" : "#2563eb";
+  const stroke = color === "red" ? "#7a1d13" : "#1e3a8a";
+  return (
+    <svg
+      width="44"
+      height="44"
+      viewBox="0 0 45 45"
+      aria-hidden="true"
+    >
+      <g
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M22,10 C32.5,11 38.5,18 38,39 L15,39 C15,30 25,32.5 23,18" />
+        <path d="M24,18 C24.38,20.91 18.45,25.37 16,27 C13,29 13.18,31.34 11,31 C9.958,30.06 12.41,27.96 11,28 C10,28 11.19,29.23 10,30 C9,30 5.997,31 6,26 C6,24 12,14 12,14 C12,14 13.89,12.1 14,10.5 C13.27,9.506 13.5,8.5 13.5,7.5 C14.5,5.5 16.5,4 16.5,4 C16.5,4 18.5,4 19,5 L20,5 C20,5 22,8 22,10" />
+        <path
+          d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z"
+          fill="#fafafa"
+          stroke="#fafafa"
+          strokeWidth="1.5"
+        />
+      </g>
+    </svg>
+  );
+}
