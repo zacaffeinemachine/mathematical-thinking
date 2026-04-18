@@ -1,0 +1,31 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Wason Selection Test
+order: 1
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Four cards, one claim, and one famous trap for the over-confident reasoner.
+description: The classic Wason selection test — which cards must you turn over to verify the claim?
+---
+import WasonCards from "../../components/games/WasonCards.tsx";
+
+Four cards lie on a table. Every card has a **colour** on one side —
+red or blue — and a **digit** on the other. Of the four cards, two
+are lying colour-up and two are lying digit-up.
+
+A friend now makes a claim about these four cards:
+
+> *If a card is red on one side, then it has an even number on the
+> other side.*
+
+Your job is to decide whether the claim is true or false for the
+cards as they lie. You may turn over as many cards as you like, but
+turning a card takes effort, so you want to turn over *as few as
+possible*.
+
+**Which cards must you turn over to be absolutely certain whether
+the claim is true or false?**
+
+Click the cards you believe need to be flipped, then press **Check**.
+
+<WasonCards client:visible />
