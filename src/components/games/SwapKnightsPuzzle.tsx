@@ -59,7 +59,7 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
 
   const submitRiddle = () => {
     const normalized = riddleAnswer.trim().toLowerCase();
-    if (normalized === "graph" || normalized === "graphs") {
+    if (normalized === "apple" || normalized === "apples") {
       setGraphUnlocked(true);
       setRiddleOpen(false);
       setRiddleError(false);
@@ -196,11 +196,13 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
             className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
           >
             <p className="text-sm mb-3">
-              I have no body, yet I show connections.
-              I have no legs, yet I can walk in cycles.
-              I am the mathematician's friend when puzzles grow heavy.
+              In the bone-dry realm where the shinigami drift, one withered
+              fruit is prized above all others — Ryuk would trade a name in
+              the notebook for a single taste. Wrinkled, sweet, and coveted
+              even by gods of death: name this dessicated fruit of their
+              dreary world.
               <br />
-              <em className="text-[var(--muted)]">One word. What am I?</em>
+              <em className="text-[var(--muted)]">One word.</em>
             </p>
             <form
               onSubmit={(e) => {
@@ -230,8 +232,8 @@ export default function SwapKnightsPuzzle({ title, hint }: Props) {
             </form>
             {riddleError && (
               <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
-                Not quite — think about what mathematicians draw when they want
-                to see connections between things.
+                Not quite — think of what Ryuk craves on every page of the
+                death god's ledger.
               </p>
             )}
           </div>
