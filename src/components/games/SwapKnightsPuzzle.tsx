@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 
 type Coord = [number, number];
 type Color = "red" | "blue";
@@ -355,6 +355,10 @@ export default function SwapKnightsPuzzle({
             with those on the board.
           </p>
         )}
+
+        {graphUnlocked && (
+          <UntangleAnimation size={480} />
+        )}
       </div>
     </figure>
   );
@@ -682,5 +686,238 @@ function KnightGraph({
         );
       })}
     </svg>
+  );
+}
+
+function boardLayout(size: number) {
+  const boardSize = size * 0.55;
+  const offset = (size - boardSize) / 2;
+  const cellSize = boardSize / COLS;
+  return { boardSize, offset, cellSize };
+}
+
+function chessboardPos(sq: number, size: number): { x: number; y: number } {
+  const { offset, cellSize } = boardLayout(size);
+  const [r, c] = squareToCoord(sq);
+  return {
+    x: offset + (c + 0.5) * cellSize,
+    y: offset + (r + 0.5) * cellSize,
+  };
+}
+
+function segmentsCross(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  c: { x: number; y: number },
+  d: { x: number; y: number },
+): boolean {
+  const orient = (
+    p: { x: number; y: number },
+    q: { x: number; y: number },
+    r: { x: number; y: number },
+  ) => Math.sign((q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x));
+  const o1 = orient(a, b, c);
+  const o2 = orient(a, b, d);
+  const o3 = orient(c, d, a);
+  const o4 = orient(c, d, b);
+  return o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0 && o1 !== o2 && o3 !== o4;
+}
+
+function UntangleAnimation({ size }: { size: number }) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const initial = useMemo(() => {
+    const p: Record<number, { x: number; y: number }> = {};
+    for (let sq = 1; sq <= 9; sq++) p[sq] = chessboardPos(sq, size);
+    return p;
+  }, [size]);
+
+  const [positions, setPositions] = useState(initial);
+  const [dragging, setDragging] = useState<number | null>(null);
+
+  const toSvgCoords = (clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const { x, y } = pt.matrixTransform(ctm.inverse());
+    return { x, y };
+  };
+
+  const startDrag = (sq: number) => (e: React.PointerEvent<SVGElement>) => {
+    e.preventDefault();
+    (e.currentTarget as SVGElement).setPointerCapture(e.pointerId);
+    setDragging(sq);
+  };
+
+  const onMove = (e: React.PointerEvent<SVGElement>) => {
+    if (dragging == null) return;
+    const { x, y } = toSvgCoords(e.clientX, e.clientY);
+    const pad = 12;
+    const cx = Math.max(pad, Math.min(size - pad, x));
+    const cy = Math.max(pad, Math.min(size - pad, y));
+    setPositions((prev) => ({ ...prev, [dragging]: { x: cx, y: cy } }));
+  };
+
+  const endDrag = (e: React.PointerEvent<SVGElement>) => {
+    if (dragging == null) return;
+    try {
+      (e.currentTarget as SVGElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // pointer may already be released
+    }
+    setDragging(null);
+  };
+
+  const reset = () => setPositions(initial);
+
+  const edges: Array<[number, number]> = [];
+  for (let i = 0; i < GRAPH_CYCLE.length; i++) {
+    edges.push([GRAPH_CYCLE[i], GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length]]);
+  }
+
+  let crossings = 0;
+  for (let i = 0; i < edges.length; i++) {
+    for (let j = i + 1; j < edges.length; j++) {
+      const [a, b] = edges[i];
+      const [c, d] = edges[j];
+      if (a === c || a === d || b === c || b === d) continue;
+      if (segmentsCross(positions[a], positions[b], positions[c], positions[d])) {
+        crossings++;
+      }
+    }
+  }
+  const solved = crossings === 0;
+
+  const nodeR = Math.max(12, Math.round(size * 0.04));
+  const fontSize = Math.max(11, Math.round(size * 0.035));
+  const edgeWidth = Math.max(3, Math.round(size * 0.01));
+  const { offset, cellSize } = boardLayout(size);
+
+  return (
+    <div className="flex flex-col items-center gap-3 mt-4 w-full">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${size} ${size}`}
+        role="img"
+        aria-label="Drag the vertices to untangle the knight-move graph"
+        onPointerMove={onMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={{
+          width: "100%",
+          maxWidth: size,
+          height: "auto",
+          background: "var(--surface)",
+          border: "1px solid var(--rule)",
+          borderRadius: 12,
+          touchAction: "none",
+          cursor: dragging != null ? "grabbing" : "default",
+        }}
+      >
+        <g opacity={0.4}>
+          {Array.from({ length: ROWS * COLS }, (_, idx) => {
+            const r = Math.floor(idx / COLS);
+            const c = idx % COLS;
+            const isLight = (r + c) % 2 === 0;
+            return (
+              <rect
+                key={idx}
+                x={offset + c * cellSize}
+                y={offset + r * cellSize}
+                width={cellSize}
+                height={cellSize}
+                fill={isLight ? "var(--sq-light)" : "var(--sq-dark)"}
+              />
+            );
+          })}
+        </g>
+
+        {edges.map(([a, b], i) => {
+          const pa = positions[a];
+          const pb = positions[b];
+          return (
+            <line
+              key={i}
+              x1={pa.x}
+              y1={pa.y}
+              x2={pb.x}
+              y2={pb.y}
+              stroke="var(--ink)"
+              strokeOpacity={0.7}
+              strokeWidth={edgeWidth}
+              strokeLinecap="round"
+            />
+          );
+        })}
+
+        {Array.from({ length: 9 }, (_, i) => {
+          const sq = i + 1;
+          const { x, y } = positions[sq];
+          const isDragging = dragging === sq;
+          return (
+            <g key={sq}>
+              <circle
+                cx={x}
+                cy={y}
+                r={nodeR}
+                fill="var(--surface)"
+                stroke={isDragging ? "var(--accent)" : "var(--muted)"}
+                strokeWidth={isDragging ? 2.6 : 1.8}
+                onPointerDown={startDrag(sq)}
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+              />
+              <text
+                x={x}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={fontSize}
+                fontWeight={600}
+                fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+                fill="var(--muted)"
+                pointerEvents="none"
+              >
+                {sq}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="flex items-center gap-3 text-sm flex-wrap justify-center">
+        <span className="text-[var(--muted)]">
+          Crossings:{" "}
+          <strong
+            style={{ color: solved ? "var(--accent)" : "var(--ink)" }}
+          >
+            {crossings}
+          </strong>
+        </span>
+        <button
+          onClick={reset}
+          className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
+        >
+          Reset
+        </button>
+      </div>
+
+      <p className="text-sm text-[var(--muted)] max-w-lg text-center">
+        {solved ? (
+          <>
+            <strong style={{ color: "var(--accent)" }}>No crossings.</strong>{" "}
+            The knight-move graph is just an 8-cycle in disguise — and square 5
+            sits alone because no knight move lands there.
+          </>
+        ) : (
+          <>
+            Drag the vertices to untangle the graph. You&rsquo;re done when no
+            two edges cross.
+          </>
+        )}
+      </p>
+    </div>
   );
 }
