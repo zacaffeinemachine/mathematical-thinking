@@ -23,7 +23,7 @@
 
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
-//  "logical-thinking",
+  "logical-thinking",
 ];
 
 export const VISIBLE_PAGES: readonly string[] = [
@@ -31,7 +31,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   "guarini/swap-knights",
   "guarini/row-swap",
   "guarini/classical",
-//  "guarini/greater-challenge",
+  "guarini/greater-challenge",
   "guarini/forbidden-fruit",
   "guarini/exercises",
 
