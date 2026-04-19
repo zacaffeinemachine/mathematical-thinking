@@ -1,5 +1,6 @@
 ---
 import Base from "./Base.astro";
+import { isPageVisible } from "../config/visibility.ts";
 
 interface Frontmatter {
   title: string;
@@ -14,7 +15,14 @@ const fm = (Astro.props as { frontmatter: Frontmatter }).frontmatter;
 const { title, chapter, chapterTitle, order, description } = fm;
 const base = import.meta.env.BASE_URL;
 
-// Collect sibling sub-pages for prev/next nav and the chapter TOC.
+// Derive the current page's slug from the URL so we can consult the
+// visibility config. The URL looks like /<base>/<chapter>/<slug>/.
+const url = Astro.url.pathname.replace(/\/+$/, "");
+const pageSlug = url.split(`/${chapter}/`)[1] ?? "";
+const pageVisible = isPageVisible(chapter, pageSlug);
+
+// Collect sibling sub-pages for prev/next nav and the chapter TOC,
+// filtered to those the student is currently allowed to see.
 const allPages = import.meta.glob("../pages/**/*.mdx", { eager: true }) as Record<
   string,
   { frontmatter?: { title: string; order: number; chapter?: string } }
@@ -28,13 +36,32 @@ const siblings = Object.entries(allPages)
     title: mod.frontmatter?.title ?? "",
     order: mod.frontmatter?.order ?? 0,
   }))
+  .filter((s) => isPageVisible(chapter, s.slug))
   .sort((a, b) => a.order - b.order);
 
 const currentIdx = siblings.findIndex((s) => s.order === order);
 const prev = currentIdx > 0 ? siblings[currentIdx - 1] : null;
 const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[currentIdx + 1] : null;
 ---
-<Base title={`${title} — ${chapterTitle}`} description={description}>
+<Base
+  title={pageVisible ? `${title} — ${chapterTitle}` : "Not yet released — Mathematical Thinking"}
+  description={pageVisible ? description : undefined}
+>
+  {!pageVisible && (
+    <div class="text-center py-24">
+      <nav class="chapter-nav text-sm mb-8 inline-block">
+        <a href={base + "/"}>Chapters</a>
+      </nav>
+      <h1 class="text-3xl font-semibold tracking-tight mb-3">Not yet released</h1>
+      <p class="text-[var(--muted)]">
+        This page isn't available yet. Check back later, or
+        <a href={base + "/"} class="underline ml-1">return to the home page</a>.
+      </p>
+    </div>
+  )}
+
+  {pageVisible && (
+  <>
   <nav class="chapter-nav text-sm mb-6">
     <a href={base + "/"}>Chapters</a>
     <span class="mx-2">·</span>
@@ -101,5 +128,7 @@ const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[curr
         </a>
       ) : <span />}
     </nav>
+  )}
+  </>
   )}
 </Base>

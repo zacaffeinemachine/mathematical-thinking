@@ -1,9 +1,11 @@
 ---
 import Base from "../../layouts/Base.astro";
+import { isChapterVisible, isPageVisible } from "../../config/visibility.ts";
 
 const base = import.meta.env.BASE_URL;
 const chapter = "logical-thinking";
 const chapterTitle = "Logical Thinking";
+const chapterVisible = isChapterVisible(chapter);
 
 const pages = import.meta.glob("./*.mdx", { eager: true }) as Record<
   string,
@@ -17,39 +19,52 @@ const subpages = Object.entries(pages)
     order: mod.frontmatter?.order ?? 0,
     blurb: mod.frontmatter?.blurb ?? "",
   }))
+  .filter((p) => isPageVisible(chapter, p.slug))
   .sort((a, b) => a.order - b.order);
 ---
 <Base title={`${chapterTitle} — Mathematical Thinking`}>
-  <nav class="chapter-nav text-sm mb-8">
-    <a href={base + "/"}>Chapters</a>
-    <span class="mx-2">·</span>
-    <span>{chapterTitle}</span>
-  </nav>
+  {chapterVisible ? (
+    <>
+      <nav class="chapter-nav text-sm mb-8">
+        <a href={base + "/"}>Chapters</a>
+        <span class="mx-2">·</span>
+        <span>{chapterTitle}</span>
+      </nav>
 
-  <h1 class="text-4xl font-semibold tracking-tight mb-4">{chapterTitle}</h1>
-  <p class="prose text-lg text-[var(--muted)] mb-12">
-    Puzzles in reasoning: what follows from what, and what most people
-    get wrong on their first try.
-  </p>
+      <h1 class="text-4xl font-semibold tracking-tight mb-4">{chapterTitle}</h1>
+      <p class="prose text-lg text-[var(--muted)] mb-12">
+        Puzzles in reasoning: what follows from what, and what most people
+        get wrong on their first try.
+      </p>
 
-  <ol class="space-y-3">
-    {subpages.map((p, i) => (
-      <li>
-        <a
-          href={`${base}/${chapter}/${p.slug}/`}
-          class="block p-5 border border-[var(--rule)] rounded-lg hover:border-[var(--accent)] transition-colors"
-        >
-          <div class="flex items-baseline gap-3">
-            <span class="text-sm text-[var(--muted)] tabular-nums">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span class="font-medium">{p.title}</span>
-          </div>
-          {p.blurb && (
-            <p class="text-sm text-[var(--muted)] mt-1 ml-8">{p.blurb}</p>
-          )}
-        </a>
-      </li>
-    ))}
-  </ol>
+      <ol class="space-y-3">
+        {subpages.map((p, i) => (
+          <li>
+            <a
+              href={`${base}/${chapter}/${p.slug}/`}
+              class="block p-5 border border-[var(--rule)] rounded-lg hover:border-[var(--accent)] transition-colors"
+            >
+              <div class="flex items-baseline gap-3">
+                <span class="text-sm text-[var(--muted)] tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span class="font-medium">{p.title}</span>
+              </div>
+              {p.blurb && (
+                <p class="text-sm text-[var(--muted)] mt-1 ml-8">{p.blurb}</p>
+              )}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </>
+  ) : (
+    <div class="text-center py-24">
+      <h1 class="text-3xl font-semibold tracking-tight mb-3">Not yet released</h1>
+      <p class="text-[var(--muted)]">
+        This chapter isn't available yet. Check back later, or
+        <a href={base + "/"} class="underline ml-1">return to the home page</a>.
+      </p>
+    </div>
+  )}
 </Base>
