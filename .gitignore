@@ -7,5 +7,6 @@ dist/
 .env.*
 !.env.example
 
-# Local-only notes
+# Local-only notes and helper scripts
 SITE_OVERVIEW.md
+release.py
