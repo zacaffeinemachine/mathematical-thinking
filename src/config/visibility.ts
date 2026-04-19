@@ -36,6 +36,9 @@ export const VISIBLE_PAGES: readonly string[] = [
   "guarini/exercises",
 
   "logical-thinking/wason",
+  "logical-thinking/hat-hurdle",
+  "logical-thinking/judicious-jinx",
+  "logical-thinking/exercises",
 ];
 
 export function isChapterVisible(slug: string): boolean {
