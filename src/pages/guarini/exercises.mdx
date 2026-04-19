@@ -1,0 +1,50 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Exercises
+order: 7
+chapter: guarini
+chapterTitle: Guarini's Puzzle
+blurb: Two puzzles to try on your own. Interactive boards, no hints — just the task.
+description: Two Guarini-style exercises — a reconfiguration on a 10-square ring, and a constrained cavalry problem on a larger board.
+---
+import ReconfigurePuzzle from "../../components/games/ReconfigurePuzzle.tsx";
+import ConstrainedCavalryPuzzle from "../../components/games/ConstrainedCavalryPuzzle.tsx";
+
+Two puzzles for you to work through on your own. There is no
+mind-over-matter button on this page: read each problem, try the board, and
+think with a pencil.
+
+## Exercise 1 — Reconfigure
+
+Is it possible to rearrange the knights from the initial configuration to the
+goal configuration shown below?
+
+<ReconfigurePuzzle client:visible />
+
+One can move only one knight at a time, and at no point should two different
+knights occupy the same square. As you can see, this is not a standard
+chessboard — a lot of the squares are missing. Knights cannot land on the
+missing squares, but when jumping from one square to another, they can pretend
+that the missing squares are present as intermediaries to help them move.
+
+## Exercise 2 — Constrained Cavalry
+
+There are four knights on a strange chessboard; two of the knights are blue
+and the other two are red. There is an L-shaped **red land** (tinted pink)
+and another L-shaped **blue land** (tinted blue).
+
+<ConstrainedCavalryPuzzle client:visible />
+
+**The task** is to transfer both red knights into the red land and both blue
+knights into the blue land, under the following constraints:
+
+- **No trespassing.** If a red knight so much as sets a hoof in the blue
+  land, it dies (an extremely painful death). Similarly, if a blue knight
+  enters the red land, it dies (an equally fun-to-watch death). The board
+  lets you make the move — and then freezes. Press **Reset** to try again.
+- **Be a gentle knight.** At any step, only one knight is allowed to move.
+  You may, however, move the same knight many times in succession.
+- **No cuddling.** At no point should two knights share a square.
+- **Be within your limits.** The white squares — the ones marked only by the
+  dashed grid — are forbidden to land on. Knights may, of course, hop over
+  them.
