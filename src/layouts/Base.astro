@@ -76,5 +76,163 @@ const base = import.meta.env.BASE_URL;
         });
       })();
     </script>
+    <script is:inline>
+      (function () {
+        var FADE_MS = 500;
+        var MAX_POINTS = 240;
+        var active = false;
+        var canvas = null;
+        var ctx = null;
+        var dpr = 1;
+        var points = [];
+        var lastX = -1, lastY = -1;
+        var rafId = null;
+        var toast = null;
+        var toastTimer = null;
+
+        function ensureCanvas() {
+          if (canvas) return;
+          canvas = document.createElement("canvas");
+          canvas.style.position = "fixed";
+          canvas.style.top = "0";
+          canvas.style.left = "0";
+          canvas.style.width = "100vw";
+          canvas.style.height = "100vh";
+          canvas.style.pointerEvents = "none";
+          canvas.style.zIndex = "9999";
+          canvas.style.display = "none";
+          document.body.appendChild(canvas);
+          ctx = canvas.getContext("2d");
+          resize();
+        }
+
+        function resize() {
+          if (!canvas) return;
+          dpr = window.devicePixelRatio || 1;
+          canvas.width = Math.round(window.innerWidth * dpr);
+          canvas.height = Math.round(window.innerHeight * dpr);
+          if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function showToast(msg) {
+          if (!toast) {
+            toast = document.createElement("div");
+            toast.style.position = "fixed";
+            toast.style.bottom = "20px";
+            toast.style.left = "50%";
+            toast.style.transform = "translateX(-50%)";
+            toast.style.padding = "6px 12px";
+            toast.style.fontSize = "12px";
+            toast.style.fontFamily = "ui-sans-serif, system-ui, sans-serif";
+            toast.style.background = "rgba(0,0,0,0.7)";
+            toast.style.color = "#fff";
+            toast.style.borderRadius = "999px";
+            toast.style.zIndex = "10000";
+            toast.style.pointerEvents = "none";
+            toast.style.transition = "opacity 200ms";
+            toast.style.opacity = "0";
+            document.body.appendChild(toast);
+          }
+          toast.textContent = msg;
+          toast.style.opacity = "1";
+          if (toastTimer) clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () {
+            if (toast) toast.style.opacity = "0";
+          }, 1400);
+        }
+
+        function activate() {
+          if (active) return;
+          ensureCanvas();
+          active = true;
+          canvas.style.display = "block";
+          document.documentElement.style.cursor = "none";
+          window.addEventListener("resize", resize);
+          if (lastX >= 0) points.push({ x: lastX, y: lastY, t: performance.now() });
+          loop();
+          showToast("Laser on — press L or Esc to exit");
+        }
+
+        function deactivate() {
+          if (!active) return;
+          active = false;
+          if (canvas) canvas.style.display = "none";
+          document.documentElement.style.cursor = "";
+          window.removeEventListener("resize", resize);
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = null;
+          points = [];
+          if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+          showToast("Laser off");
+        }
+
+        function draw() {
+          if (!ctx || !canvas) return;
+          var now = performance.now();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          while (points.length && now - points[0].t > FADE_MS) points.shift();
+
+          for (var i = 1; i < points.length; i++) {
+            var p0 = points[i - 1];
+            var p1 = points[i];
+            var age = now - p1.t;
+            var alpha = Math.max(0, 1 - age / FADE_MS);
+            ctx.strokeStyle = "rgba(255, 40, 40, " + (alpha * 0.75).toFixed(3) + ")";
+            ctx.lineWidth = 2 + alpha * 6;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.stroke();
+          }
+
+          if (lastX >= 0) {
+            var grad = ctx.createRadialGradient(lastX, lastY, 0, lastX, lastY, 22);
+            grad.addColorStop(0, "rgba(255, 80, 80, 0.95)");
+            grad.addColorStop(0.35, "rgba(255, 50, 50, 0.45)");
+            grad.addColorStop(1, "rgba(255, 50, 50, 0)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(lastX, lastY, 22, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "rgba(255, 255, 255, 0.98)";
+            ctx.beginPath();
+            ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        function loop() {
+          if (!active) return;
+          draw();
+          rafId = requestAnimationFrame(loop);
+        }
+
+        document.addEventListener("mousemove", function (e) {
+          lastX = e.clientX;
+          lastY = e.clientY;
+          if (active) {
+            points.push({ x: lastX, y: lastY, t: performance.now() });
+            if (points.length > MAX_POINTS) points.shift();
+          }
+        }, { passive: true });
+
+        document.addEventListener("keydown", function (e) {
+          var key = e.key;
+          if (key !== "l" && key !== "L" && key !== "Escape") return;
+          var t = e.target;
+          var tag = t && t.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || (t && t.isContentEditable)) return;
+          if (key === "Escape") {
+            if (active) { e.preventDefault(); deactivate(); }
+            return;
+          }
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          e.preventDefault();
+          if (active) deactivate(); else activate();
+        });
+      })();
+    </script>
   </body>
 </html>
