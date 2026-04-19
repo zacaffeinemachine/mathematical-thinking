@@ -1,0 +1,51 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Judicious Jinx
+order: 3
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Three logicians, three hats, and three rounds of speech that fall into place like tumblers in a lock.
+description: The judicious jinx puzzle — three logicians deduce their hat colours from a sequence of shared statements and silences.
+---
+import JudiciousJinxExplainer from "../../components/games/JudiciousJinxExplainer.tsx";
+
+export const base = import.meta.env.BASE_URL;
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/judicious-jinx.png`}
+    alt="Three watercolour-style hats on a wooden surface: one blue and two red."
+    style={{ maxWidth: "min(460px, 100%)", height: "auto", borderRadius: 8 }}
+  />
+</figure>
+
+Three perfect logicians &mdash; **Elara**, **Phoebe**, and **Orion** &mdash;
+were given a puzzle. A hat, coloured either red or blue, was placed on
+each of their heads. They could each see the hats of the other two, but
+not their own.
+
+After a moment of looking at one another, they all spoke at the same
+time:
+
+> *"I see at least one red hat!"*
+
+A silence then fell as they thought about this statement. Then, all at
+once, they spoke again:
+
+> *"I don't know what colour my hat is."*
+
+After a little more time passed, a realisation struck all three.
+Together, they exclaimed:
+
+> *"Now I know my hat colour!"*
+
+**The question.** What is the colour of each person's hat? And, more
+importantly, what is the chain of reasoning that led the three of them
+from uncertainty to certainty?
+
+The credit lies entirely in the reasoning behind the answer, not in
+the answer itself. Sit with the three rounds before peeking. Each
+sentence the logicians utter &mdash; including the silences in
+between &mdash; carries information.
+
+<JudiciousJinxExplainer client:visible />

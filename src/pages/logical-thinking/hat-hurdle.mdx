@@ -1,0 +1,73 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Hat Hurdle
+order: 2
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Four logicians, four hats, and a chorus of "I don't know" that says everything.
+description: The hat hurdle puzzle — four logicians in a line, two red and two blue hats, and a deduction built entirely from silence.
+---
+import HatHurdleExplainer from "../../components/games/HatHurdleExplainer.tsx";
+
+export const base = import.meta.env.BASE_URL;
+
+Four perfectly rational logicians (named **1**, **2**, **3**, and **4**)
+have been captured by a warden. To win their freedom, they must solve a
+puzzle. The warden places them in a line as shown in the diagram.
+
+- **Logician 1** is at the highest position and can see the hats of
+  Logician 2 and Logician 3.
+- **Logician 2** is in the middle and can see the hat of Logician 3.
+- **Logician 3** is in front of Logician 2 and can see only a brick
+  wall.
+- **Logician 4** is on the other side of the brick wall, unable to see
+  anyone, and no one can see them.
+
+The warden places a hat on each logician's head from a set of **two red
+hats** and **two blue hats**. No logician can see the colour of their
+own hat.
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/wl.png`}
+    alt="Four logicians in a line: Logician 4 stands behind a brick wall on the left; Logicians 3, 2, and 1 stand on the right in increasing height, each able to see only those in front of them."
+    style={{ maxWidth: "min(420px, 100%)", height: "auto" }}
+  />
+</figure>
+
+Here is the important fine print.
+
+1. **Perfect logic.** All four are perfect logicians. They will make
+   any deduction that is logically possible, and each knows that the
+   other three are equally perfect.
+2. **Shared knowledge.** Every logician knows the entire setup &mdash;
+   the positions, the lines of sight, and that there are exactly two
+   red and two blue hats in total.
+3. **No communication.** No speaking, no gestures &mdash; logicians
+   answer the warden's questions and nothing more.
+4. **Certainty required.** A logician will state their hat colour only
+   when they are 100% certain. They will never guess.
+
+The warden then conducts the following round of questioning, and every
+logician hears every question and every answer.
+
+1. The warden asks **Logician 4**: *Do you know the colour of your
+   hat?* &nbsp; Logician 4 replies, *"I do not know."*
+2. The warden asks **Logician 3**: *Do you know the colour of your
+   hat?* &nbsp; Logician 3 replies, *"I do not know."*
+3. The warden asks **Logician 2**: *Do you know the colour of your
+   hat?* &nbsp; Logician 2 replies, *"I do not know."*
+4. The warden asks **Logician 1** &mdash; the one with the best view
+   &mdash; *Do you know the colour of your hat?* &nbsp; Logician 1 also
+   replies, *"I do not know."*
+
+And then, out of the silence, **Logician 2** suddenly speaks up and
+correctly announces their hat colour.
+
+**The question.** What is the step-by-step reasoning that lets
+Logician 2 be absolutely certain of their hat colour?
+
+Sit with this for a few minutes before peeking. The whole puzzle
+turns on what one of the four "I don't know"s really means.
+
+<HatHurdleExplainer client:visible />
