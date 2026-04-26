@@ -1,0 +1,205 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Digraphs and cycle decomposition
+order: 2
+chapter: permutations
+chapterTitle: Permutations
+blurb: Draw arrows from each slot to its destination, and the picture falls apart into rings.
+description: Cycle decomposition of a permutation, and the fact that every permutation is a union of disjoint cycles.
+---
+import PermutationDigraph from "../../components/games/PermutationDigraph.tsx";
+
+Reading a permutation off a row of numbers is hard work. The eye
+has to chase each column separately and hold every destination in
+memory at the same time. A picture makes the same information far
+easier to absorb.
+
+## The digraph of a permutation
+
+For a permutation on $n$ objects, here is the rule for drawing the
+picture:
+
+- place one dot for each slot, labelled $1, 2, \ldots, n$;
+- draw an arrow from slot $i$ to slot $j$ whenever the permutation
+  sends the gem at slot $i$ to slot $j$.
+
+We shall call this picture the **digraph** of the permutation
+("digraph" is short for "directed graph").
+
+As a warm-up consider the small permutation
+
+$$
+\pi =
+\begin{pmatrix}
+1 & 2 & 3 & 4 & 5 \\
+3 & 5 & 1 & 2 & 4
+\end{pmatrix}
+$$
+
+on five slots. If we draw a dot for each slot and an arrow showing
+where its gem is sent, the picture organises itself into two
+separate rings:
+
+<PermutationDigraph cycles={[[1,3],[2,5,4]]} caption="The digraph of π. Two cycles: a 2-cycle on {1,3} and a 3-cycle on {2,5,4}." />
+
+- One ring contains slots $1$ and $3$: slot $1$ sends to slot $3$,
+  and slot $3$ sends back to slot $1$.
+- The other contains slots $2, 5, 4$: slot $2$ sends to slot $5$,
+  slot $5$ sends to slot $4$, and slot $4$ sends back to slot $2$.
+
+Every dot has exactly one arrow leaving it and exactly one arrow
+entering it — no dot is overburdened, none is left out.
+
+## Cycle decomposition
+
+Each such ring is called a **cycle**, and the whole list of cycles
+is called the **cycle decomposition** of the permutation. In
+writing, a cycle is recorded by listing the slots in the order the
+arrows visit them, enclosed in parentheses.
+
+For the $\pi$ above, the cycle decomposition is
+
+$$
+\pi = (1,\ 3)\,(2,\ 5,\ 4).
+$$
+
+For the larger permutation
+
+$$
+\sigma =
+\begin{pmatrix}
+1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+3 & 9 & 7 & 6 & 10 & 5 & 2 & 4 & 1 & 8
+\end{pmatrix},
+$$
+
+following the arrows from slot $1$ gives
+$1 \to 3 \to 7 \to 2 \to 9 \to 1$, a ring of length five; from slot
+$4$ we walk $4 \to 6 \to 5 \to 10 \to 8 \to 4$, another ring of
+length five. So
+
+$$
+\sigma = (1,\ 3,\ 7,\ 2,\ 9)\,(4,\ 6,\ 5,\ 10,\ 8).
+$$
+
+<PermutationDigraph cycles={[[1,3,7,2,9],[4,6,5,10,8]]} caption="The digraph of σ — two five-cycles." />
+
+This is a pleasantly compact form: at a glance it tells us
+everything we need to know about $\sigma$.
+
+## Cycles of every shape
+
+The two cycles of $\sigma$ happened to be the same length. In
+general the cycles of a permutation can be of very different
+lengths. Consider
+
+$$
+\tau =
+\begin{pmatrix}
+1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+4 & 6 & 8 & 5 & 1 & 3 & 10 & 2 & 9 & 7
+\end{pmatrix}.
+$$
+
+Tracing the arrows from each slot turns up four cycles of four
+different lengths:
+
+- A cycle of length four: $2 \to 6 \to 3 \to 8 \to 2$.
+- A cycle of length three: $1 \to 4 \to 5 \to 1$.
+- A cycle of length two: $7 \to 10 \to 7$. When a cycle has length
+  two, the permutation simply exchanges the two slots; this is
+  commonly called a **swap**.
+- A cycle of length one: $9 \to 9$. When a cycle has length one,
+  the slot is left alone; its gem does not move. Such a slot is
+  called a **fixed point**, and we decorate it with a little
+  self-loop to make that fact visible.
+
+In compact notation,
+
+$$
+\tau = (1,\ 4,\ 5)\,(2,\ 6,\ 3,\ 8)\,(7,\ 10)\,(9).
+$$
+
+<PermutationDigraph cycles={[[1,4,5],[2,6,3,8],[7,10],[9]]} caption="The digraph of τ — cycles of lengths 3, 4, 2, and 1." />
+
+Even the fixed point $9$ is written down — nothing is forgotten.
+
+## Every permutation breaks into cycles
+
+The two examples above suggest the following pattern.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+*The digraph of any permutation breaks up into a collection of
+separate rings.*
+
+</div>
+
+This is not a coincidence. To see why it must always be true, pick
+any slot — call it slot $s$ — and just keep following the arrows.
+Each step lands at some new slot. Because there are only finitely
+many slots, we must eventually revisit one we have already seen.
+The question is: which slot do we return to first?
+
+The answer is that the first slot we revisit has to be $s$ itself.
+Here is why. Suppose, for the sake of argument, we were to revisit
+some other slot $t$ before revisiting $s$. Slot $t$ was visited
+once before on our walk, so there is already an arrow entering $t$
+(the one that brought us there). Now a second arrow is entering
+$t$ (the one we just followed). But every slot of a permutation has
+exactly *one* arrow entering it: one gem comes in, no more, no
+less. So revisiting a slot other than $s$ is impossible, and the
+walk closes up into a ring at $s$.
+
+If any slots remain unvisited after this ring closes, pick one of
+them and repeat the same argument. A fresh ring forms. Continuing
+until no slot is left, the digraph is revealed as a collection of
+separate rings — exactly the pattern we saw in the examples.
+
+## Composing two permutations
+
+Let $\sigma$ and $\tau$ be the two ten-slot permutations above.
+Suppose we carry out $\sigma$ first and then carry out $\tau$.
+What is the permutation that results?
+
+To answer this for a particular slot, we follow the gem in two
+steps. First, $\sigma$ moves the gem from slot $i$ to slot
+$\sigma(i)$. Next, $\tau$ acts on that new position and moves the
+gem to slot $\tau(\sigma(i))$. Spelling it out for every slot:
+
+<div style={{display:'flex', justifyContent:'center', margin:'18px 0'}}>
+<table style={{borderCollapse:'collapse', fontFamily:'ui-monospace, monospace', fontSize:13}}>
+<thead>
+<tr><th style={{padding:'4px 12px', fontStyle:'italic', fontWeight:'normal'}}>slot</th><th style={{padding:'4px 12px', fontStyle:'italic', fontWeight:'normal'}}>after $\sigma$</th><th style={{padding:'4px 12px', fontStyle:'italic', fontWeight:'normal'}}>after $\tau$</th></tr>
+</thead>
+<tbody>
+{[
+  [1,3,8],[2,9,9],[3,7,10],[4,6,3],[5,10,7],
+  [6,5,1],[7,2,6],[8,4,5],[9,1,4],[10,8,2],
+].map(([a,b,c]) => (
+  <tr key={a}><td style={{padding:'2px 12px', textAlign:'center'}}>{a}</td><td style={{padding:'2px 12px', textAlign:'center'}}>{b}</td><td style={{padding:'2px 12px', textAlign:'center'}}>{c}</td></tr>
+))}
+</tbody>
+</table>
+</div>
+
+Calling the resulting permutation $\mu$, its cycle decomposition
+can be read straight off the right-hand column:
+
+$$
+\mu = (1,\ 8,\ 5,\ 7,\ 6)\,(2,\ 9,\ 4,\ 3,\ 10).
+$$
+
+<PermutationDigraph cycles={[[1,8,5,7,6],[2,9,4,3,10]]} caption='The digraph of "σ then τ".' />
+
+Notice that the cycle decomposition of $\mu$ looks nothing like
+the cycle decompositions of $\sigma$ and $\tau$ that we started
+with. Composing permutations can scramble the shape of the rings
+quite dramatically; predicting what happens is one of the things
+that makes this subject interesting.

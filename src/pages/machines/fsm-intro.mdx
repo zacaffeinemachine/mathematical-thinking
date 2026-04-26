@@ -1,0 +1,460 @@
+---
+layout: ../../layouts/Chapter.astro
+title: What is a Finite State Machine?
+order: 1
+chapter: machines
+chapterTitle: Machines
+blurb: A few circles, a few arrows, and a tape of symbols sliding past. Watch the machine react.
+description: An interactive introduction to finite state machines — light switches, turnstiles, suffix detectors, password matchers, parity counters, and more.
+---
+import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
+import {
+  lightSwitch,
+  turnstile,
+  endsInZero,
+  startsOneEndsZero,
+  passwordQrmt,
+  atLeastTwoOnes,
+  evenZeros,
+  lengthAtMost4,
+  divisibleBy3Ones,
+  divBy3Binary,
+  substringBfs,
+} from "../../components/games/fsm/machines.ts";
+
+A **finite state machine** can be in one of a few **moods** at any
+moment, and reacts to whatever you feed it next according to a rule
+that depends only on its current mood and the next thing it sees.
+That's the whole story.
+
+We draw a machine as circles (one per mood) connected by labelled
+arrows. The **start** mood has a stub arrow from outside; an
+**accepting** mood — one we'd like to end in — has a double border.
+
+## A light switch
+
+The smallest machine worth drawing. Two moods, **Off** and **On**,
+and one input, <code>f</code> for *flick*. A flick swaps you. Press
+**Play** below.
+
+<FSMRunner
+  client:visible
+  machine={lightSwitch}
+  defaultInput="ffff"
+  examples={["", "f", "ff", "fff", "ffff"]}
+/>
+
+The four pieces of a machine are:
+
+- a finite set of **states** (drawn as circles),
+- an **alphabet** of input symbols,
+- **transitions** (one outgoing arrow per state per symbol),
+- a designated **start** state and a set of **accepting** states.
+
+For the machine to be well-defined, *every* state must have an
+outgoing arrow for *every* symbol. When a rule like "if the first
+symbol is wrong, give up" needs to be enforced, we send the machine
+to a **dead** state — non-accepting, looping on every input.
+
+## The turnstile
+
+A subway turnstile has two moods, **Locked** and **Unlocked**, and
+two inputs, <code>c</code> for *coin* and <code>p</code> for *push*.
+A coin unlocks; a push locks. There are no accepting states — the
+turnstile is modelling continuous behaviour, not a yes/no test on
+a string.
+
+<FSMRunner
+  client:visible
+  machine={turnstile}
+  defaultInput="cpcp"
+  examples={["", "p", "c", "cp", "cc", "cpcp", "ppc"]}
+/>
+
+## Ending in 0
+
+A two-state recognizer. The machine remembers one fact about the
+input so far: *did the last symbol I read equal <code>0</code>?*
+That single bit of memory is enough to know whether to accept.
+
+<FSMRunner
+  client:visible
+  machine={endsInZero}
+  defaultInput="1010"
+  examples={["", "0", "1", "10", "01", "100", "111", "1010"]}
+/>
+
+## Start with 1, end with 0
+
+A composite rule. The machine has to remember *two* things:
+"did the input start correctly?" and "what was the last symbol?" If
+the very first symbol is <code>0</code>, the rule is broken
+forever — the machine drops into the **dead** state and never
+recovers.
+
+<FSMRunner
+  client:visible
+  machine={startsOneEndsZero}
+  defaultInput="1110"
+  examples={["", "0", "1", "10", "11", "100", "1110", "1011", "0110"]}
+/>
+
+## A password machine
+
+This machine accepts *only* the exact string <code>qrmt</code>. The
+alphabet is shrunk to `{q, r, m, t, x}`, where <code>x</code> stands
+for "any other letter." Every step except the right one drops the
+machine into **dead**.
+
+<FSMRunner
+  client:visible
+  machine={passwordQrmt}
+  defaultInput="qrmt"
+  examples={["q", "qr", "qrm", "qrmt", "qrmtx", "qrmq", "x"]}
+/>
+
+Notice what happens once you type the correct string: a single
+extra symbol — even another <code>q</code> — sends the machine to
+**dead**. The machine accepts <code>qrmt</code> and *only*
+<code>qrmt</code>.
+
+## At least two 1s
+
+A counter that stops counting at two. The machine has three moods:
+*zero <code>1</code>s seen*, *exactly one <code>1</code> seen*, and
+*two-or-more*. Once we are in the third mood, no input — zero or
+one — can knock us out. That trap is the *good* one: it locks
+acceptance in.
+
+<FSMRunner
+  client:visible
+  machine={atLeastTwoOnes}
+  defaultInput="0110"
+  examples={["", "0", "1", "11", "0010", "1010", "1111"]}
+/>
+
+## Even number of zeros
+
+Parity is the simplest interesting property. We need exactly one
+bit of memory: *is the count of zeros even or odd?* Zero is even,
+so <code>E</code> doubles as the start *and* the accepting state.
+Reading a <code>0</code> flips the parity; reading a <code>1</code>
+leaves it alone.
+
+<FSMRunner
+  client:visible
+  machine={evenZeros}
+  defaultInput="11011"
+  examples={["", "0", "1", "00", "01", "11", "0011", "11011", "0010"]}
+/>
+
+## Length at most 4
+
+A pure counter. Each symbol — whatever it is — bumps the state one
+notch along the chain. After four symbols any further input falls
+into **dead**. Five accepting states (including the empty-string
+state) and one trap.
+
+<FSMRunner
+  client:visible
+  machine={lengthAtMost4}
+  defaultInput="aaa"
+  examples={["", "a", "aa", "aaa", "aaaa", "aaaaa", "aaaaaaa"]}
+/>
+
+## Number of 1s divisible by 3
+
+Now we lift the count to *modulo* arithmetic. Three moods record
+*the count of <code>1</code>s, mod 3*. Reading a <code>0</code>
+loops in place; reading a <code>1</code> rotates around. Only
+<code>r0</code> is accepting.
+
+<FSMRunner
+  client:visible
+  machine={divisibleBy3Ones}
+  defaultInput="111"
+  examples={["", "1", "11", "111", "1010", "111111", "10101010"]}
+/>
+
+The machine cannot remember *how many* <code>1</code>s it has seen
+— only the count modulo three. To remember an exact count we'd
+need a fresh state for every possible count, and that ladder would
+never end. Hold that thought; it returns at the end of the chapter.
+
+## Divisibility by 3, in binary
+
+A subtler counting machine. Read a binary string left-to-right as
+the binary representation of a number *n*; this machine accepts if
+*n* is divisible by 3. The trick is the rule
+
+<div style={{textAlign:'center', margin:'8px 0', fontFamily:'ui-monospace, monospace'}}>
+n ≡ 0 (mod 3) &nbsp;⟺&nbsp; s₁ − s₂ + s₃ − s₄ + … ≡ 0 (mod 3),
+</div>
+
+a binary cousin of the familiar mod-11 rule. The state's letter
+(A or B) tracks whether the *next* bit is at an odd or even
+position; the subscript is the running residue. The machine
+alternates between the two layers as it reads, *adding* a bit at
+A-states and *subtracting* (≡ adding 2 mod 3) at B-states.
+
+<FSMRunner
+  client:visible
+  machine={divBy3Binary}
+  defaultInput="110"
+  examples={["", "0", "11", "110", "1001", "1100", "111111", "10101"]}
+  width={600}
+/>
+
+The accepting states are <code>A₀</code> and <code>B₀</code>: the
+running residue is zero whether the next bit would be at an odd
+or even position. The diagram is dense by design — there are six
+states with twelve transitions — but each arrow really is just
+one of the four arithmetic rules above.
+
+## Substring detection: "bfs"
+
+The job: accept exactly those strings that contain
+<code>bfs</code> somewhere inside. The machine's states track the
+*longest prefix of <code>bfs</code> we have just seen* — empty,
+<code>b</code>, or <code>bf</code> — plus a fourth, *we have seen
+the whole thing*, which is a one-way trap. Alphabet: `{b, f, s, x}`,
+with <code>x</code> standing in for any other letter.
+
+<FSMRunner
+  client:visible
+  machine={substringBfs}
+  defaultInput="bfs"
+  examples={["bfs", "abfsx", "bbfs", "bfbfs", "bfx", "fsbfs", "bbb", "ssss"]}
+/>
+
+The transitions are all about *keeping hope alive*. A
+<code>b</code> always lets us start a fresh attempt; a stray
+<code>f</code> or <code>s</code> from the empty mood does nothing.
+Once we have seen the whole substring we lock into accept.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<p style={{textAlign:'center', color:'var(--muted)', fontSize:14, marginBottom:24}}>
+For each language below, design a finite state machine that accepts a
+string if and only if it belongs to the language. A clear diagram is
+enough — no proof of correctness is required.
+</p>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — A warm-up with binary strings</div>
+
+The alphabet is `{0, 1}`. For each collection *S* described below,
+design a machine that accepts a binary string if and only if it
+belongs to *S*.
+
+**(a)** *S* is the collection of strings that have length at least
+3 and whose third symbol is a `0`.
+
+**(b)** *S* is the collection of strings that contain an **even**
+number of `0`s **and** an **odd** number of `1`s.
+
+**(c)** *S* is the collection of strings that either start with a
+`1` and have an even total length, **or** start with a `0` and
+have an odd total length.
+
+**(d)** *S* is the collection of strings where every symbol at an
+odd-numbered position (the 1st, 3rd, 5th, …) is a `1`.
+
+**(e)** *S* is the collection of strings where all `0`s (if any)
+appear before all `1`s (if any). For example, `00111`, `111`,
+and `000` belong to *S*; `010` does not.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — HATE QRMT</div>
+
+Design a machine that reads the 26 lowercase letters of the
+English alphabet and accepts *only* the two specific strings
+`hate` and `qrmt`.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — Looking back from the end</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts a binary
+string *w* exactly when both of the following hold:
+
+- the length of *w* is at least 3;
+- the third-to-last symbol of *w* is a `1`.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — Every `0` immediately followed by a `1`</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts exactly
+those strings in which every `0` is immediately followed by a
+`1`. For example, `1101` is accepted; `1001` and `10` are not.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 5 — Length a multiple of 3, ending in `1`</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts exactly
+those strings whose length is a multiple of 3 *and* whose final
+symbol is `1`.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 6 — start, stop, pause</div>
+
+Design a machine that reads the 26 lowercase letters and accepts
+*only* the three strings `start`, `stop`, and `pause`.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 7 — First symbol equals second-to-last</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts exactly
+those binary strings *w* satisfying both of the following:
+
+- the length of *w* is at least 2;
+- the first symbol of *w* and the second-to-last symbol of *w*
+  are identical.
+
+For example, `0100101` should be accepted, while `0100011` should
+be rejected.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 8 — Odd projection contains `dfa`</div>
+
+For a string *x*₁*x*₂…*x*<sub>n</sub>, the **odd projection** is
+the string formed by deleting every symbol at an even position —
+that is, *x*₁*x*₃*x*₅… For example, the odd projection of
+`ihateqrmt` is `iaert`, and the odd projection of `iloveinsta`
+is `ioent`.
+
+Design a machine that reads the 26 lowercase letters and accepts
+exactly those strings whose odd projection contains `dfa` as a
+substring.
+</div>

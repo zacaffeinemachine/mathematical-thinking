@@ -1,0 +1,166 @@
+---
+layout: ../../layouts/Chapter.astro
+title: More on swaps
+order: 5
+chapter: permutations
+chapterTitle: Permutations
+blurb: Every permutation is a sequence of swaps. Star swaps suffice. And n−1 swaps is the minimum.
+description: Decomposing permutations into swaps, the star-swap basis, and a lower bound.
+---
+
+Swaps are the simplest non-trivial permutations, and we have
+already seen that they pack a surprising punch: a single swap
+flips the sign of any permutation. In this section we examine
+swaps as building blocks and ask three natural questions. Can
+every permutation be realised as a sequence of swaps? If so, must
+we allow *every* possible swap, or does a small collection
+suffice? And how small can that collection be made before we lose
+the ability to realise some permutation?
+
+## Every permutation is a sequence of swaps
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Every permutation of $n$ objects can be written as
+"$\theta_1$ then $\theta_2$ then $\cdots$ then $\theta_k$" for some
+finite list of swaps $\theta_1, \theta_2, \ldots, \theta_k$.
+
+</div>
+
+The recipe is to chop $\sigma$ into cycles and handle each cycle
+separately. Suppose $\sigma$ has a cycle
+$(a_1, a_2, \ldots, a_m)$ — so $\sigma$ sends $a_1$ to $a_2$,
+$a_2$ to $a_3$, and so on, with $a_m$ sent back to $a_1$. This
+single cycle is the same as the sequence of $m - 1$ swaps
+
+$$
+(a_1,\ a_2)\text{ then }(a_1,\ a_3)\text{ then }\cdots\text{ then }(a_1,\ a_m).
+$$
+
+For example, the three-cycle $(1, 2, 3)$ is the same as
+"$(1,\ 2)$ then $(1,\ 3)$": tracing each gem, $1$ goes to $2$ and
+stays there, $2$ goes to $1$ then on to $3$, and $3$ stays put
+then jumps to $1$ — exactly the cycle $1 \to 2 \to 3 \to 1$.
+
+Applying this expansion to each cycle of $\sigma$ in turn (and
+recalling that different cycles share no slots, so their swaps do
+not interfere with one another) expresses $\sigma$ as a single
+long sequence of swaps. The total number of swaps used is
+
+$$
+(m_1 - 1) + (m_2 - 1) + \cdots + (m_\ell - 1) \;=\; n - \ell \;=\; \mathrm{st}(\sigma),
+$$
+
+where $m_1, \ldots, m_\ell$ are the lengths of the $\ell$ cycles
+of $\sigma$. So every permutation can be built using exactly
+$\mathrm{st}(\sigma)$ swaps by this recipe — a pleasant fact that
+explains, at last, why "stupid number" was a reasonable thing to
+define.
+
+## A consequence for the sign
+
+The recipe above produces *one* expression of $\sigma$ as a
+sequence of swaps. In general there are many others. Any such
+expression, however, is forced to have a particular parity.
+Suppose $\sigma$ is written as a sequence of $k$ swaps,
+
+$$
+\sigma = \theta_1\text{ then }\theta_2\text{ then }\cdots\text{ then }\theta_k.
+$$
+
+Starting from the do-nothing permutation (whose sign is
+$\mathsf{even}$) and composing with one swap at a time, the sign
+flips $k$ times along the way. Therefore
+
+$$
+\mathrm{sgn}(\sigma) = \psi(k).
+$$
+
+In particular, **any two realisations of the same permutation as
+sequences of swaps must use the same parity of swaps** — an even
+permutation requires an even number of swaps every time, and an
+odd permutation requires an odd number every time, no matter how
+we slice it.
+
+## Star swaps suffice
+
+The recipe above helps itself to arbitrary swaps. But in fact a
+very restricted collection is already enough to realise every
+permutation. Call the $n - 1$ swaps
+
+$$
+(1,\ 2),\quad (1,\ 3),\quad (1,\ 4),\quad \ldots,\quad (1,\ n)
+$$
+
+the **star swaps**. (The name comes from the picture: joining
+slot $1$ to every other slot by an edge produces a star with slot
+$1$ at its centre.)
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Every permutation of $n$ objects can be built using only star swaps.
+
+</div>
+
+The reason is that any swap whatsoever can itself be written as a
+short sequence of star swaps. Let $(i,\ j)$ be a swap with neither
+$i$ nor $j$ equal to $1$. A direct check — track what each of the
+three swaps below does to the slots $1$, $i$, $j$ — confirms the
+identity
+
+$$
+(i,\ j) \;=\; (1,\ i)\text{ then }(1,\ j)\text{ then }(1,\ i).
+$$
+
+So each non-star swap expands into three star swaps. Taking the
+sequence produced by the previous recipe and replacing every
+non-star swap by its three-swap expansion yields a realisation of
+$\sigma$ using only star swaps.
+
+## Can we do with fewer than $n - 1$ swaps?
+
+We have just seen that a collection of $n - 1$ swaps (the star
+swaps) is enough. Is there an even smaller collection — say of
+only $n - 2$ swaps — that still does the job?
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+No collection of $n - 2$ swaps can realise every permutation of
+$n$ objects.
+
+</div>
+
+Let $S$ be any collection of $n - 2$ swaps. Build a graph $G$ on
+the vertex set $\{1, 2, \ldots, n\}$ by joining vertices $i$ and
+$j$ with an edge whenever the swap $(i,\ j)$ belongs to $S$. The
+graph $G$ has only $n - 2$ edges, but a connected graph on $n$
+vertices needs at least $n - 1$ edges. So $G$ is disconnected, and
+its vertex set splits into two or more components.
+
+Now pick any two slots $i$ and $j$ that lie in *different*
+components of $G$. Any single swap drawn from $S$ only exchanges
+two slots joined by an edge of $G$, and so can move a gem only
+between vertices in the same component. Chaining such swaps
+together extends the reach only along edge-paths in $G$, and the
+components of $G$ are never crossed. Consequently no sequence of
+swaps from $S$ can send the gem at slot $i$ to slot $j$, which
+means the swap $(i,\ j)$ itself cannot be realised using only the
+swaps in $S$.

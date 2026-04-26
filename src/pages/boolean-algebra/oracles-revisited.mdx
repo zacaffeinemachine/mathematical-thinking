@@ -1,0 +1,247 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Oracles and Chimeras, by computation
+order: 4
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: A puzzle that previously needed case analysis now drops out of substitution and a single identity.
+description: Solving Oracles and Chimeras puzzles by translating each statement into a boolean equation.
+---
+
+Recall the puzzle of *Oracles and Chimeras* from the chapter on
+Logical Thinking.
+
+- *Ariadne* says: "Selene is an Oracle."
+- *Selene* says: "All three of us are Oracles."
+- *Thalia* says: "Ariadne is a Chimera."
+
+Oracles always tell the truth; Chimeras always lie. Who is which?
+
+## Translation to boolean algebra
+
+Assign one yes/no variable to each figure: $a$ for Ariadne, $s$ for
+Selene, $t$ for Thalia, with $a = \texttt{1}$ if Ariadne is an
+Oracle and $a = \texttt{0}$ if she is a Chimera, and likewise for
+$s$ and $t$.
+
+Now we encode the data. The key observation is that an Oracle's
+statement is true and a Chimera's statement is false, so a
+speaker's type is itself the truth value of what the speaker says.
+
+- *"Ariadne says that Selene is an Oracle"* tells us: if Ariadne is
+  an Oracle then Selene is, and if Ariadne is a Chimera then Selene
+  is. In one shot:
+
+  $$
+  a = s.
+  $$
+
+- *"Selene says that all three of us are Oracles"* tells us: if
+  Selene is an Oracle then $ast = \texttt{1}$; if Selene is a
+  Chimera then $ast = \texttt{0}$. In one shot:
+
+  $$
+  s = ast.
+  $$
+
+- *"Thalia says that Ariadne is a Chimera"* tells us: if Thalia is
+  an Oracle then $a = \texttt{0}$; if Thalia is a Chimera then
+  $a = \texttt{1}$. In one shot:
+
+  $$
+  t = \texttt{1} + a.
+  $$
+
+A valid type assignment is one for which all three equations hold
+simultaneously.
+
+## Solving the system
+
+Pause to appreciate what has happened. The puzzle was handed to us
+as three sentences in plain English; the three equations capture
+exactly that information — nothing more, nothing less. Every drop
+of meaning carried by the original wording has been poured into
+these three equations, and from this point on we may forget the
+wording entirely and let the algebra do the work.
+
+Substitute $s = a$ from (i) into (ii):
+
+$$
+a = a \cdot a \cdot t = a^2 t = a t,
+$$
+
+using $a^2 = a$. So $a + at = \texttt{0}$, which factors as
+
+$$
+a(\texttt{1} + t) = \texttt{0}.
+$$
+
+Now use (iii), which says $t = \texttt{1} + a$, so
+$\texttt{1} + t = \texttt{1} + \texttt{1} + a = a$. Substituting
+back, the displayed equation becomes $a \cdot a = a^2 = \texttt{0}$,
+and one more application of $a^2 = a$ gives $a = \texttt{0}$.
+Equation (i) then gives $s = a = \texttt{0}$, and equation (iii)
+gives $t = \texttt{1} + a = \texttt{1}$.
+
+The unique solution is $a = \texttt{0}, s = \texttt{0}, t = \texttt{1}$:
+**Ariadne and Selene are Chimeras, and Thalia is the lone Oracle.**
+The puzzle has been solved by ordinary algebra — substitution,
+factoring, and two uses of $a^2 = a$.
+
+## What just happened
+
+Look back at the steps. We did not draw a single case-table, and
+we did not write the words "suppose Ariadne is an Oracle." We
+translated each statement into an arithmetic equation, and from
+there on the answer dropped out of substitution, factoring, and
+the identity $a^2 = a$. There was no point at which we paused to
+say "either this or that"; every branch of the original case
+analysis has been swallowed into the algebra.
+
+This is the payoff of the encoding. The case analysis we used in
+the original chapter has been replaced by ordinary computation.
+The arithmetic does the bookkeeping for us.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Treacherous Trio</div>
+
+Recall the puzzle of the Treacherous Trio.
+
+- **Ariadne:** *"There is exactly one Chimera amongst the three of us, and it is not me."*
+- **Selene:** *"Ariadne is an Oracle."*
+- **Thalia:** *"Ariadne and Selene are both Oracles."*
+
+Set up the consistency equations and solve.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Five on the Shore</div>
+
+Five figures stand on the shore of the Isles of Paradox — Elara,
+Orion, Phoebe, Selene, and Helios. Each is either an Oracle, who
+always tells the truth, or a Chimera, who always lies. They speak
+in turn:
+
+- **Elara:** *"Orion is a Chimera."*
+- **Orion:** *"Exactly two of us are Oracles."*
+- **Phoebe:** *"Orion and Elara are either both Oracles or both Chimeras."*
+- **Selene:** *"Phoebe and Elara are either both Oracles or both Chimeras."*
+- **Helios:** *"Selene and Phoebe are either both Oracles or both Chimeras."*
+
+Apply the same procedure as for the Treacherous Trio, noting that
+each statement of the form "$X$ and $Y$ are either both Oracles or
+both Chimeras" translates to the truth value $\texttt{1} + X + Y$
+(zero when they disagree, one when they agree). Set up five
+consistency equations in five yes/no variables, and use the algebra
+to find every assignment that solves them all.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — The Three Lying Chests</div>
+
+You are in a room with three chests — a left chest, a middle
+chest, and a right chest. You know that at least one of them holds
+treasure, and that any chest without treasure is instead filled
+with deadly poison. Each chest bears a written message, and you
+are told that all three messages are lies:
+
+- **Left chest:** *"The middle chest has treasure."*
+- **Middle chest:** *"All three chests have treasure."*
+- **Right chest:** *"Only one of these chests has treasure."*
+
+Assign yes/no variables $\ell, m, r$, where $\ell = \texttt{1}$
+means the left chest holds treasure, and likewise for $m$ and $r$.
+Translate each lying message, together with the background fact
+that at least one chest holds treasure, into a boolean equation.
+Solve the system to determine which chests are safe to open.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — Two on a Bench</div>
+
+A male person and a female person are sitting on a bench. One of
+them has white hair and the other has black hair, but you do not
+yet know which is which. They speak:
+
+- **The white-haired person:** *"I am male."*
+- **The black-haired person:** *"I am female."*
+
+You are told that at least one of the two is lying. Assign yes/no
+variables $w$ and $b$, where $w = \texttt{1}$ means the
+white-haired person is male and $b = \texttt{1}$ means the
+black-haired person is male. Translate the data — including the
+background fact that exactly one of the two people on the bench is
+male — into boolean equations, and solve to identify who is male
+and who is female.
+</div>

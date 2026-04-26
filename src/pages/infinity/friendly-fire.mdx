@@ -1,0 +1,95 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Friendly fire
+order: 2
+chapter: infinity
+chapterTitle: Infinity
+blurb: A frog, a shooter, and a plan written before the frog has chosen — yet the splash always lands.
+description: The single-jump frog puzzle and how listability of the natural numbers solves it.
+---
+
+## The puzzle
+
+Imagine a frog sitting on a very long line of lily pads, numbered
+$0, 1, 2, 3, \ldots$. The frog starts at lily pad $0$. When a
+buzzer sounds, the frog secretly chooses a natural number $k$ (so
+$k$ could be $1$, $2$, $3$, or any other natural number). Then, at
+every tick of the clock, it jumps forward by $k$ pads:
+
+- at time $t = 1$, it sits on pad $k$;
+- at time $t = 2$, it sits on pad $2k$;
+- at time $t = t_0$, it sits on pad $t_0 k$.
+
+A friendly shooter, armed with a water gun, wants to make sure the
+frog gets a splash. The catch is this: the shooter must write down
+the *entire* plan in advance, *before* the frog chooses $k$. A
+plan is a list of shots, where each shot is a pair
+
+<div style={{textAlign:'center', margin:'8px 0'}}>
+(lily pad number, time).
+</div>
+
+So a plan might begin: "at $t = 1$, shoot at pad $5$; at $t = 2$,
+shoot at pad $3$; …".
+
+The question is: *can the shooter devise a single, universal plan
+that guarantees the frog gets wet, no matter which number $k$ the
+frog chooses?*
+
+## Cracking the puzzle
+
+At first glance this seems impossible. The frog has infinitely
+many choices for $k$, yet the plan must be committed to paper in
+advance. How can a single fixed list of shots hope to anticipate
+every one of those infinitely many trajectories?
+
+Let us restate the situation carefully. The shooter's plan is a
+list of shots $S_1, S_2, S_3, \ldots$, where
+$S_i = (\mathrm{pad}_i, \mathrm{time}_i)$. If the frog picks $k$,
+its trajectory is the set of pairs
+
+$$
+P_k = \{(k, 1),\ (2k, 2),\ (3k, 3),\ \ldots\}.
+$$
+
+The shooter wins if, for *every* choice of $k$, at least one shot
+$S_i$ lies in $P_k$.
+
+Here is the key observation. Although the frog has infinitely many
+possible choices, those choices can be arranged in a single list:
+they are simply $1, 2, 3, \ldots$, and we have a natural way to go
+through them one after another. A set whose elements can be
+arranged in such a list is called **listable**, or equivalently
+**countable** (or **countably infinite** when the set is infinite).
+Listability is what lets the shooter address each choice of $k$ in
+turn, using the tick of the clock as the "position" in the list.
+
+This suggests the following strategy:
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+at time $t$, target the frog that chose $k = t$, that is, shoot at pad $t^2$.
+</div>
+
+Spelling this out:
+
+- at $t = 1$, address the frog that chose $k = 1$ by shooting at pad $1^2 = 1$;
+- at $t = 2$, address the frog that chose $k = 2$ by shooting at pad $2^2 = 4$;
+- at $t = 3$, address the frog that chose $k = 3$ by shooting at pad $3^2 = 9$;
+- $\vdots$
+
+Why does this work? Suppose the frog chose some specific $k$; its
+position at time $t$ is $tk$. Consider the particular moment
+$t = k$:
+
+- *shooter's action at time $t = k$*: shoots at pad $k^2$;
+- *frog's position at time $t = k$*: pad $k \cdot k = k^2$.
+
+The two coincide, and the frog gets soaked. Whatever $k$ the frog
+might have picked, the shooter's pre-written plan includes a shot
+at exactly the right pad at exactly the right instant to meet it.
+
+The trick worked because the frog's infinitely many options could
+be lined up in a list, and the clock gave the shooter enough ticks
+to address them one by one. This idea — that an infinite set of
+choices can sometimes be enumerated, and then dealt with in turn —
+is the thread we follow through the rest of this chapter.

@@ -1,0 +1,210 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Stupid number, and sign
+order: 4
+chapter: permutations
+chapterTitle: Permutations
+blurb: Slots minus cycles is a number that ticks one step with every swap. Its parity is the sign.
+description: The stupid number, Boolean addition, and the sign of a permutation.
+---
+
+In the previous page we noticed that applying a single swap to a
+permutation changes its cycle count by exactly one — never by zero,
+never by two. It will be convenient to repackage this observation
+in terms of a single number attached to every permutation, a
+number that ticks up or down by one each time a swap is applied.
+
+## Stupid number of a permutation
+
+Let $\sigma$ be a permutation of $n$ objects, and let $\ell$ denote
+the number of cycles in its cycle decomposition. The **stupid
+number** of $\sigma$ is defined to be
+
+$$
+\mathrm{st}(\sigma) = n - \ell.
+$$
+
+In words: count the slots, count the cycles, and subtract. The
+name is cheerfully informal, but the quantity itself is far from
+stupid — it will turn out to be the yardstick by which we measure
+how much "work" a permutation represents. Since every cycle takes
+up at least one slot, $\ell$ can never exceed $n$, and it is
+always at least $1$ (unless $n = 0$). So
+
+$$
+0 \;\leq\; \mathrm{st}(\sigma) \;\leq\; n - 1.
+$$
+
+Three worked examples, from tame to wild:
+
+- *The do-nothing permutation.* Let $\sigma$ leave every gem in
+  place. Every slot is its own little ring, so $\ell = n$, and
+  $\mathrm{st}(\sigma) = n - n = 0$. This is the only permutation
+  whose stupid number is $0$.
+- *A swap.* Let $\sigma$ be the swap of two slots $a$ and $b$.
+  Its cycle decomposition contains one two-cycle together with
+  $n - 2$ fixed points, for $\ell = n - 1$. So
+  $\mathrm{st}(\sigma) = n - (n - 1) = 1$. Every swap has stupid
+  number $1$.
+- *A mixed example.* For
+  $\sigma = (1,\ 3,\ 8,\ 2,\ 6,\ 4,\ 5)\,(7,\ 10)\,(9)$ on ten
+  slots, $\ell = 3$, so $\mathrm{st}(\sigma) = 10 - 3 = 7$.
+
+## A swap changes the stupid number by exactly one
+
+Let $\sigma$ be any permutation of $n$ objects and let $\theta$ be
+the swap $(a,\ b)$. The previous page described precisely how the
+cycle count of $\sigma$ responds when $\theta$ is applied
+afterwards — and since the stupid number is just $n$ minus the
+cycle count, the two move in opposite directions.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+$$
+\mathrm{st}(\sigma\text{ then }\theta) \;=\; \mathrm{st}(\sigma) \,\pm\, 1.
+$$
+
+More precisely:
+
+- If slots $a$ and $b$ lie in the *same* cycle of $\sigma$, that
+  cycle splits in two. The cycle count grows by one, so the stupid
+  number *drops* by one.
+- If slots $a$ and $b$ lie in *different* cycles of $\sigma$, those
+  two cycles fuse into one. The cycle count shrinks by one, so the
+  stupid number *grows* by one.
+
+</div>
+
+Whichever of the two happens, the stupid number shifts by a single
+unit — up or down, but never by zero and never by two. This steady
+one-step-at-a-time behaviour is exactly what will let us keep
+track of long sequences of swaps in the sections to come.
+
+## Boolean addition
+
+For many purposes, the precise value of the stupid number carries
+more information than we actually need: what really matters is
+only whether it is *even* or *odd*. Collapsing the stupid number
+down to its parity yields a cruder — but remarkably useful —
+invariant of a permutation, which we shall call its **sign**.
+Before we define it, we pause to introduce a small piece of
+arithmetic on a two-element alphabet.
+
+Let $\mathsf{odd}$ and $\mathsf{even}$ be two formal symbols. We
+equip them with the addition rule
+
+- $\mathsf{odd} + \mathsf{odd} = \mathsf{even}$;
+- $\mathsf{odd} + \mathsf{even} = \mathsf{odd}$;
+- $\mathsf{even} + \mathsf{odd} = \mathsf{odd}$;
+- $\mathsf{even} + \mathsf{even} = \mathsf{even}$.
+
+The inspiration is clear: odd plus odd is even, odd plus even is
+odd, and so on — exactly the rules for combining parities of
+integers. We shall refer to these four laws collectively as
+**Boolean addition**. Note that $\mathsf{even}$ plays the role of
+zero (adding it changes nothing) and $\mathsf{odd}$ is its own
+negative.
+
+## Sign of a permutation
+
+For each integer $n$, let $\psi(n) = \mathsf{odd}$ if $n$ is odd
+and $\psi(n) = \mathsf{even}$ if $n$ is even. Boolean addition
+was cooked up precisely so that $\psi(a + b) = \psi(a) + \psi(b)$
+for all integers $a, b$.
+
+The **sign** of a permutation $\sigma$ is the parity of its stupid
+number:
+
+$$
+\mathrm{sgn}(\sigma) = \psi(\mathrm{st}(\sigma)).
+$$
+
+We call $\sigma$ an **even** permutation if
+$\mathrm{sgn}(\sigma) = \mathsf{even}$ and an **odd** permutation
+if $\mathrm{sgn}(\sigma) = \mathsf{odd}$. Examples:
+
+- The do-nothing permutation has stupid number $0$, which is
+  even — sign $\mathsf{even}$.
+- Any swap has stupid number $1$, which is odd — sign
+  $\mathsf{odd}$.
+- The ten-slot example with stupid number $7$ has sign
+  $\mathsf{odd}$.
+
+## Effect of a swap on the sign
+
+Let $\sigma$ be any permutation and let $\theta$ be a swap. The
+stupid number of "$\sigma$ then $\theta$" differs from that of
+$\sigma$ by exactly $\pm 1$, so the two have *opposite* parities.
+Translating into signs:
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+$$
+\mathrm{sgn}(\sigma\text{ then }\theta) = \mathrm{sgn}(\sigma) + \mathsf{odd}.
+$$
+
+</div>
+
+In plain English: composing with a single swap *flips* the sign —
+an even permutation becomes odd, and an odd permutation becomes
+even.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise — Sign of a $k$-cycle</div>
+
+Let $k \geq 2$ be an integer and let $n \geq k$. A permutation
+$\sigma$ of $n$ objects is called a **$k$-cycle** if in the
+digraph of $\sigma$ there is exactly one cycle featuring $k$ slots,
+and every other slot is a fixed point. (For example, a swap is
+nothing but a $2$-cycle.)
+
+**(a)** Determine the sign of every $5$-cycle. Does the answer
+depend on $n$?
+
+**(b)** Determine the sign of every $6$-cycle. Does the answer
+depend on $n$?
+
+**(c)** More generally, give a rule that expresses the sign of a
+$k$-cycle in terms of $k$ alone.
+</div>

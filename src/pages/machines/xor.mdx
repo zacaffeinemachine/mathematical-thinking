@@ -1,0 +1,55 @@
+---
+layout: ../../layouts/Chapter.astro
+title: XOR — a finite test for sameness
+order: 5
+chapter: machines
+chapterTitle: Machines
+blurb: Exactly one. The XOR of two machines accepts where they disagree — and that turns "same language?" into a finite question.
+description: The XOR product construction and how it reduces equivalence of machines to reachability in a finite graph.
+---
+import DualMachineRunner from "../../components/games/fsm/DualMachineRunner.tsx";
+import { zerosMod3, onesMod4 } from "../../components/games/fsm/machines.ts";
+
+Same product wiring, one more accepting rule:
+
+> **XOR** — accept when **exactly one** of A, B accepts.
+
+<DualMachineRunner
+  client:visible
+  machineA={zerosMod3}
+  machineB={onesMod4}
+  defaultInput="000"
+  examples={["", "000", "1111", "000111", "0011", "00001111"]}
+  initialRule="XOR"
+  rules={["OR", "AND", "XOR"]}
+/>
+
+This looks like just another flavour of the product construction.
+But it has a striking consequence.
+
+## When do two machines recognise the same language?
+
+Suppose two engineers each build a machine — call them *M* and *N*
+— and they want to know whether the two machines accept exactly
+the same strings.
+
+Tested by hand, the question seems hopeless: there are infinitely
+many strings, and verifying agreement on the first thousand says
+nothing about the thousand-and-first.
+
+**The XOR trick.** Build the XOR of *M* and *N*. By construction
+this machine accepts a string if and only if *M* and *N* disagree
+on it. So:
+
+> *M* and *N* recognise the same language &nbsp;⟺&nbsp; the XOR machine accepts **no string at all.**
+
+And *that* is a finite question. It does not refer to strings — it
+asks whether, starting from the start state, there is any path of
+arrows that reaches an accepting state. With a finite graph, you
+can answer it by sweeping outward from the start until no new
+states show up.
+
+We have replaced an infinite collection of yes/no questions
+("agree on each of these strings?") with a single finite check
+("walk the wires of one diagram"). That is the kind of trade
+mathematicians find irresistible.

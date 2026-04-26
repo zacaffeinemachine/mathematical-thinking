@@ -1,0 +1,152 @@
+---
+layout: ../../layouts/Chapter.astro
+title: What is a permutation?
+order: 1
+chapter: permutations
+chapterTitle: Permutations
+blurb: An instruction for shuffling gems around in numbered slots — never colliding two, never leaving one empty.
+description: Permutations as instructions for rearranging gemstones in slots, with two-row notation.
+---
+
+The act of *rearranging* a row of objects is so familiar that one
+rarely notices it as a mathematical operation at all. But it is the
+central operation of this chapter, and it has a long and surprisingly
+literary history. Hindu and Jain scholars in India were already
+counting permutations systematically by the time of *Bhaskara II* in
+the twelfth century. Earlier still, *Archimedes*, in a fragment of a
+lost treatise called the *Stomachion*, appears to have asked how
+many ways fourteen ivory pieces could be reassembled into a square —
+a question of permutation in disguise, and one whose answer ($17{,}152$)
+was only computed in $2003$ from a recovered palimpsest.
+
+What turns this counting exercise into a genuine theory is the
+realisation that *permutations can be composed*. Apply one shuffle
+to a row of objects and follow it by another, and the result is a
+third shuffle, just as legitimate as either of its parents. This
+observation — that the rearrangements of $n$ objects form a system
+closed under composition, with an identity ("do nothing") and
+inverses ("undo") — was first crystallised by *Joseph-Louis Lagrange*
+in $1771$. Half a generation later, *Augustin-Louis Cauchy* took up
+the thread and developed a systematic calculus of permutations,
+including most of the cycle notation we still use. The story
+reaches its dramatic climax with *Évariste Galois*, who in $1832$,
+on the eve of the duel that killed him at the age of twenty, wrote
+a feverish letter sketching how the solvability of an equation by
+radicals could be read off from the structure of an associated
+permutation system.
+
+A fourth strand, much more recent and much more public, is the
+world of **permutation puzzles**. *Sam Loyd*'s Fifteen Puzzle of
+$1880$ was the first such puzzle to make a mathematical
+impossibility famous, and *Ernő Rubik*'s cube of $1974$ is by some
+measures the best-selling toy in history. Both are entirely about
+permutations, and both turn out, on inspection, to be governed by
+the very same parity invariant we will isolate in this chapter.
+
+A permutation in this book is not a function from a set to a set —
+a phrase the book is committed to avoiding — but an instruction for
+moving gemstones around in numbered slots. The mathematics is no
+less precise for being dressed this way; if anything, it is more
+so, because the gemstones leave no room for symbol-pushing without
+meaning.
+
+## Definition
+
+Imagine a row of distinct gemstones placed in numbered slots, from
+$1$ to $n$. A **permutation** is simply an *instruction for
+shuffling these gemstones around*. For each slot, it tells us
+where the gemstone currently sitting there should go.
+
+Here is a small example. Suppose there are $5$ gems sitting in
+slots $1$ through $5$, and we are handed the instruction
+
+$$
+1 \to 3,\quad 2 \to 5,\quad 3 \to 1,\quad 4 \to 2,\quad 5 \to 4.
+$$
+
+Read this as a list of commands:
+
+- the gem in slot $1$ travels to slot $3$;
+- the gem in slot $2$ travels to slot $5$;
+- the gem in slot $3$ travels to slot $1$;
+- the gem in slot $4$ travels to slot $2$;
+- the gem in slot $5$ travels to slot $4$.
+
+If we call the gems $A, B, C, D, E$ (sitting in slots $1, 2, 3, 4, 5$
+to begin with), then after everyone has moved, slot $1$ holds $C$,
+slot $2$ holds $D$, slot $3$ holds $A$, slot $4$ holds $E$, and
+slot $5$ holds $B$.
+
+<div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:8, margin:'18px 0', fontFamily:'ui-monospace, monospace'}}>
+<div style={{display:'flex', alignItems:'center', gap:6}}>
+<div style={{width:64, color:'var(--muted)', fontStyle:'italic', textAlign:'right', paddingRight:8}}>Before:</div>
+{["A","B","C","D","E"].map((g, i) => (
+  <div key={i} style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+    <div style={{width:32, height:32, border:'1px solid var(--gate-ink)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700}}>{g}</div>
+    <div style={{fontSize:10, color:'var(--muted)', marginTop:2}}>slot {i+1}</div>
+  </div>
+))}
+</div>
+<div style={{display:'flex', alignItems:'center', gap:6}}>
+<div style={{width:64, color:'var(--muted)', fontStyle:'italic', textAlign:'right', paddingRight:8}}>After:</div>
+{["C","D","A","E","B"].map((g, i) => (
+  <div key={i} style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+    <div style={{width:32, height:32, border:'1px solid var(--gate-ink)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700}}>{g}</div>
+  </div>
+))}
+</div>
+</div>
+
+Two things are worth noticing about such an instruction:
+
+- Every slot is given a destination — no gem is left without orders.
+- No two gems are ever sent to the same slot; equivalently, every
+  slot ends up holding exactly one gem.
+
+This second point is the heart of the matter: a permutation
+*rearranges* the gems, it never collides them and it never leaves
+a slot empty.
+
+If we name our instruction $\sigma$, we can record the same
+information as
+
+$$
+\sigma(1) = 3,\quad \sigma(2) = 5,\quad \sigma(3) = 1,\quad \sigma(4) = 2,\quad \sigma(5) = 4.
+$$
+
+In words, $\sigma(i)$ is the slot to which the gem starting at
+slot $i$ is sent.
+
+## Notation
+
+Writing out "$1 \to 3,\ 2 \to 5, \ldots$" becomes cumbersome once
+$n$ is large. A cleaner way is to line up the starting slots in a
+top row and their destinations directly underneath. For the
+$\sigma$ above this looks like
+
+$$
+\sigma =
+\begin{pmatrix}
+1 & 2 & 3 & 4 & 5\\
+3 & 5 & 1 & 2 & 4
+\end{pmatrix}.
+$$
+
+Each column is a single command: the number on top is the starting
+slot, the number right below it is the destination.
+
+Here is a larger permutation of $10$ objects written in the same
+style:
+
+$$
+\sigma =
+\begin{pmatrix}
+1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+3 & 9 & 7 & 6 & 10 & 5 & 2 & 4 & 1 & 8
+\end{pmatrix}.
+$$
+
+The gem at slot $1$ moves to slot $3$, the gem at slot $2$ moves
+to slot $9$, and so on down the line. We shall freely switch
+between the two-row form and the value-list form $\sigma(i) = \ldots$
+depending on which feels more natural in a given situation.

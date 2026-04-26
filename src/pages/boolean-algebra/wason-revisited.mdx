@@ -1,0 +1,128 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Wason test, revisited
+order: 5
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: A single tiny polynomial — the violation indicator — decides which cards must be flipped.
+description: Re-deriving the answer to the Wason selection test by computing each card's violation indicator.
+---
+
+Recall the Wason puzzle from the chapter on Logical Thinking. Four
+cards lie on a table, each with a colour on one side (red or blue)
+and a digit on the other ($4$ or $7$). The claim under test is
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+"If a card is red on one side, then it has an even number on the other side."
+</div>
+
+The question is which cards we must turn over to test the claim.
+
+## Setting up the equation
+
+Label the four cards $A, B, C, D$, and to each card $X$ attach a
+pair of yes/no values
+
+$$
+x_r = \texttt{1} \text{ if $X$ is red on its colour side}, \qquad x_e = \texttt{1} \text{ if $X$ is even on its digit side.}
+$$
+
+The claim, applied to a single card $X$, has the dictionary form
+"if $x_r$ is yes, then $x_e$ is yes," which translates to the
+equation
+
+$$
+x_r \cdot (\texttt{1} + x_e) = \texttt{0}.
+$$
+
+The card $X$ violates the claim exactly when
+$x_r(\texttt{1} + x_e) = \texttt{1}$. For each card, one of
+$x_r, x_e$ is visible and the other is hidden. The card needs to be
+turned over precisely when the value of $x_r(\texttt{1} + x_e)$
+*depends* on the hidden value: only then could the back of the
+card change the answer.
+
+## Computing for each card
+
+For a generic card $X$, call $x_r(\texttt{1} + x_e)$ the
+**violation indicator** of $X$: it equals $\texttt{1}$ exactly when
+$X$ violates the claim, and $\texttt{0}$ otherwise.
+
+<div style={{
+  margin:'16px 0',
+  padding:'14px 18px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+
+**The red card.** Here $x_r = \texttt{1}$ is known. The violation
+indicator becomes $\texttt{1} \cdot (\texttt{1} + x_e) = \texttt{1} + x_e$.
+Its value still depends on the hidden $x_e$, so we cannot tell
+from the visible side alone whether the card violates the claim.
+**Must flip.**
+
+</div>
+
+<div style={{
+  margin:'16px 0',
+  padding:'14px 18px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--muted)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+
+**The blue card.** Here $x_r = \texttt{0}$ is known. The violation
+indicator becomes $\texttt{0} \cdot (\texttt{1} + x_e) = \texttt{0}$,
+regardless of $x_e$. The visible side already settles the matter
+— the card cannot violate the claim. **No need to flip.**
+
+</div>
+
+<div style={{
+  margin:'16px 0',
+  padding:'14px 18px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--muted)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+
+**The 4 card.** Here $x_e = \texttt{1}$ is known. Then
+$\texttt{1} + x_e = \texttt{0}$, so the violation indicator becomes
+$x_r \cdot \texttt{0} = \texttt{0}$, regardless of $x_r$. Again the
+visible side settles the matter. **No need to flip.**
+
+</div>
+
+<div style={{
+  margin:'16px 0',
+  padding:'14px 18px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+
+**The 7 card.** Here $x_e = \texttt{0}$ is known. Then
+$\texttt{1} + x_e = \texttt{1}$, so the violation indicator becomes
+$x_r \cdot \texttt{1} = x_r$. Its value depends on the hidden
+$x_r$, so the visible side does not tell us whether the card
+violates the claim. **Must flip.**
+
+</div>
+
+The two cards we must turn over are the **red card** and the
+**7 card**. We have re-derived the answer of the original chapter,
+but here it has dropped out of arithmetic — one short calculation
+per card, with no prose case analysis.
+
+The pattern generalises. Whenever a yes/no claim translates to an
+equation of the form $E = \texttt{0}$, deciding *which inputs
+matter* reduces to asking, for each input variable in turn:
+**does the value of $E$ still depend on this variable once the
+known values are plugged in?** If yes, that variable's hidden
+value matters; if no, it does not. The algebra makes the question
+mechanical.

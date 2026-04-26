@@ -1,0 +1,236 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Sign of a composition
+order: 6
+chapter: permutations
+chapterTitle: Permutations
+blurb: The sign of "σ then τ" is the Boolean sum of the two signs. Even-then-odd is odd; odd-then-odd is even.
+description: Sign of a composition of permutations and a small library of exercises on parity.
+---
+
+We have examined in detail how a single swap acts on the sign: it
+flips it. What happens when we compose two *arbitrary*
+permutations, neither of which is necessarily a swap? The answer,
+as one might suspect by now, is very clean. The sign of the
+composition is nothing more than the Boolean sum of the individual
+signs — so the Boolean addition table we defined earlier was no
+idle invention, but exactly the rule needed to combine signs.
+
+## Theorem
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Let $\sigma$ and $\tau$ be permutations of $n$ objects. Then
+
+$$
+\mathrm{sgn}(\sigma\text{ then }\tau) = \mathrm{sgn}(\sigma) + \mathrm{sgn}(\tau).
+$$
+
+</div>
+
+*Proof.* Every permutation can be written as a sequence of swaps.
+Write
+
+$$
+\sigma = \alpha_1\text{ then }\cdots\text{ then }\alpha_k,
+$$
+
+a sequence of $k$ swaps, and
+
+$$
+\tau = \beta_1\text{ then }\cdots\text{ then }\beta_m,
+$$
+
+a sequence of $m$ swaps. Concatenating, "$\sigma$ then $\tau$" is
+itself a sequence of $k + m$ swaps. The sign-of-a-swap-sequence
+identity from the previous page gives
+
+$$
+\mathrm{sgn}(\sigma) = \psi(k),\qquad \mathrm{sgn}(\tau) = \psi(m),\qquad \mathrm{sgn}(\sigma\text{ then }\tau) = \psi(k + m).
+$$
+
+Since $\psi$ respects addition, $\psi(k + m) = \psi(k) + \psi(m)$,
+which is exactly $\mathrm{sgn}(\sigma\text{ then }\tau) = \mathrm{sgn}(\sigma) + \mathrm{sgn}(\tau)$.
+∎
+
+## In plain words
+
+Unpacking the theorem in the language of even and odd
+permutations, the four possibilities are:
+
+- Even then even is even.
+- Even then odd is odd.
+- Odd then even is odd.
+- Odd then odd is even.
+
+These are just the four lines of the Boolean addition table in
+disguise. In particular, performing any even permutation changes
+nothing about the parity, while performing any odd permutation
+flips it — a clean generalisation of what a single swap does, from
+a single transposition to *any* odd permutation at all.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Two permutations of fifteen</div>
+
+Let $\sigma$ be the permutation of $15$ objects
+
+$$
+\begin{aligned}
+&1 \mapsto 13,\quad 2 \mapsto 2,\quad 3 \mapsto 15,\quad 4 \mapsto 14,\quad 5 \mapsto 10,\\
+&6 \mapsto 6,\quad 7 \mapsto 12,\quad 8 \mapsto 3,\quad 9 \mapsto 4,\quad 10 \mapsto 1,\\
+&11 \mapsto 7,\quad 12 \mapsto 9,\quad 13 \mapsto 5,\quad 14 \mapsto 11,\quad 15 \mapsto 8,
+\end{aligned}
+$$
+
+and let $\tau$ be the permutation of $15$ objects
+
+$$
+\begin{aligned}
+&1 \mapsto 14,\quad 2 \mapsto 9,\quad 3 \mapsto 10,\quad 4 \mapsto 2,\quad 5 \mapsto 12,\\
+&6 \mapsto 6,\quad 7 \mapsto 5,\quad 8 \mapsto 11,\quad 9 \mapsto 15,\quad 10 \mapsto 3,\\
+&11 \mapsto 8,\quad 12 \mapsto 7,\quad 13 \mapsto 4,\quad 14 \mapsto 1,\quad 15 \mapsto 13.
+\end{aligned}
+$$
+
+**(a)** Find the stupid numbers and signs of each of the six
+permutations $\sigma$, $\tau$, "$\sigma$ then $\sigma$", "$\tau$
+then $\sigma$", "$\sigma$ then $\tau$", and "$\sigma$ then $\tau$
+then $\tau$".
+
+**(b)** Can $\sigma$ be expressed as a sequence of an even number
+of swaps? An odd number of swaps?
+
+**(c)** Same question for $\tau$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Two permutations of ten</div>
+
+Let $\sigma$ be the permutation of $10$ objects
+
+$$
+\begin{aligned}
+&1 \mapsto 8,\quad 2 \mapsto 9,\quad 3 \mapsto 10,\quad 4 \mapsto 2,\quad 5 \mapsto 7,\\
+&6 \mapsto 5,\quad 7 \mapsto 3,\quad 8 \mapsto 1,\quad 9 \mapsto 4,\quad 10 \mapsto 6,
+\end{aligned}
+$$
+
+and let $\tau$ be the permutation of $10$ objects
+
+$$
+\begin{aligned}
+&1 \mapsto 7,\quad 2 \mapsto 6,\quad 3 \mapsto 9,\quad 4 \mapsto 8,\quad 5 \mapsto 10,\\
+&6 \mapsto 1,\quad 7 \mapsto 3,\quad 8 \mapsto 2,\quad 9 \mapsto 5,\quad 10 \mapsto 4.
+\end{aligned}
+$$
+
+**(a)** Draw the digraphs of $\sigma$ and $\tau$.
+
+**(b)** Find the stupid numbers and signs of $\sigma$ and $\tau$.
+
+**(c)** Draw the digraph of "$\sigma$ then $\tau$" and find its
+sign.
+
+**(d)** For each of $\sigma$, $\tau$, and "$\sigma$ then $\tau$",
+decide whether it can be written as a sequence of an even number
+of swaps, and whether it can be written as a sequence of an odd
+number of swaps.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — A 7-cycle and a 14-cycle</div>
+
+Let $\sigma$ be a $7$-cycle and let $\tau$ be a $14$-cycle (on a
+common set of $n \geq 14$ slots). What is the sign of "$\sigma$
+then $\tau$"? Is it necessarily equal to, or opposite to, the
+sign of $\sigma$? Of $\tau$?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — Self-compositions of a permutation of 13</div>
+
+Let $\sigma$ be a permutation of $13$ objects.
+
+**(a)** What is the sign of "$\sigma$ then $\sigma$"? Does the
+answer depend on $\sigma$?
+
+**(b)** How is the sign of "$\sigma$ then $\sigma$ then $\sigma$"
+related to the sign of $\sigma$?
+</div>

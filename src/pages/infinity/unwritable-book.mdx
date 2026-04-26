@@ -1,0 +1,86 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The unwritable book
+order: 5
+chapter: infinity
+chapterTitle: Infinity
+blurb: A book of reading lists that cannot exist — and the diagonal argument that proves it.
+description: Cantor's diagonal argument, in the form of a book whose every page lists pages of the same book.
+---
+
+So far, it seems like any infinite set can be listed. Is this
+true? Let's explore this with one final puzzle.
+
+## The inquiry
+
+Imagine a magical book with a countably infinite number of pages,
+numbered $1, 2, 3, \ldots$. On each page, we are allowed to write a
+**reading list**. A reading list is simply a list of page numbers
+from the very same book. A reading list can be empty, finite, or
+even infinite. For example:
+
+- on page $1$, we could write the reading list $\{5, 10, 15\}$;
+- on page $2$, we could write the list of all even pages,
+  $\{2, 4, 6, 8, \ldots\}$;
+- on page $3$, we could write the empty list, $\{\,\}$.
+
+The question is: *is it possible to fill this book such that every
+conceivable reading list appears on some page?*
+
+## The timeless diamond of Cantor
+
+Let's assume, for the sake of finding a contradiction, that we
+*succeeded*. Every possible reading list is written on some page.
+So, for each page $n$, there is a reading list $R_n$. Our book is
+a complete catalogue.
+
+Now, we will construct a devilishly crafted reading list, which we
+will denote as $R$.
+
+<div style={{
+  margin:'14px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+For each natural number $n$, we include $n$ in $R$ if $n$ is
+*not* in $R_n$, and we do not include $n$ in $R$ if $n$ *is* in
+$R_n$.
+
+</div>
+
+In mathematical notation,
+
+$$
+R = \{\, n \in \mathbb{N} \mid n \notin R_n \,\}.
+$$
+
+Since every reading list appears on some page of the book, there
+exists $k$ such that $R = R_k$. Now we ask a simple, devastating
+question: *is the page number $k$ on the list $R_k$?*
+
+There are two possibilities.
+
+- *Case 1: $k$ is in $R$.* Since $R = R_k$, we see that $k$ is in
+  $R_k$. But then, by definition of $R$, we deduce that $k$ is
+  *not* in $R$. Contradiction.
+
+- *Case 2: $k$ is not in $R$.* Since $R = R_k$, we see that $k$ is
+  not in $R_k$. But then, by definition of $R$, we deduce that
+  $k$ *is* in $R$. Contradiction.
+
+Both possibilities lead to a logical absurdity. The only way to
+escape the contradiction is to realize that our initial assumption
+was wrong. **It is impossible** for the list $R$ to appear
+anywhere in the book. No matter how you try to write down all the
+reading lists, we can always construct one that you've missed.
+
+We have demonstrated something truly remarkable. Even though the
+two-dimensional infinity $\mathbb{N} \times \mathbb{N}$ is, rather
+surprisingly, not "bigger than" the one-dimensional infinity of
+$\mathbb{N}$, what we have just seen is that the set of all the
+possible reading lists is an infinite set that *cannot* be
+accommodated in $\mathbb{N}$. **Some infinities are bigger than
+others.**

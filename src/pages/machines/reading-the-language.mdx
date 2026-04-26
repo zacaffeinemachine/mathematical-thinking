@@ -1,0 +1,258 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Reading the Language of a Machine
+order: 2
+chapter: machines
+chapterTitle: Machines
+blurb: Flip the game around. A machine is dropped in front of you with no explanation — what does it accept?
+description: A reverse-engineering puzzle. Try strings on an unlabelled machine and figure out which strings it accepts.
+---
+import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
+import {
+  mysteryMachine,
+  evenZerosEvenOnes,
+  mystery1,
+  mystery2,
+  mystery3,
+  mystery4,
+  mystery5,
+} from "../../components/games/fsm/machines.ts";
+
+We have been building machines for a property. Now we flip the
+game: here is a machine. **What does it accept?**
+
+The machine will not tell you what it is thinking. The two moves
+that work are:
+
+1. **Experiment.** Feed in short strings, in order: empty,
+   <code>0</code>, <code>1</code>, <code>00</code>, <code>01</code>, … 
+   A pattern usually announces itself within ten or twelve attempts.
+2. **Name the states.** For each circle, ask *what must be true of
+   the input so far for the machine to be sitting here?* When the
+   names are right, the arrows click into place.
+
+## Mystery machine
+
+<FSMRunner
+  client:visible
+  machine={mysteryMachine}
+  defaultInput="1011"
+  examples={["", "0", "1", "00", "01", "10", "11", "101", "110", "1011"]}
+/>
+
+<details style={{margin:'12px 0', padding:'12px 16px', border:'1px solid var(--rule)', borderRadius:6}}>
+<summary style={{cursor:'pointer', fontWeight:500}}>Reveal — what this machine accepts</summary>
+
+It accepts every string that contains <code>11</code> as a substring.
+
+- **<code>s0</code>** — the input so far does not end in
+  <code>1</code>. (The empty string lives here, and so do
+  <code>0</code>, <code>100</code>, <code>0010</code>, …)
+- **<code>s1</code>** — the input ends in exactly one
+  <code>1</code>.
+- **<code>s2</code>** — we have already seen <code>11</code>
+  somewhere. Both arrows from <code>s2</code> loop back: once a
+  <code>11</code> has appeared, the verdict is locked in.
+
+</details>
+
+## A subtler language
+
+A second machine. It runs *two parity counters at once* — but the
+state names give that away if you stare long enough. Try the empty
+string, then <code>0</code>, <code>1</code>, <code>00</code>,
+<code>11</code>, <code>0011</code>, …
+
+<FSMRunner
+  client:visible
+  machine={evenZerosEvenOnes}
+  defaultInput="0011"
+  examples={["", "0", "1", "00", "01", "11", "0011", "0110", "001", "010"]}
+/>
+
+<details style={{margin:'12px 0', padding:'12px 16px', border:'1px solid var(--rule)', borderRadius:6}}>
+<summary style={{cursor:'pointer', fontWeight:500}}>Reveal — what this machine accepts</summary>
+
+Every string with an **even number of <code>0</code>s** *and* an
+**even number of <code>1</code>s**. The first letter of each state
+name tracks the parity of <code>0</code>s (E for even, O for
+odd); the second letter tracks the parity of <code>1</code>s.
+The only accepting state is <code>EE</code>.
+
+This is a tiny preview of the **product construction** — running
+two parity machines on the same tape — that we'll meet two pages
+on.
+
+</details>
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<p style={{textAlign:'center', color:'var(--muted)', fontSize:14, marginBottom:24}}>
+For each machine below, describe the language *L*(*M*) of accepted
+strings in plain English. The same protocol — *experiment, then
+name the states* — works on every one of them.
+</p>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:8,
+}}>Exercise 1 — Mystery 1</div>
+
+<FSMRunner
+  client:visible
+  machine={mystery1}
+  defaultInput="0101"
+  examples={["", "0", "01", "010", "0101", "1", "11", "111", "00"]}
+/>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:8,
+}}>Exercise 2 — Mystery 2</div>
+
+<FSMRunner
+  client:visible
+  machine={mystery2}
+  defaultInput="100"
+  examples={["", "0", "00", "001", "100", "010", "101", "1100", "10101"]}
+/>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:8,
+}}>Exercise 3 — Mystery 3 *(this one is sneaky — think modulo something)*</div>
+
+<FSMRunner
+  client:visible
+  machine={mystery3}
+  defaultInput="111"
+  examples={["", "1", "11", "111", "1010", "1111", "111111"]}
+/>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:8,
+}}>Exercise 4 — Mystery 4</div>
+
+<FSMRunner
+  client:visible
+  machine={mystery4}
+  defaultInput="000"
+  examples={["", "0", "00", "000", "1", "01", "10", "0001"]}
+/>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:8,
+}}>Exercise 5 — Mystery 5 *(the alphabet here is `{a, b}`)*</div>
+
+<FSMRunner
+  client:visible
+  machine={mystery5}
+  defaultInput="ab"
+  examples={["", "a", "b", "ab", "ba", "aab", "abab", "bbbab", "aaa"]}
+/>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 6 — Two machines, one language</div>
+
+Find two **different** machines — different shapes, different
+state counts — that both recognise the language *"binary strings
+ending in `0`."* Then ask yourself: in what sense are the two
+machines *the same*, and in what sense are they *different*? We
+return to this two pages later, when XOR plus reachability turns
+"do two machines recognise the same language?" into a finite
+check.
+</div>

@@ -1,0 +1,194 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Majority and the staircase
+order: 4
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: A three-friend vote and a three-switch hallway. Same gate, two stories.
+description: A majority-of-three circuit and the three-switch staircase as a chain of XORs.
+---
+import CircuitDiagram from "../../components/games/circuits/CircuitDiagram.tsx";
+import {
+  majority3,
+  staircase2,
+  xorChain3,
+} from "../../components/games/circuits/circuits.ts";
+
+Two small case studies of the recipe in action — one a vote, the
+other a hallway light. Both take three inputs.
+
+## A majority signal
+
+Three friends decide something by majority vote. Each presses a
+button: $\texttt{1}$ for *yes*, $\texttt{0}$ for *no*. A single
+lamp on the wall should light up exactly when at least two of the
+three have said yes.
+
+The recipe-on-autopilot circuit has eight rows in its table; the
+winning rows are
+$(\texttt{1},\texttt{1},\texttt{0}),\;(\texttt{1},\texttt{0},\texttt{1}),\;(\texttt{0},\texttt{1},\texttt{1}),\;(\texttt{1},\texttt{1},\texttt{1})$.
+The straight recipe would build four spike detectors and OR them.
+Clunky-but-correct.
+
+A nicer circuit reads the rule directly: *at least two of $a, b, c$
+are $\texttt{1}$* is the same as *at least one of the pairs
+$(a, b), (a, c), (b, c)$ consists entirely of $\texttt{1}$s*. Three
+ANDs, two ORs:
+
+<CircuitDiagram client:visible circuit={majority3} steppable showTruthTable />
+
+Each of the four winning rows has at least one all-$\texttt{1}$s
+pair, so at least one AND fires; each of the four losing rows has
+no all-$\texttt{1}$s pair, so no AND fires. Two circuits, same
+table. Both are correct. The second is shorter. This is your first
+glimpse that the recipe does not have the last word: the same
+behaviour can often be built in many ways, and some of them are
+considerably smaller than others.
+
+## The staircase, two switches
+
+Recall the staircase: a switch at the top, a switch at the bottom,
+a single bulb, and the wish that flipping either switch on its own
+toggles the bulb. Filling in the two-input table by experiment
+gives a column whose only $\texttt{1}$s sit on the rows where
+exactly one of the two switches is up — the XOR table:
+
+<CircuitDiagram client:visible circuit={staircase2} showTruthTable />
+
+The two-switch staircase, in other words, is wired as $a \oplus b$.
+
+## The staircase, three switches
+
+Now imagine the staircase is so long that a third switch has been
+installed at the landing halfway up. The wish is the same as
+before, just with one more switch in the picture: *each switch,
+flipped on its own, must flip the state of the bulb, no matter
+what the other two are doing*.
+
+Fill in the eight-row table by the same kind of experiment. Start
+with all three switches at $\texttt{0}$ and the bulb off. Flipping
+exactly one switch must change the bulb — so every row that
+differs from $(\texttt{0}, \texttt{0}, \texttt{0})$ in exactly one
+position must have the bulb *on*. Flipping two switches must leave
+the bulb back where it started. Flipping all three switches must,
+once again, put the bulb in the *on* state. The bulb is on
+exactly when an *odd* number of the three switches are at
+$\texttt{1}$. That is a chain of XORs:
+
+<CircuitDiagram client:visible circuit={xorChain3} steppable showTruthTable />
+
+And this pattern does not stop at three. If you install *any*
+number of switches along the staircase and insist that each one,
+on its own, flip the bulb, then the only wiring that grants the
+wish is: the bulb is on exactly when an odd number of switches are
+at $\texttt{1}$. That is an XOR chain of arbitrary length — each
+new switch adds one more XOR at the end.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Majority of five</div>
+
+Design a circuit for the *at-least-three-out-of-five* voting
+signal: five inputs, output $\texttt{1}$ exactly when at least
+three of the inputs are $\texttt{1}$. Write it in whichever way
+you find cleanest — either by the spike-detector recipe, or by a
+handwritten shortcut. Which approach gives a shorter circuit?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Exactly two of three</div>
+
+Design a circuit for the *exactly-two-out-of-three* signal: output
+$\texttt{1}$ precisely when exactly two of $a, b, c$ are
+$\texttt{1}$ (so *not* when all three are $\texttt{1}$). How does
+it compare to the majority circuit?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — The three-switch table from scratch</div>
+
+Write out the full eight-row table for the three-switch staircase
+from scratch, without peeking at the discussion above. Verify by
+inspection that the bulb is on precisely when an odd number of
+the three inputs are $\texttt{1}$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — XOR is associative</div>
+
+Suppose you are told that XOR is *associative*: that is,
+$(a \oplus b) \oplus c$ and $a \oplus (b \oplus c)$ always give
+the same output, row by row. Check this claim by filling in the
+$8$-row table for each of the two circuits and comparing columns.
+(Hint: both compute the "odd counter" of the three inputs.)
+</div>

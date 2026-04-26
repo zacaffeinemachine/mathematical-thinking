@@ -1,0 +1,206 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Building one gate from others
+order: 2
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: AND from NOT and OR. XOR from the trio. And one gate that refuses to be built without help.
+description: De Morgan's law as a circuit construction; XOR from AND, OR, NOT; why NOT is essential.
+---
+import CircuitDiagram from "../../components/games/circuits/CircuitDiagram.tsx";
+import {
+  andFromNotOr,
+  xorFromBasics,
+} from "../../components/games/circuits/circuits.ts";
+
+The four gates from the previous page might at first look
+independent. They are not. We will see that AND can already be
+built out of NOT and OR; that XOR can be built out of all three;
+and that NOT itself, on the other hand, is essential — no
+combination of ANDs and ORs can flip a wire.
+
+## AND from NOT and OR
+
+The recipe is short: *flip the inputs, OR them, flip the result*.
+Click **Step ▸** below to walk the signal through the four gates,
+or just toggle $a$ and $b$ and watch the final wire.
+
+<CircuitDiagram client:visible circuit={andFromNotOr} steppable showTruthTable />
+
+Why does this circuit compute $a \mathbin{\texttt{\&}} b$? Translate
+each gate into its algebraic dictionary and follow the wire from
+left to right. After the first two NOTs the inner wires carry
+$a + \texttt{1}$ and $b + \texttt{1}$. The OR combines them as
+
+$$
+(a + \texttt{1}) + (b + \texttt{1}) + (a + \texttt{1})(b + \texttt{1}).
+$$
+
+Expand the product, $(a + \texttt{1})(b + \texttt{1}) = ab + a + b + \texttt{1}$,
+and collect, using $a + a = \texttt{0}$ and
+$\texttt{1} + \texttt{1} = \texttt{0}$ to kill doubled terms:
+
+$$
+\;= (a + a) + (b + b) + (\texttt{1} + \texttt{1} + \texttt{1}) + ab = \texttt{1} + ab.
+$$
+
+The outermost NOT adds $\texttt{1}$:
+$\mathord{\texttt{!}}(\texttt{1} + ab) = ab$. The output is exactly
+$ab = a \mathbin{\texttt{\&}} b$, even though no AND gate appears
+anywhere inside.
+
+The pattern — *flip the inputs, OR them, flip the result* — is one
+half of a famous pair of identities called **De Morgan's laws**.
+The other half builds OR from NOT and AND in the mirror-image way.
+
+## XOR from AND, OR, and NOT
+
+We called XOR a new gate, but in fact we do not need a new box on
+the shelf. The "disagree" signal can be assembled out of the three
+gates we already have.
+
+Two inputs $a$ and $b$ disagree exactly when one is $\texttt{1}$
+while the other is $\texttt{0}$. So either ($a = \texttt{1}$ and
+$b = \texttt{0}$) or ($a = \texttt{0}$ and $b = \texttt{1}$). Each
+of these is a small AND; gluing them with an OR gives:
+
+<CircuitDiagram client:visible circuit={xorFromBasics} steppable showTruthTable />
+
+Each upper branch of the OR catches one of the two "disagree" rows
+of the table, and the outer OR glues the two catches together. This
+is the first hint of a much bigger fact: any gate we might want to
+invent can be built from just AND, OR, and NOT. The next page
+makes this precise.
+
+## Can NOT be built from AND and OR alone?
+
+We have just seen that the strict committee AND can be assembled
+out of NOT and OR. The natural follow-up is: can the trade go the
+other way? Can the flipper NOT be assembled out of AND and OR
+alone?
+
+The answer is **no**, and the reason is that AND and OR are both
+*listeners-only-upward*: feeding them all-$\texttt{0}$s produces a
+$\texttt{0}$, and feeding them all-$\texttt{1}$s produces a
+$\texttt{1}$. Whatever circuit we cook up out of AND and OR
+inherits this politeness — on input $a = \texttt{0}$, every wire
+inside is $\texttt{0}$, so the output is $\texttt{0}$; on input
+$a = \texttt{1}$, every wire inside is $\texttt{1}$, so the output
+is $\texttt{1}$. But NOT does the opposite.
+
+On the algebraic side, the same fact is even shorter to read off.
+AND is $ab$ and OR is $a + b + ab$; both expressions evaluate to
+$\texttt{0}$ when all inputs are $\texttt{0}$, and any combination
+inherits this. But $\mathord{\texttt{!}}a = a + \texttt{1}$
+evaluates to $\texttt{1}$ at $a = \texttt{0}$. The $\texttt{1}$ has
+to come in from *somewhere*, and AND and OR alone do not supply it.
+
+Moral: the trio NOT, AND, OR is not a free-for-all. AND is
+removable. NOT, on the other hand, is *essential*: any further
+trimming of the alphabet must hold on to a gate that flips.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Build OR from NOT and AND</div>
+
+Build OR using only NOT and AND gates. (Hint: this is the mirror
+of the AND-from-NOT-OR construction above. Try "flip the inputs,
+AND them, flip the result." Verify on the algebraic side that
+$\mathord{\texttt{!}}((\mathord{\texttt{!}}a) \mathbin{\texttt{\&}} (\mathord{\texttt{!}}b)) = a \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} b$.)
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — XOR from OR and NOT only</div>
+
+Build XOR using only OR and NOT gates. (Hint: the section's XOR
+recipe uses AND, OR, NOT. The previous point says AND can in turn
+be replaced by an OR-and-NOT construction. Substitute and stitch.)
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — XOR from AND and NOT only</div>
+
+Build XOR using only AND and NOT gates. (Same plan as the previous
+exercise, but go through the mirror identity: replace each OR in
+the section's XOR recipe by an AND-and-NOT construction.)
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — XOR refuses to be built from AND and OR</div>
+
+Show that XOR *cannot* be built using only AND and OR gates — no
+matter how many copies, no matter how cleverly wired. (Hint:
+borrow the argument that NOT cannot be built from AND and OR
+alone. What does any AND/OR circuit do on input $(\texttt{0}, \texttt{0})$?
+What does XOR do?)
+</div>

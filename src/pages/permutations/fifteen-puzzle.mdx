@@ -1,0 +1,282 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The 15 puzzle
+order: 7
+chapter: permutations
+chapterTitle: Permutations
+blurb: The toy that ate the 1880s. Try the unsolvable Loyd board for yourself, then watch parity rule out the prize.
+description: An interactive 15 puzzle and the parity-of-permutation argument that proves the 14–15 swap unsolvable.
+---
+import FifteenPuzzle from "../../components/games/FifteenPuzzle.tsx";
+
+We have spent several pages building up the sign of a permutation,
+the Boolean addition rule, and the fact that signs compose nicely.
+It is time to turn this machinery on a real problem — one that
+made headlines in the 1880s and is still fun to play with today.
+
+The **15 puzzle** is played on a $4 \times 4$ grid filled with
+tiles numbered $1$ through $15$ and one empty square. A legal
+move slides one tile into the empty square; nothing else is
+allowed. Given a starting arrangement, the goal is to bring the
+board into the *solved* configuration: tiles $1$ through $15$
+listed in reading order with the empty square at the bottom right.
+
+The puzzle was marketed aggressively in the United States by the
+puzzle designer Sam Loyd, who famously offered a large cash prize
+to anyone who could reach the solved configuration starting from a
+board that looked almost-solved but with tiles $14$ and $15$
+exchanged. Countless players wasted countless hours on it. The
+prize was never claimed — for a very good reason, which we are
+now in a position to explain.
+
+## Try it yourself
+
+The board below starts in the **Loyd configuration** — solved
+except for tiles $14$ and $15$, which have been swapped. Click any
+tile that touches the blank to slide it. Tiles in their solved
+slot turn orange. The buttons below let you reset, jump to
+neighbouring set-ups, or scramble.
+
+<FifteenPuzzle client:visible caption="Slide tiles into the blank to try to reach the solved board." />
+
+Spend a few minutes on it. You will not succeed — that is the
+content of the next section — but the act of trying makes the
+impossibility argument feel less abstract.
+
+## Reformulating the puzzle as a permutation
+
+To apply what we know about signs, we shall think of all $16$
+tokens on the board — the $15$ numbered tiles together with the
+empty square — as $16$ gems sitting in $16$ labelled slots. Label
+the slots in reading order:
+
+$$
+\begin{array}{cccc}
+1 & 2 & 3 & 4 \\
+5 & 6 & 7 & 8 \\
+9 & 10 & 11 & 12 \\
+13 & 14 & 15 & 16
+\end{array}
+$$
+
+In the solved configuration, gem $k$ sits in slot $k$ for each
+$k$, with the empty square playing the role of "gem $16$" and
+sitting in slot $16$. The starting configuration is obtained from
+the solved one by applying a single swap — the one that exchanges
+the contents of slots $14$ and $15$. We shall call this swap $\pi$.
+
+Solving the puzzle therefore amounts to finding a sequence of
+legal slides that together realise $\pi$: the slides, performed
+one after another, should move gem $14$ from slot $15$ to slot
+$14$, gem $15$ from slot $14$ to slot $15$, and leave every other
+gem (including the blank) where it was.
+
+## The proof of impossibility
+
+Suppose, for the sake of argument, that some sequence of $k$
+legal slides *does* solve the puzzle from the starting
+configuration. We shall derive a contradiction from two simple
+observations.
+
+*Observation 1: each legal slide is a swap.* A legal slide
+exchanges the blank with one of its neighbours. In the "$16$ gems
+in $16$ slots" picture, this is exactly a transposition of two
+slots — a swap. So our hypothetical solution is a sequence of $k$
+swaps whose overall effect is the permutation $\pi$, and the
+sign-of-a-swap-sequence rule gives
+
+$$
+\mathrm{sgn}(\pi) = \psi(k).
+$$
+
+*Observation 2: $k$ must be even.* Colour the $16$ slots like a
+chessboard, alternating dark and light, so that two slots sharing
+an edge always have opposite colours. Arrange the colouring so
+that slot $16$ (the bottom-right slot) ends up dark.
+
+<div style={{display:'flex', justifyContent:'center', margin:'18px 0'}}>
+<svg viewBox="0 0 200 200" style={{width:200, height:200}}>
+{Array.from({length:16}).map((_, i) => {
+  const r = Math.floor(i/4), c = i%4;
+  const dark = (r + c) % 2 === 1;
+  return (
+    <rect key={i} x={c*50} y={r*50} width="50" height="50"
+      fill={dark ? "var(--gate-ink)" : "var(--surface)"}
+      stroke="var(--rule)" strokeWidth="1" />
+  );
+})}
+</svg>
+</div>
+
+Each legal slide moves the blank to an *adjacent* slot, and
+adjacent slots have opposite colours, so the colour of the slot
+currently holding the blank flips with every single slide. In the
+starting configuration the blank is at slot $16$, which is dark;
+in the solved configuration the blank is again at slot $16$,
+still dark. If the colour starts dark and ends dark, it must have
+flipped an even number of times — so $k$ is even.
+
+*Putting the two observations together.* By Observation 2, $k$ is
+even, so $\psi(k) = \mathsf{even}$. Combined with Observation 1,
+
+$$
+\mathrm{sgn}(\pi) = \psi(k) = \mathsf{even}.
+$$
+
+But $\pi$ is a single swap, and every swap has sign
+$\mathsf{odd}$. We have arrived at $\mathrm{sgn}(\pi) = \mathsf{even}$
+and $\mathrm{sgn}(\pi) = \mathsf{odd}$ simultaneously, which is
+nonsense. The assumed solution cannot exist.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+No sequence of legal slides converts the $14$–$15$ swapped
+starting configuration into the solved configuration. The prize
+was safe.
+
+</div>
+
+## A second scrambled board
+
+The technique we just used is not a one-off trick tailored to the
+$14$–$15$ swap — it decides, at a glance, an entire family of
+starting configurations. Click **4-cycle (1,2,6,5)** in the
+controls of the live board above to load the configuration in
+which tiles $1, 2, 5, 6$ have been shuffled among themselves in
+the top-left corner.
+
+Comparing that board to the solved one, the starting configuration
+is obtained from the solved one by
+
+$$
+1 \to 2,\quad 2 \to 6,\quad 6 \to 5,\quad 5 \to 1,
+$$
+
+with every other gem (including the blank) sitting still. Chasing
+this around, the four displaced gems form a single ring, and the
+permutation $\pi$ from solved to starting is the four-cycle
+
+$$
+\pi = (1,\ 2,\ 6,\ 5),
+$$
+
+with every other slot a fixed point.
+
+The cycle decomposition of $\pi$ consists of one four-cycle
+together with $12$ fixed points, for a total of $\ell = 13$
+cycles. The stupid number is
+
+$$
+\mathrm{st}(\pi) = 16 - 13 = 3,
+$$
+
+which is odd, so $\mathrm{sgn}(\pi) = \mathsf{odd}$.
+
+The same parity argument as before applies. Each slide is a swap,
+so the $k$ slides realise $\pi$ (or its inverse, which has the
+same sign). The blank sits at slot $16$ both before and after, so
+the chessboard argument forces $k$ to be even, hence
+$\psi(k) = \mathsf{even}$. Combining,
+$\mathrm{sgn}(\pi) = \mathsf{even}$ — contradicting our
+calculation that $\mathrm{sgn}(\pi) = \mathsf{odd}$.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+The scrambled $(1, 2, 6, 5)$-cycle configuration cannot be solved
+either.
+
+</div>
+
+The argument generalises cleanly: whenever the blank returns to
+its starting slot, the permutation of the $15$ numbered tiles is
+forced to be even. So *any* starting configuration that leaves
+the blank at slot $16$ but corresponds to an odd permutation of
+the tiles is unsolvable — no case-by-case analysis required.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Scramble and decide</div>
+
+Press **Scramble** on the live board above to generate a random
+starting position. Because the scramble is produced by a sequence
+of legal slides from the solved board, the starting configuration
+is reachable. Verify this by trying to solve it; record the
+resulting permutation $\pi$ in cycle decomposition form, compute
+its stupid number, and check that $\mathrm{sgn}(\pi)$ comes out
+$\mathsf{even}$ whenever the blank ends back at slot $16$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — A starting configuration with the blank elsewhere</div>
+
+Suppose a starting configuration places the blank somewhere other
+than slot $16$ — say slot $11$. The chessboard argument from the
+text needs a small adjustment, since the blank no longer ends at
+the same colour it started on. Work out the modified parity
+constraint, and use it to decide whether the configuration
+
+$$
+\begin{array}{cccc}
+1 & 2 & 3 & 4 \\
+5 & 6 & 7 & 8 \\
+9 & 10 & \square & 11 \\
+13 & 14 & 15 & 12
+\end{array}
+$$
+
+can be solved.
+</div>

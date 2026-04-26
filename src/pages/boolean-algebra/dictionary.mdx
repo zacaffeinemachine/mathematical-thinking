@@ -1,0 +1,279 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Conditions as equations
+order: 3
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: A small dictionary translating English yes/no claims into boolean equations — and back.
+description: Translating logical conditions into equations using the boolean operations.
+---
+
+Now we put on the "yes/no" reading and use the algebra to talk
+about logical conditions. Each yes/no condition will translate into
+an arithmetic equation that holds exactly when the condition holds.
+Once a condition has become an equation, we are free to manipulate
+it with the laws on the previous page.
+
+## Both yes / at least one no
+
+The multiplication table tells us at once that
+
+$$
+a \cdot b = \texttt{1} \quad \text{means} \quad \text{``both $a$ and $b$ are yes,''}
+$$
+
+$$
+a \cdot b = \texttt{0} \quad \text{means} \quad \text{``at least one of $a$ and $b$ is no.''}
+$$
+
+The same pattern extends: $abc = \texttt{1}$ says "all three are
+yes," and $abc = \texttt{0}$ says "at least one of the three is no."
+
+## Both no / at least one yes
+
+Apply the same trick to the flipped variables $\texttt{1} + a$ and
+$\texttt{1} + b$. Their product equals $\texttt{1}$ exactly when
+both flips are yes — which says both $a$ and $b$ are no:
+
+$$
+(\texttt{1} + a)(\texttt{1} + b) = \texttt{1} \;\;\Longleftrightarrow\;\; \text{both are no},
+$$
+
+$$
+(\texttt{1} + a)(\texttt{1} + b) = \texttt{0} \;\;\Longleftrightarrow\;\; \text{at least one is yes}.
+$$
+
+Expanding the product, "at least one yes" has the equational form
+$a + b + ab = \texttt{1}$.
+
+## Exactly one / agree
+
+The boolean addition table is itself a translator. Reading the
+table:
+
+- $a + b = \texttt{1}$ on rows where $a$ and $b$ disagree.
+- $a + b = \texttt{0}$ on rows where $a$ and $b$ agree.
+
+So $a + b = \texttt{1}$ means "exactly one of $a, b$ is yes," and
+$a + b = \texttt{0}$ means "$a$ and $b$ agree." Boolean addition is,
+in fact, the same operation engineers call *xor* — the disagreement
+detector.
+
+## "If yes, then yes"
+
+A claim of the form "if $a$ is yes, then $b$ is yes" fails exactly
+when $a$ is yes and $b$ is no — that is, when $a = \texttt{1}$ and
+$\texttt{1} + b = \texttt{1}$. Both have to be yes simultaneously,
+so the failure pattern is $a(\texttt{1} + b) = \texttt{1}$. The
+claim itself is therefore the equation
+
+$$
+a(\texttt{1} + b) = \texttt{0} \quad \text{means} \quad \text{``if $a$ is yes, then $b$ is yes.''}
+$$
+
+## A small dictionary
+
+Collect the recipes in one place.
+
+<div style={{display:'flex', justifyContent:'center', margin:'24px 0'}}>
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr>
+<th style={{padding:'6px 16px', textAlign:'left', borderBottom:'1px solid var(--rule)'}}>Condition</th>
+<th style={{padding:'6px 16px', textAlign:'left', borderBottom:'1px solid var(--rule)'}}>Equation</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'4px 16px'}}>$a$ is yes</td><td style={{padding:'4px 16px'}}>$a = \texttt{1}$, or $\texttt{1} + a = \texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>$a$ is no</td><td style={{padding:'4px 16px'}}>$a = \texttt{0}$, or $\texttt{1} + a = \texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>both $a, b$ are yes</td><td style={{padding:'4px 16px'}}>$ab = \texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>at least one of $a, b$ is no</td><td style={{padding:'4px 16px'}}>$ab = \texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>both $a, b$ are no</td><td style={{padding:'4px 16px'}}>$(\texttt{1} + a)(\texttt{1} + b) = \texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>at least one of $a, b$ is yes</td><td style={{padding:'4px 16px'}}>$(\texttt{1} + a)(\texttt{1} + b) = \texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>$a$ and $b$ agree</td><td style={{padding:'4px 16px'}}>$a + b = \texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>exactly one of $a, b$ is yes</td><td style={{padding:'4px 16px'}}>$a + b = \texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 16px'}}>if $a$ is yes, then $b$ is yes</td><td style={{padding:'4px 16px'}}>$a(\texttt{1} + b) = \texttt{0}$</td></tr>
+</tbody>
+</table>
+</div>
+
+This dictionary is not meant to be memorised. Every row can be
+reconstructed in a few seconds by going back to the two arithmetic
+tables and asking one question: *which tiny expression reads
+$\texttt{1}$ on exactly the pattern this condition describes, and
+$\texttt{0}$ everywhere else?*
+
+## Joining conditions
+
+Suppose we have two conditions, each of the form $E_1 = \texttt{0}$
+and $E_2 = \texttt{0}$, and we want to express "both" or "at least
+one" as a single equation.
+
+- *At least one*: "at least one of $E_1, E_2$ is zero" is the
+  multiplication-table reading of a product being zero,
+  $E_1 \cdot E_2 = \texttt{0}$.
+- *Both*: when $E_1$ and $E_2$ are themselves yes/no values, "both
+  are zero" is the same as "neither is one," which by the dictionary
+  is $(\texttt{1} + E_1)(\texttt{1} + E_2) = \texttt{1}$.
+
+In practice it is usually easier to keep the two equations as a
+pair and reason with both at once.
+
+## Worked translations
+
+**"All three of $a, b, c$ are yes."** A chain of "both"s, so
+$abc = \texttt{1}$.
+
+**"At least one of $a, b, c$ is no."** Negation of the previous —
+$abc = \texttt{0}$.
+
+**"$a$ and $b$ agree, and $b$ and $c$ agree."** $a + b = \texttt{0}$
+and $b + c = \texttt{0}$. Adding the two equations gives
+$a + c = \texttt{0}$ — agreement is contagious along a chain.
+
+**"If $a$ and $b$ are both yes, then $c$ is no."** Using "if yes,
+then yes" on the condensed condition: failure pattern is
+$ab \cdot (\texttt{1} + (\texttt{1} + c)) = abc$, so the claim
+itself is $abc = \texttt{0}$.
+
+**"Exactly one of $a, b, c$ is yes."** Three mutually-exclusive
+ways, sum the truth values:
+
+$$
+a(\texttt{1} + b)(\texttt{1} + c) + b(\texttt{1} + a)(\texttt{1} + c) + c(\texttt{1} + a)(\texttt{1} + b) = \texttt{1}.
+$$
+
+Expanding, the three-term sum collapses to
+$a + b + c + abc = \texttt{1}$.
+
+**"Exactly two of $a, b, c$ are yes."** Pick which two:
+
+$$
+ab(\texttt{1} + c) + ac(\texttt{1} + b) + bc(\texttt{1} + a) = \texttt{1},
+$$
+
+which expands to $ab + ac + bc + abc = \texttt{1}$. Compare with
+the previous: the three-variable boolean world has three clean
+polynomials — $abc$, $a + b + c + abc$, and $ab + ac + bc + abc$
+— that cut cleanly through the eight yes/no patterns and single
+out "all three," "exactly one," and "exactly two" respectively.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — English to equation</div>
+
+Translate each English condition into an equation in the variables
+$a, b, c$. Wherever reasonable, simplify the resulting expression
+so it has no powers above the first and no term repeated.
+
+**(a)** "None of $a, b, c$ is yes."
+
+**(b)** "$a$ and $b$ disagree, but $b$ and $c$ agree."
+
+**(c)** "If $a$ is yes, then both $b$ and $c$ are yes."
+
+**(d)** "If $a$ is yes, then $b$ and $c$ disagree."
+
+**(e)** "Either $a$ is yes, or both $b$ and $c$ are yes (or both of these hold)."
+
+**(f)** "Exactly one of the three pairs $(a, b), (b, c), (a, c)$ is a pair of agreers."
+
+**(g)** "An odd number of $a, b, c$ are yes."
+
+**(h)** "An even number of $a, b, c$ are yes."
+
+**(i)** "At least two of $a, b, c$ are yes."
+
+**(j)** "At most one of $a, b, c$ is yes."
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Equation to English</div>
+
+Translate each of the following boolean equations back into a plain
+English condition on $a, b, c$.
+
+**(a)** $a + b + ab = \texttt{0}$.
+
+**(b)** $a(\texttt{1} + b)(\texttt{1} + c) = \texttt{0}$.
+
+**(c)** $(a + b) + (b + c) = \texttt{0}$.
+
+**(d)** $(\texttt{1} + a)(\texttt{1} + b)(\texttt{1} + c) = \texttt{0}$.
+
+**(e)** $ab + bc + ac = \texttt{1}$.
+
+**(f)** $a + b + c = \texttt{0}$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — A practice in joining</div>
+
+Each part below names two yes/no conditions. Use the "both hold"
+and "at least one holds" rules from above to write a single boolean
+equation that captures the joint condition, and simplify it.
+
+**(a)** Both of "$a$ and $b$ agree" and "$b$ and $c$ disagree" hold.
+
+**(b)** At least one of "$a$ is yes" and "$b$ is no" holds.
+
+**(c)** Both of "at least one of $a, b$ is yes" and "at least one of $b, c$ is yes" hold.
+
+**(d)** At least one of "$a = b$" and "$b = c$" holds. (Here "$a = b$" means "$a$ and $b$ agree.")
+</div>

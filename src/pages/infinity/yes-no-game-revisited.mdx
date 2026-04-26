@@ -1,0 +1,166 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The yes/no game, revisited
+order: 6
+chapter: infinity
+chapterTitle: Infinity
+blurb: The same diamond, now in the costume of an unwinnable guessing game.
+description: A harder yes/no guessing game, and the diagonal argument that no strategy can ever win it.
+---
+
+## A harder version of the guessing game
+
+Recall the guessing game from the start of the chapter. I was
+thinking of a positive whole number, and you found a yes/no
+questioning strategy — "is it $1$?, is it $2$?, is it $3$?, …" —
+that was guaranteed to identify my number in finitely many
+questions. The same trick, with a little weaving, handled all
+integers, and (with the diagonal sweep of the previous sections)
+it would handle all fractions too.
+
+Let us now play a much harder version.
+
+I am no longer thinking of a number. I am thinking of an *infinite*
+sequence of yeses and nos — one answer for each of the positions
+$1, 2, 3, \ldots$. So my secret might begin
+
+<div style={{textAlign:'center', margin:'12px 0'}}>
+yes, no, no, yes, yes, no, yes, no, no, no, …
+</div>
+
+and continue forever in some pattern only I know.
+
+You may ask any yes/no questions you like, in any order, and I
+will answer each one truthfully. Your goal is to commit, in
+advance, to a strategy that is *guaranteed* to pin down my entire
+sequence in finitely many questions, no matter which sequence I
+picked.
+
+Can you do it?
+
+## Why no strategy can win
+
+The answer is **no**, and the reason is exactly the reason the
+unwritable book could not be written.
+
+Any strategy you commit to is, in the end, a recipe. Run the
+recipe against my sequence and it asks some first question, then a
+second, and so on; after finitely many of these it announces a
+guess. The crucial point is that there are only countably many
+possible scripts the strategy can follow during a play of the
+game — one for each finite transcript of yeses and nos — and so
+over all possible plays, the strategy can produce *at most* a
+countable list of guessed sequences.
+
+Call those guessed sequences $G_1, G_2, G_3, \ldots$. If your
+strategy works, then for every secret sequence $S$ I might choose,
+there is some play of the game where the strategy guesses $S$
+correctly — so $S$ must appear somewhere on the list
+$G_1, G_2, G_3, \ldots$. In other words, your strategy gives a
+*single list of all possible infinite yes/no sequences*.
+
+But this is exactly the unwritable book in a new costume. Identify
+"yes" with "include this page" and "no" with "leave this page out."
+Then an infinite sequence of yeses and nos is the same thing as a
+reading list, and your hypothetical list $G_1, G_2, G_3, \ldots$
+is the same thing as a complete catalogue of reading lists — which
+we have just proved cannot exist.
+
+Concretely, given $G_1, G_2, G_3, \ldots$, build a new sequence
+$D$ as follows: in position $n$, put the *opposite* of whatever
+$G_n$ has in position $n$. Then $D$ disagrees with $G_n$ at
+position $n$, so $D$ is not $G_n$ — and this is true for every
+$n$. The sequence $D$ is on no page of your strategy's catalogue.
+If I happen to have chosen $D$ as my secret, your strategy is
+doomed.
+
+## The same diamond, two settings
+
+Notice the parallel between the two impossibility results.
+
+- In the unwritable book, we tried to list every reading list as a
+  page of a book. Cantor's diagonal produced a reading list $R$
+  that disagreed with the page-$n$ list at the question "is $n$ in
+  the list?"
+- In the guessing game, we tried to list every infinite yes/no
+  sequence as a possible outcome of a strategy. The same diagonal
+  produced a sequence $D$ that disagreed with the $n$-th outcome
+  at position $n$.
+
+The two problems look completely different on the surface — one is
+about writing books, the other about asking questions — but
+underneath they are the same problem, and Cantor's argument
+dispatches both with a single move.
+
+A reading list, viewed correctly, is just an infinite sequence of
+yeses and nos: for each page, "yes I include it" or "no I do not."
+The collection of all reading lists and the collection of all
+infinite yes/no sequences are not just the same size; they are
+literally the same collection in different clothes. And we have
+now shown, twice, that this collection cannot be threaded into a
+single list.
+
+This is the chapter's final lesson. The natural numbers, the
+integers, the fractions, the pairs, the triples — all the
+infinities we met can be tamed by a clever listing. But the
+infinity of yes/no sequences — equivalently, the infinity of
+reading lists, and (as a course in real analysis later reveals)
+the infinity of points on a line — is of a strictly larger kind.
+No strategy, no book, no enumeration whatsoever can reach all of
+them.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise — Four flavours of reading list</div>
+
+Cantor's infinite book has pages numbered $1, 2, 3, \ldots$.
+
+- A **reading list** is a set of page numbers (finite or infinite).
+- A **finite reading list** is a set of finitely many pages.
+- An **even reading list** is a set of even page numbers.
+- A **finite even reading list** is a set of finitely many even page numbers.
+
+Choose the correct options.
+
+**(a)** One can write a reading list on each page in such a way
+that the book then features all possible reading lists.
+
+**(b)** One can write an even reading list on each page in such a
+way that the book then features all possible even reading lists.
+
+**(c)** One can write a finite reading list on each page in such
+a way that the book then features all possible finite reading
+lists.
+
+**(d)** One can write a finite even reading list on each page in
+such a way that the book then features all possible finite even
+reading lists.
+</div>

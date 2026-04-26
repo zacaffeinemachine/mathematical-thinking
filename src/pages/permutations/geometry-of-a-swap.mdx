@@ -1,0 +1,170 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The geometry of a swap
+order: 3
+chapter: permutations
+chapterTitle: Permutations
+blurb: A single swap either snips one cycle in two or stitches two cycles into one. Never anything else.
+description: How composing with a swap rewires the digraph — fission versus fusion.
+---
+import PermutationDigraph from "../../components/games/PermutationDigraph.tsx";
+
+The simplest permutation that does anything at all is a **swap**:
+it exchanges the gems sitting in two chosen slots and leaves every
+other gem where it was. In the cycle-decomposition language of the
+previous page, this is a permutation whose digraph has exactly one
+cycle of length two and all remaining cycles of length one. If the
+two swapped slots are $a$ and $b$, we shall write the swap as
+$(a,\ b)$ — a single two-cycle, with all the fixed points silently
+understood.
+
+A swap is a tiny disturbance: only two slots are directly affected.
+What happens if we apply such a tiny disturbance *after* some
+larger permutation $\sigma$? The answer, remarkably, is that only
+two things are ever possible: either a single cycle of $\sigma$
+gets snipped into two smaller cycles, or two separate cycles of
+$\sigma$ get stitched together into one bigger cycle. Which of the
+two happens is decided by a single question: *do the swapped slots
+live in the same cycle of $\sigma$, or in two different cycles?*
+
+## Fission: splitting a cycle
+
+Let $\sigma$ be the permutation on ten slots with cycle
+decomposition
+
+$$
+\sigma = (10,\ 8,\ 4,\ 7,\ 6,\ 5)\,(1,\ 3,\ 2,\ 9),
+$$
+
+and let $\theta$ be the swap $(4,\ 5)$. The two slots being
+swapped, $4$ and $5$, both lie in the same cycle of $\sigma$ — the
+six-slot ring on the left.
+
+<PermutationDigraph cycles={[[10,8,4,7,6,5],[1,3,2,9]]} caption="Digraph of σ. Slots 4 and 5 sit in the same six-cycle." />
+
+A direct calculation (follow each arrow of $\sigma$ and then apply
+$\theta$) gives
+
+$$
+\sigma\text{ then }\theta = (10,\ 8,\ 5)\,(4,\ 7,\ 6)\,(1,\ 3,\ 2,\ 9).
+$$
+
+<PermutationDigraph cycles={[[10,8,5],[4,7,6],[1,3,2,9]]} caption='Digraph of "σ then θ". The six-cycle has split into two three-cycles.' />
+
+The four-cycle $(1,\ 3,\ 2,\ 9)$ on the right is untouched — slots
+$4$ and $5$ never enter it. The interesting thing is what happened
+to the long ring: it has broken cleanly into two smaller rings, of
+three slots each.
+
+*Why does the ring split?* Look at the two arrows of $\sigma$ that
+*enter* slots $4$ and $5$. There is exactly one such arrow into
+each, because every slot of a permutation receives exactly one
+arrow. The arrow into $4$ starts at slot $8$ (since $\sigma$ sends
+$8$ to $4$), and the arrow into $5$ starts at slot $6$ (since
+$\sigma$ sends $6$ to $5$).
+
+Now consider what happens when we perform $\theta$ right after
+$\sigma$. For a slot $i$ that $\sigma$ sends to neither $4$ nor
+$5$, the swap $\theta$ leaves $\sigma(i)$ untouched, so the arrow
+out of $i$ is unchanged. The only arrows that get redirected are
+the two whose heads landed on $4$ or $5$:
+
+- The arrow from slot $8$, which used to point at $4$, now points
+  at $5$ (because $\theta$ sends $4$ to $5$).
+- The arrow from slot $6$, which used to point at $5$, now points
+  at $4$.
+
+In other words, composing with $\theta$ has the sole effect of
+*swapping the heads of these two incoming arrows*. Everything
+else in the digraph is untouched.
+
+This small rewiring is enough to split the ring. Starting from
+$10$ and following the new arrows, we walk
+$10 \to 8 \to 5 \to 10$ — a three-cycle. Starting from $4$, we
+walk $4 \to 7 \to 6 \to 4$ — a second three-cycle. The original
+six-cycle has been snipped into two halves precisely at the
+rewiring site.
+
+## Fusion: merging two cycles
+
+Now let $\sigma$ be the permutation on ten slots with cycle
+decomposition
+
+$$
+\sigma = (3,\ 8,\ 2,\ 6)\,(1,\ 4,\ 5)\,(7,\ 10)\,(9),
+$$
+
+and let $\theta$ be the swap $(3,\ 4)$. This time the two slots
+being swapped live in *different* cycles of $\sigma$: slot $3$
+sits in the four-cycle on the left, and slot $4$ sits in the
+three-cycle beside it.
+
+<PermutationDigraph cycles={[[3,8,2,6],[1,4,5],[7,10],[9]]} caption="Digraph of σ. Slots 3 and 4 sit in two different cycles." />
+
+A short calculation shows that
+
+$$
+\sigma\text{ then }\theta = (1,\ 3,\ 8,\ 2,\ 6,\ 4,\ 5)\,(7,\ 10)\,(9).
+$$
+
+<PermutationDigraph cycles={[[1,3,8,2,6,4,5],[7,10],[9]]} caption='Digraph of "σ then θ". The two cycles containing 3 and 4 have fused into one seven-cycle.' />
+
+The cycles $(7,\ 10)$ and $(9)$ are carried along unchanged. But
+the two cycles that contained $3$ and $4$ have merged into a
+single seven-slot ring.
+
+*Why do the two cycles merge?* The reasoning is the mirror image
+of the splitting argument. In $\sigma$ the arrow entering $3$
+starts at slot $6$, and the arrow entering $4$ starts at slot $1$.
+Performing $\theta$ afterwards swaps the heads of these two
+arrows: the arrow from $6$ now points at $4$ instead of $3$, and
+the arrow from $1$ now points at $3$ instead of $4$. No other
+arrow is touched.
+
+This single rewiring stitches the two separate rings together.
+Starting from $1$ and following the new arrows, we now walk
+
+$$
+1 \to 3 \to 8 \to 2 \to 6 \to 4 \to 5 \to 1,
+$$
+
+a single seven-cycle that passes through every slot of both
+original rings. Two cycles have become one.
+
+## The general picture
+
+The two examples are instances of a single general fact.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Let $\sigma$ be any permutation on $n$ slots and let $\theta$ be
+the swap $(a,\ b)$.
+
+- If slots $a$ and $b$ lie in the *same* cycle of $\sigma$, then
+  the number of cycles of "$\sigma$ then $\theta$" is one *more*
+  than the number of cycles of $\sigma$: that cycle has split in
+  two.
+- If slots $a$ and $b$ lie in *different* cycles of $\sigma$, then
+  the number of cycles of "$\sigma$ then $\theta$" is one *less*
+  than the number of cycles of $\sigma$: those two cycles have
+  fused into one.
+
+</div>
+
+The argument we used in both examples works word for word in
+general. In the digraph of $\sigma$, composing with the swap
+$(a,\ b)$ has the sole effect of exchanging the heads of the two
+arrows that enter $a$ and $b$; every other arrow is left alone.
+A single such rewiring is always exactly enough either to snip
+one ring into two or to stitch two rings into one — no other
+outcome is possible.
+
+In either case, *the number of cycles changes by exactly one*.
+This tiny accounting fact will turn out to be the key to
+everything that comes next.

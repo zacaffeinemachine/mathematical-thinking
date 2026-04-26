@@ -1,0 +1,154 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Where machines stop
+order: 6
+chapter: machines
+chapterTitle: Machines
+blurb: Finiteness is the source of the cap. The Loop Lemma names it, and three natural languages fall just past it.
+description: The Loop Lemma and three impossibility results — 0ⁿ1ⁿ, square counts of 1s, prime counts of 1s.
+---
+import FSMGraph from "../../components/games/fsm/FSMGraph.tsx";
+import { loopSchematic } from "../../components/games/fsm/machines.ts";
+
+A machine has finitely many states. Push a string through it that
+is longer than the state count, and by pigeonhole some state must
+be visited twice. The block of input read between those two visits
+is a **loop**: structurally, the machine cannot tell whether it
+went around that loop *zero, one, or twenty* times.
+
+## The Loop Lemma
+
+<div style={{
+  margin: '20px 0',
+  padding: '16px',
+  borderLeft: '4px solid var(--accent)',
+  background: 'var(--surface)',
+  borderRadius: 4,
+}}>
+
+Let *M* be a machine with *k* states, and let *s* be a string that
+*M* accepts with |*s*| ≥ *k*. Then *s* admits a decomposition
+
+<div style={{textAlign:'center', fontFamily:'ui-monospace, monospace', margin:'8px 0', fontSize:16}}>
+s = u v w
+</div>
+
+with *v* non-empty, such that for every integer *q* ≥ 0, the string
+*u v<sup>q</sup> w* is also accepted.
+
+</div>
+
+The picture is exactly this:
+
+<div style={{display:'flex', justifyContent:'center', margin:'12px 0'}}>
+  <FSMGraph
+    client:visible
+    machine={loopSchematic}
+    width={500}
+    height={260}
+  />
+</div>
+
+Reading *u* drives the machine from the start state q₀ to some
+state qᵢ. Reading *v* takes qᵢ back to qᵢ. Reading *w* finishes
+the trip to the accepting state qₙ. Pumping *v* — replaying it
+*q* times instead of once — never changes where we end up.
+
+## Three impossibilities
+
+Pumping is fatal for any language whose accepted lengths refuse to
+sit on a long enough arithmetic progression. Three natural
+languages fall to it.
+
+**0ⁿ1ⁿ.** Strings with the same number of `0`s as `1`s, all the
+zeros first. Take *s* = `0`<sup>k</sup>`1`<sup>k</sup>; the loop
+*v* must lie inside the leading run of zeros, so pumping it adds
+zeros without adding ones. The accepted string `0`<sup>k+m</sup>`1`<sup>k</sup>
+breaks the count.
+
+**A square number of `1`s.** Take *s* = `1`<sup>m²</sup> with
+*m* > *k*. The lemma promises that m², m²+p, m²+2p, … are all
+accepted, with 1 ≤ *p* ≤ *k*. But m² + *p* lies strictly between
+m² and (m+1)² = m² + 2m + 1, so it is not a square.
+
+**A prime number of `1`s.** Take *s* = `1`<sup>P</sup> with *P*
+prime and *P* > *k*. The lemma promises P + qp prime for every q.
+Set q = P: then P + Pp = P(1+p), composite. Both factors are at
+least 2.
+
+## The line
+
+The first half of this chapter showed what machines *can* do —
+recognise any property expressible with bounded memory, and
+combine such properties freely via the product construction. The
+Loop Lemma names the other side of the line. A property that
+requires *unbounded* memory — matching counts, recognising
+squares, recognising primes — falls to a single weapon: take a
+long-enough accepted string, find the loop, pump.
+
+This boundary is structural, not a failure of cleverness. Crossing
+it requires a different kind of machine — a story for later
+chapters.
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Finding a loop</div>
+
+Recall the machine that accepts binary strings whose number of
+`1`s is divisible by 3 — three states, with `r0` doubling as start
+and accept; `1` advances `r0 → r1 → r2 → r0`; `0` loops in place.
+
+1. Trace the machine on the string `s = 1101101`. List the state
+   after each symbol.
+2. Find a decomposition `s = u v w` with `v` non-empty such that
+   reading `v` returns the machine to the same state.
+3. Use your decomposition to exhibit three other strings on which
+   the machine is forced to behave the same way as on `s`.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Parity equality</div>
+
+Show that no finite machine accepts exactly those binary strings
+in which the number of `0`s equals the number of `1`s.
+</div>

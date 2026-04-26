@@ -1,0 +1,268 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The familiar laws (and two strange ones)
+order: 2
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: Commutativity, associativity, distributivity — plus two collapse identities that do most of the simplifying.
+description: Standard algebra laws in the boolean world, and the two strange identities a + a = 0 and a² = a.
+---
+
+## Everything you would hope for, holds
+
+Here is a short list of properties of $+$ and $\cdot$. Each one can
+be checked by writing down the four (or eight) rows of a tiny table
+and comparing the two columns.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+For all values $a, b, c$ in $\{\texttt{0}, \texttt{1}\}$:
+
+- *Order does not matter*: $a + b = b + a$ and $a \cdot b = b \cdot a$.
+- *Grouping does not matter*: $(a + b) + c = a + (b + c)$ and $(a \cdot b) \cdot c = a \cdot (b \cdot c)$.
+- *Multiplication shares over addition*: $a \cdot (b + c) = a \cdot b + a \cdot c$.
+- *Identities*: $a + \texttt{0} = a$ and $a \cdot \texttt{1} = a$.
+- *Annihilator*: $a \cdot \texttt{0} = \texttt{0}$.
+
+</div>
+
+None of these are surprising. They are exactly the properties you
+would expect of any arithmetic worth the name. The reason they hold
+here, free of charge, is the parity reading from the previous page:
+each of these laws is true for ordinary integers, and reading every
+integer "through the parity lens" preserves the law.
+
+## Two laws that have no analogue in ordinary arithmetic
+
+Two further identities are special to the two-element world. They
+look strange at first sight, and they are the source of most of the
+simplifying we will do in this chapter.
+
+**(a) Adding a value to itself gives zero.** For every value $a$ in
+$\{\texttt{0}, \texttt{1}\}$:
+
+$$
+a + a = \texttt{0}.
+$$
+
+Check: $\texttt{0} + \texttt{0} = \texttt{0}$ and
+$\texttt{1} + \texttt{1} = \texttt{0}$. (Through the parity lens,
+"odd plus odd is even" is exactly this fact.) A useful rephrasing:
+subtraction in this world is the same as addition. There is no need
+to ever write a minus sign — if you wanted to compute "$b$ minus
+$a$," just write $b + a$ instead. In particular, $\texttt{1} - a$
+and $\texttt{1} + a$ mean the same thing, and from now on we write
+$\texttt{1} + a$ for "the flip of $a$."
+
+**(b) Squaring a value gives back the value.** For every $a$ in
+$\{\texttt{0}, \texttt{1}\}$:
+
+$$
+a \cdot a = a, \qquad \text{written more compactly as } a^2 = a.
+$$
+
+Check: $\texttt{0} \cdot \texttt{0} = \texttt{0}$ and
+$\texttt{1} \cdot \texttt{1} = \texttt{1}$. So no power of $a$ above
+the first ever needs to appear: $a^3 = a^2 \cdot a = a \cdot a = a$,
+and so on. Every polynomial we ever write in boolean variables can
+be reduced, by repeated use of $a^2 = a$, to one with no exponents
+at all.
+
+## A worked simplification
+
+To see the new laws in action, simplify
+
+$$
+E = (a + b)^2 + a + b.
+$$
+
+Expand the square by the distributive law:
+
+$$
+(a + b)^2 = (a + b)(a + b) = a^2 + ab + ba + b^2.
+$$
+
+Now $a^2 = a$, $b^2 = b$, and $ab + ab = \texttt{0}$, so
+
+$$
+(a + b)^2 = a + \texttt{0} + b = a + b.
+$$
+
+Therefore $E = (a + b) + (a + b) = \texttt{0}$, again by "a thing
+plus itself is zero." The expression is identically zero. Notice
+how cheap the steps were: *things added to themselves vanish*,
+*squares collapse*. Once these reflexes settle in, expressions get
+much smaller very quickly.
+
+## More worked simplifications
+
+Four more tiny examples. Each one leans on the same two moves.
+
+**A value times its flip.** $\;a(\texttt{1} + a) = a + a^2 = a + a = \texttt{0}.\;$
+Under the yes/no reading this is common sense: "$a$ is yes *and*
+$a$ is no" cannot happen.
+
+**The freshman's dream, for real this time.** In ordinary algebra,
+beginners often write $(a + b + c)^2 = a^2 + b^2 + c^2$ and lose
+marks for it. In the boolean world that mistake becomes a theorem:
+
+$$
+(a + b + c)^2 = a^2 + b^2 + c^2 + 2ab + 2ac + 2bc.
+$$
+
+Every cross term is doubled, and $2xy = xy + xy = \texttt{0}$, so
+all three cross terms vanish. Using $a^2 = a$ etc., we get
+$(a + b + c)^2 = a + b + c$. The same argument works for any number
+of terms: *every boolean expression squares to itself*.
+
+**A symmetric expression that is always zero.**
+
+$$
+a(b + c) + b(c + a) + c(a + b) = ab + ac + bc + ab + ac + bc = \texttt{0}.
+$$
+
+**A product of three sums that collapses.**
+
+$$
+(a + b)(b + c)(a + c) = \texttt{0}.
+$$
+
+Among three boolean values at least two must agree — there are only
+two values to go around — so at least one of the three sums is
+already $\texttt{0}$, and a product with a $\texttt{0}$ factor is
+$\texttt{0}$.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Simplify</div>
+
+Use $a^2 = a$ and $a + a = \texttt{0}$ (together with the familiar
+laws) to simplify each expression as far as it will go. The answer
+should have no powers above the first and no term repeated.
+
+**(a)** $a^3 + a^2 + a$.
+
+**(b)** $a^5 + a^4 + a^3 + a^2 + a$.
+
+**(c)** $(\texttt{1} + a)(\texttt{1} + b) + \texttt{1}$.
+
+**(d)** $(a + b + c)^2$.
+
+**(e)** $(a + b + c)^3$.
+
+**(f)** $(a + b)(a + b + \texttt{1})$.
+
+**(g)** $a(\texttt{1} + b) + b(\texttt{1} + a)$.
+
+**(h)** $ab + a(\texttt{1} + b)$.
+
+**(i)** $(\texttt{1} + a)(\texttt{1} + b)(\texttt{1} + c) + \texttt{1} + a + b + c$.
+
+**(j)** $ab(\texttt{1} + c) + ac(\texttt{1} + b) + bc(\texttt{1} + a)$.
+
+**(k)** $(a + b)^2 + (b + c)^2 + (a + c)^2$.
+
+**(l)** $(a + b)(\texttt{1} + ab)$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Identities</div>
+
+Show that each of the following identities holds for all boolean
+values. In each case, start from one side and simplify until you
+land on the other.
+
+**(a)** $a(\texttt{1} + a) = \texttt{0}$.
+
+**(b)** $(\texttt{1} + a)(\texttt{1} + a) = \texttt{1} + a$.
+
+**(c)** $ab + a(\texttt{1} + b) = a$.
+
+**(d)** $a + b = (\texttt{1} + a)b + a(\texttt{1} + b)$.
+
+**(e)** $ab(a + b) = \texttt{0}$.
+
+**(f)** $(a + b)(b + c)(a + c) = \texttt{0}$.
+
+**(g)** $(a + b)^n = a + b$ for every $n \geq 1$. *(Hint: start from $(a+b)^2 = a+b$ and repeat.)*
+
+**(h)** $ab + (\texttt{1} + a)(\texttt{1} + b) + \texttt{1} = a + b$.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — Equal or not?</div>
+
+For each pair of expressions below, either simplify both sides to a
+common form to show they are equal, or produce specific values of
+the variables that make them differ.
+
+**(a)** $a + b + ab \;\;$ vs. $\;\; (\texttt{1} + a)(\texttt{1} + b) + \texttt{1}$.
+
+**(b)** $(a + b)(\texttt{1} + ab) \;\;$ vs. $\;\; a + b$.
+
+**(c)** $abc \;\;$ vs. $\;\; a + b + c + (a + b)(b + c)(a + c)$.
+
+**(d)** $a + bc \;\;$ vs. $\;\; (a + b)(a + c)$.
+</div>

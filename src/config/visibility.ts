@@ -24,6 +24,11 @@
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
   "logical-thinking",
+  "machines",
+  "logic-gates",
+  "boolean-algebra",
+  "infinity",
+  "permutations",
 ];
 
 export const VISIBLE_PAGES: readonly string[] = [
@@ -39,6 +44,42 @@ export const VISIBLE_PAGES: readonly string[] = [
   "logical-thinking/hat-hurdle",
   "logical-thinking/judicious-jinx",
   "logical-thinking/exercises",
+
+  "machines/fsm-intro",
+  "machines/reading-the-language",
+  "machines/not",
+  "machines/or-and",
+  "machines/xor",
+  "machines/limitations",
+
+  "logic-gates/gate-zoo",
+  "logic-gates/building-from-others",
+  "logic-gates/design-challenge",
+  "logic-gates/majority-and-staircase",
+  "logic-gates/nand-universal",
+  "logic-gates/sandbox",
+
+  "boolean-algebra/two-values",
+  "boolean-algebra/the-laws",
+  "boolean-algebra/dictionary",
+  "boolean-algebra/oracles-revisited",
+  "boolean-algebra/wason-revisited",
+
+  "infinity/yes-no-game",
+  "infinity/friendly-fire",
+  "infinity/upgraded-frog",
+  "infinity/hilbert-hotel",
+  "infinity/unwritable-book",
+  "infinity/yes-no-game-revisited",
+
+  "permutations/definition",
+  "permutations/digraphs-and-cycles",
+  "permutations/geometry-of-a-swap",
+  "permutations/stupid-number-and-sign",
+  "permutations/more-on-swaps",
+  "permutations/sign-of-a-composition",
+  "permutations/fifteen-puzzle",
+  "permutations/oval-track",
 ];
 
 export function isChapterVisible(slug: string): boolean {

@@ -1,0 +1,49 @@
+---
+layout: ../../layouts/Chapter.astro
+title: OR and AND — running two machines at once
+order: 4
+chapter: machines
+chapterTitle: Machines
+blurb: A single tape, two machines watching it. The same wiring solves OR and AND with only the accepting rule changing.
+description: The product construction. Combining two finite state machines into one that recognises their OR or AND.
+---
+import DualMachineRunner from "../../components/games/fsm/DualMachineRunner.tsx";
+import { zerosMod3, onesMod4 } from "../../components/games/fsm/machines.ts";
+
+Suppose we want a machine that accepts a binary string when at
+least one of these holds:
+
+- the count of `0`s is divisible by **3**, or
+- the count of `1`s is divisible by **4**.
+
+We already have machines for each property in isolation. The
+question is how to put them together.
+
+**The trick.** Run both machines *on the same tape, simultaneously*.
+At every moment the combined state is the **pair** (state of A,
+state of B). Reading a `0` advances A and leaves B alone; reading
+a `1` does the reverse. The machine below does exactly that —
+accept rule selectable.
+
+<DualMachineRunner
+  client:visible
+  machineA={zerosMod3}
+  machineB={onesMod4}
+  defaultInput="000111"
+  examples={["", "000", "1111", "000111", "0011", "000011110000"]}
+  initialRule="OR"
+  rules={["OR", "AND"]}
+/>
+
+The wiring is identical for OR and AND. The only difference is
+which pairs we call accepting:
+
+- **OR** — at least one component accepts. (Many pair-states
+  qualify.)
+- **AND** — both components accept. (Only the pair (A₀, B₀)
+  qualifies.)
+
+This is the **product construction**, and it's a remarkably
+flexible tool. *Any* logical combination of two machines is just a
+choice of accepting set on the same product wiring. We will use
+this again on the next page to attack a sharper question.

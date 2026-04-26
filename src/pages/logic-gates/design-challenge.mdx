@@ -1,0 +1,281 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The design challenge
+order: 3
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: Hand a friend any truth table, and you can hand back a circuit. The recipe is one AND per winning row, ORed together.
+description: Spike detectors and the universal recipe — every truth table is realisable from AND, OR, and NOT.
+---
+import CircuitDiagram from "../../components/games/circuits/CircuitDiagram.tsx";
+import { recipeWalkthrough } from "../../components/games/circuits/circuits.ts";
+
+Forget circuits for a moment and imagine the simplest possible
+specification of a two-input gadget. A friend writes down a table:
+
+<div style={{display:'flex', justifyContent:'center', margin:'20px 0'}}>
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr><th style={{padding:'4px 14px'}}>$a$</th><th style={{padding:'4px 14px'}}>$b$</th><th style={{padding:'4px 14px', borderLeft:'1px solid var(--rule)'}}>out</th></tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)'}}>?</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)'}}>?</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)'}}>?</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)'}}>?</td></tr>
+</tbody>
+</table>
+</div>
+
+They fill in each "?" with a $\texttt{0}$ or a $\texttt{1}$ in
+whatever way they please — nothing fancy, no rule, just four
+arbitrary choices. They hand the filled-in table to you and say:
+**"Build me a circuit, using only AND, OR, and NOT gates, whose
+behaviour matches this table."**
+
+A table with two inputs has four rows, and each row's output is
+independently $\texttt{0}$ or $\texttt{1}$, so there are sixteen
+tables your friend could have written down. Can every one of those
+sixteen tables be granted? More importantly, can *every*
+truth-table-of-any-arity be granted?
+
+## Why the table is the whole story
+
+A circuit built out of AND, OR, and NOT gates has no memory and no
+clock — the output depends only on the *present* inputs. So once
+we know what the circuit does on each of the four input
+combinations, we know everything there is to know about it. Two
+circuits with the same table behave identically in every
+conceivable situation. The table is not a partial description of
+the circuit; it is the whole description, viewed from the outside.
+
+## The strategy: spike detectors, then OR the right ones
+
+Here is the headline result we will prove:
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Every one of the sixteen possible two-input tables is the
+behaviour of some circuit built only from AND, OR, and NOT gates.
+The same is true for tables of any number of inputs.
+
+</div>
+
+Call a row of the table marked $\texttt{1}$ a **winning row**.
+Imagine, for a moment, that we already had a magic toolbox: for
+each of the four possible input patterns, the toolbox contained a
+small circuit — a **spike detector** for that row — whose output
+is $\texttt{1}$ *only* on its own row and $\texttt{0}$ on every
+other row.
+
+Suppose we have these four spike detectors lying on the bench.
+Granting any table the friend writes is now almost effortless:
+
+- Pick out the spike detectors corresponding to the table's
+  *winning* rows — one detector per winning row.
+- Feed the chosen detectors into a big OR.
+
+On any input pattern the friend tries, exactly one of the four
+spike detectors is firing, and the OR output is $\texttt{1}$ if
+and only if the firing one is among the chosen — that is, if and
+only if the input pattern is a winning row.
+
+## Building a spike detector
+
+A spike detector for a fixed row is an AND of pieces, one piece
+per input. The piece is the *input itself* if that column is
+$\texttt{1}$ in the target row, and it is the *flipped version* of
+the input if that column is $\texttt{0}$ in the target row. For
+two inputs:
+
+<div style={{display:'flex', justifyContent:'center', margin:'18px 0'}}>
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr>
+<th style={{padding:'4px 14px'}}>$a$</th>
+<th style={{padding:'4px 14px'}}>$b$</th>
+<th style={{padding:'4px 14px', borderLeft:'1px solid var(--rule)', textAlign:'left'}}>detector</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', borderLeft:'1px solid var(--rule)', fontFamily:'ui-monospace, monospace'}}>$(\mathord{\texttt{!}}a)\,\&\,(\mathord{\texttt{!}}b)$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', borderLeft:'1px solid var(--rule)', fontFamily:'ui-monospace, monospace'}}>$(\mathord{\texttt{!}}a)\,\&\,b$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', borderLeft:'1px solid var(--rule)', fontFamily:'ui-monospace, monospace'}}>$a\,\&\,(\mathord{\texttt{!}}b)$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', borderLeft:'1px solid var(--rule)', fontFamily:'ui-monospace, monospace'}}>$a\,\&\,b$</td></tr>
+</tbody>
+</table>
+</div>
+
+Why does each detector do its job? Consider, say,
+$a \mathbin{\texttt{\&}} (\mathord{\texttt{!}}b)$. This is
+$\texttt{1}$ exactly when both pieces are $\texttt{1}$, that is,
+when $a = \texttt{1}$ and $b = \texttt{0}$. That is one specific
+row of the table, and no other. On every other row, at least one
+piece evaluates to $\texttt{0}$, dragging the AND to $\texttt{0}$.
+
+## A concrete table to chase
+
+Suppose your friend hands you the following table:
+
+<div style={{display:'flex', justifyContent:'center', margin:'18px 0'}}>
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr><th style={{padding:'4px 14px'}}>$a$</th><th style={{padding:'4px 14px'}}>$b$</th><th style={{padding:'4px 14px', borderLeft:'1px solid var(--rule)'}}>out</th></tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)', fontWeight:700}}>$\texttt{1}$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{0}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)', fontWeight:700}}>$\texttt{1}$</td></tr>
+<tr><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center'}}>$\texttt{1}$</td><td style={{padding:'2px 14px', textAlign:'center', borderLeft:'1px solid var(--rule)', fontWeight:700}}>$\texttt{1}$</td></tr>
+</tbody>
+</table>
+</div>
+
+The winning rows are $(\texttt{0}, \texttt{0})$, $(\texttt{1}, \texttt{0})$,
+and $(\texttt{1}, \texttt{1})$; the losing row is $(\texttt{0}, \texttt{1})$.
+Following the strategy, build a spike detector for each winning
+row and OR the three together:
+
+$$
+\bigl((\mathord{\texttt{!}}a) \mathbin{\texttt{\&}} (\mathord{\texttt{!}}b)\bigr) \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} \bigl(a \mathbin{\texttt{\&}} (\mathord{\texttt{!}}b)\bigr) \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} (a \mathbin{\texttt{\&}} b).
+$$
+
+Step through it gate by gate:
+
+<CircuitDiagram client:visible circuit={recipeWalkthrough} steppable showTruthTable />
+
+Toggle the inputs and check against the target table: on each
+winning row exactly one spike fires and the OR lights up; on the
+losing row $(\texttt{0}, \texttt{1})$ none of the chosen spikes
+fires and the output stays dark.
+
+## The recipe in general
+
+The worked example was not special. The same two-step move works
+for any table the friend might write down:
+
+- For each winning row, build a spike detector — one AND, with
+  NOTs in front of those inputs the row asks to be $\texttt{0}$ —
+  that outputs $\texttt{1}$ exactly on that row and $\texttt{0}$
+  everywhere else.
+- Feed all those spike detectors into one big OR.
+
+Nothing in the recipe leaned on having exactly two inputs. With
+ten inputs, each detector ANDs ten pieces; the table has $1024$
+rows; the OR at the end has as many wires going in as the table
+has winning rows. The recipe never breaks down.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Given any table whatsoever — two inputs, three inputs, ten inputs
+— there is a circuit, built only from AND, OR, and NOT gates,
+whose behaviour is that table.
+
+</div>
+
+## OR and NOT are already enough
+
+Look back at the recipe. It uses three kinds of gates: AND, OR,
+NOT. But the previous page built AND out of NOT and OR alone:
+
+$$
+a \mathbin{\texttt{\&}} b = \mathord{\texttt{!}}\bigl((\mathord{\texttt{!}}a) \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} (\mathord{\texttt{!}}b)\bigr).
+$$
+
+So every AND in our recipe can be replaced by a small construction
+of two NOTs feeding an OR feeding one more NOT. The replacement
+may make the resulting circuit clunkier, but it computes the same
+table.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Every table is the behaviour of some circuit built using only OR
+and NOT gates — no AND required.
+
+</div>
+
+This is our first hint that the alphabet of gates can be
+*trimmed*. We started with five gate names and already two of them
+are enough. Later in the chapter we will trim the alphabet right
+down to a single gate.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Rebuilding XOR from the recipe</div>
+
+Apply the spike-detector recipe to the XOR table. The winning rows
+are $(\texttt{0}, \texttt{1})$ and $(\texttt{1}, \texttt{0})$.
+Read the two spike detectors straight off the dictionary and OR
+them together. You should land on exactly the XOR-from-basics
+circuit you saw on the previous page.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Pick a table, pick a circuit</div>
+
+Pick any one of the sixteen possible two-input tables that you
+have not yet seen named in this chapter. Apply the recipe. Draw
+the resulting circuit on paper, simulate it row by row, and verify
+that each of the four input combinations gives the output you
+intended.
+</div>

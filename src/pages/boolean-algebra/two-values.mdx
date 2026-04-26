@@ -1,0 +1,116 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Two values, two operations
+order: 1
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: A tiny world in which the only numbers are 0 and 1, and addition has one strange row.
+description: Boolean addition and multiplication, the parity reading, and the yes/no reading.
+---
+
+The algebra of this chapter — a tiny arithmetic in which the only
+numbers are $\texttt{0}$ and $\texttt{1}$ — is the work, almost
+single-handedly, of the English schoolmaster *George Boole*. In
+$1847$ he published a slim pamphlet, *The Mathematical Analysis of
+Logic*, with the audacious thesis that the laws of human reasoning
+could be cast as the laws of an algebra. What Boole noticed was
+simple but startling: if one writes $\texttt{1}$ for "true" and
+$\texttt{0}$ for "false," then *and* behaves like multiplication and
+*or* (in its exclusive form) behaves like addition — with the single
+peculiarity that $\texttt{1} + \texttt{1}$, having no logical room
+to be $2$, must collapse back to $\texttt{0}$.
+
+## The two tables
+
+The whole of this chapter takes place inside a tiny world: a world
+that contains only two numbers, $\texttt{0}$ and $\texttt{1}$. We
+define addition and multiplication on this little world and watch
+the algebra spring out of those two definitions. To keep the two
+worlds visually distinct, we write boolean values in a typewriter
+font — $\texttt{0}$ and $\texttt{1}$ — rather than the ordinary $0$
+and $1$.
+
+<div style={{display:'flex', justifyContent:'center', gap:'48px', margin:'24px 0', flexWrap:'wrap'}}>
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr><th style={{padding:'4px 12px'}}>$a$</th><th style={{padding:'4px 12px'}}>$b$</th><th style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$a + b$</th></tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{1}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+</tbody>
+</table>
+
+<table style={{borderCollapse:'collapse'}}>
+<thead>
+<tr><th style={{padding:'4px 12px'}}>$a$</th><th style={{padding:'4px 12px'}}>$b$</th><th style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$a \cdot b$</th></tr>
+</thead>
+<tbody>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px'}}>$\texttt{0}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{0}$</td></tr>
+<tr><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px'}}>$\texttt{1}$</td><td style={{padding:'4px 12px', borderLeft:'1px solid var(--rule)'}}>$\texttt{1}$</td></tr>
+</tbody>
+</table>
+</div>
+
+Three of the four rows in each table look exactly like the answers
+ordinary integer arithmetic would give. The single row that breaks
+ranks is the bottom row of the addition table:
+
+$$
+\texttt{1} + \texttt{1} = \texttt{0},
+$$
+
+not $2$. There is a good reason for this rule.
+
+## A coarse view of ordinary arithmetic
+
+The strange-looking rule $\texttt{1} + \texttt{1} = \texttt{0}$
+becomes natural the moment we read $\texttt{0}$ as "even" and
+$\texttt{1}$ as "odd."
+
+<div style={{textAlign:'center', margin:'12px 0'}}>
+$\texttt{0} = $ even, $\quad \texttt{1} = $ odd.
+</div>
+
+Now look back at the addition table.
+
+- *Even plus even is even*: $\texttt{0} + \texttt{0} = \texttt{0}$.
+- *Even plus odd is odd*: $\texttt{0} + \texttt{1} = \texttt{1} + \texttt{0} = \texttt{1}$.
+- *Odd plus odd is even*: $\texttt{1} + \texttt{1} = \texttt{0}$.
+
+The boolean addition table is just the parity arithmetic of ordinary
+integers — it records what happens to the even-or-odd-ness of a
+sum, and forgets every other detail.
+
+The same coarse reading works for multiplication: even times
+anything is even ($\texttt{0} \cdot a = \texttt{0}$), and odd times
+odd is odd ($\texttt{1} \cdot \texttt{1} = \texttt{1}$).
+
+So boolean arithmetic is not a foreign new system. It is the
+familiar arithmetic of integers, viewed at a deliberately coarsened
+resolution: every number is reported only by its even/odd label,
+and everything else is thrown away.
+
+## A second reading: yes and no
+
+The same two values, $\texttt{0}$ and $\texttt{1}$, will play
+another role in this chapter. We will use $\texttt{1}$ to mean
+"yes / true" and $\texttt{0}$ to mean "no / false," so we can talk
+about logical conditions in the same algebra.
+
+If this second reading gives you a moment's pause, you are paying
+attention. Under the parity reading, the equation
+$\texttt{1} + \texttt{1} = \texttt{0}$ translates to *odd plus odd
+is even*, a familiar fact. Under the yes/no reading, the very same
+equation translates to *yes plus yes is no*, which does not seem
+to mean anything at all.
+
+Nothing has gone wrong. This is precisely the freedom that
+abstraction buys us. Boolean arithmetic is a skeleton: the
+"odd / even" reading is one coat we can put on it, the "yes / no"
+reading is another. Meaning is attached for our convenience, and
+peeled off again the moment it stops helping.

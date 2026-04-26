@@ -1,0 +1,265 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Hilbert's grand hotel
+order: 4
+chapter: infinity
+chapterTitle: Infinity
+blurb: A hotel with infinitely many rooms, all full — and the manager who can always find space for one more.
+description: Hilbert's hotel illustrates how countably infinite sets can be re-shifted to make room for more.
+---
+
+This idea of countability is famously illustrated by **Hilbert's
+Hotel**. It's a hotel with an infinite number of rooms, numbered
+$1, 2, 3, \ldots$. On a particular night, the hotel is completely
+full — every room has a guest.
+
+- *A new guest arrives.* The manager isn't worried. He asks every
+  guest in room $n$ to please move to room $n + 1$. Room $1$ is
+  now free for the new arrival. Everyone still has a room.
+
+- *An infinite bus arrives.* A bus with a countably infinite
+  number of new passengers arrives. Now what? The manager has a
+  clever solution. He asks every guest in room $n$ to move to
+  room $2n$. This clears out all the odd-numbered rooms
+  ($1, 3, 5, \ldots$). He then places the passenger from seat $k$
+  on the bus into room $2k - 1$. Again, everyone is accommodated.
+
+- *Infinitely many infinite buses arrive.* This is the ultimate
+  challenge. We have buses $B_1, B_2, B_3, \ldots$, each with
+  passengers $P_1, P_2, P_3, \ldots$. To assign a room to passenger
+  $P_j$ from bus $B_i$, we need to find a unique room number for
+  the pair $(i, j)$. But we just solved this with our second frog
+  puzzle! We can use the diagonal enumeration of
+  $\mathbb{N} \times \mathbb{N}$ to create a single list of all
+  passengers from all buses and assign them rooms $1, 2, 3, \ldots$
+  in that order.
+
+The lesson of Hilbert's Hotel is that if a set is countably
+infinite, it can always be "shifted around" to make room for
+another countably infinite set.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — A fleet of infinite-decker buses</div>
+
+Welcome to the Grand Hilbert Hotel, with rooms numbered
+$1, 2, 3, \ldots$. On this fateful evening, the hotel is
+completely full. Then an entire fleet of buses appears, also
+numbered $1, 2, 3, \ldots$. These are no ordinary buses. Each one
+is an "Infinite Decker Hilbert Bus." Bus $i$ has decks numbered
+$1, 2, 3, \ldots$, and on each deck of each bus there are seats
+numbered $1, 2, 3, \ldots$. To the manager's horror, every single
+seat, on every single deck, on every single bus, is occupied by a
+new patron.
+
+Can the brilliant night manager devise a plan to move the existing
+guests and accommodate every single new patron from this infinite
+fleet of infinite buses? If so, explain the manager's
+re-assignment plan.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — An infinite collection of natural numbers</div>
+
+Let $S$ be an infinite collection of natural numbers. Show that
+$S$ is listable, that is, $S$ is countably infinite.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — Infinite subsets of a listable set</div>
+
+Let $L$ be a listable (countably infinite) collection of objects.
+Let $S$ be formed by selecting some objects from $L$. If $S$ is
+infinite, show that $S$ is also listable.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — A union of listable sets</div>
+
+Let $F_1, F_2, F_3, \ldots$ be an infinite sequence of listable
+sets. Let $F$ be formed by collecting all those elements which
+occur in at least one of the $F_i$'s. Show that $F$ is also
+listable. Deduce that if each $F_i$ were finite, then also $F$
+would be listable.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 5 — All finite reading lists</div>
+
+We will see in the next page that we cannot write down all
+possible reading lists in a book with infinitely many pages
+labelled $1, 2, 3, \ldots$. However, this exercise asks you to
+show that a humbler goal can be achieved. Let $\mathcal{F}$ be the
+collection of all *finite* reading lists. Show that we can write
+each element of $\mathcal{F}$ on some page of the book.
+
+*Hint.* Let $\mathcal{F}_n$ be the set of all the reading lists
+which feature exactly $n$ pages. Show that $\mathcal{F}_n$ is
+listable.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 6 — Familiar sets are listable</div>
+
+Show that:
+
+**(a)** the set of natural numbers is listable;
+
+**(b)** the set of prime numbers is listable;
+
+**(c)** the set of integers is listable;
+
+**(d)** the set of all the perfect squares is listable.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 7 — Pairs and triples</div>
+
+Show that:
+
+**(a)** the set of all pairs of natural numbers is listable;
+
+**(b)** the set of all triples of natural numbers is listable;
+
+**(c)** the set of all pairs of integers is listable;
+
+**(d)** the set of all triples of integers is listable.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 8 — Listability under various conditions</div>
+
+Show that:
+
+**(a)** every infinite set of natural numbers is listable;
+
+**(b)** every infinite set of integers is listable;
+
+**(c)** every infinite subset of a listable set is listable.
+</div>

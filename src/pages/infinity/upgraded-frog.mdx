@@ -1,0 +1,309 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The frog gets an upgrade
+order: 3
+chapter: infinity
+chapterTitle: Infinity
+blurb: Now the frog picks a starting offset and a jump size. Two infinities, one list — Cantor's dovetail.
+description: The two-dimensional frog puzzle, dovetailing along diagonals, and an explicit enumeration of pairs of natural numbers.
+---
+
+## Upgraded frog
+
+Let us raise the stakes. The frog is now more sophisticated: at the
+buzzer it secretly picks *two* natural numbers, a starting offset
+$d$ and a jump size $k$. At time $t$ its position is
+
+$$
+d + tk.
+$$
+
+As before, the shooter with a water gun wants to guarantee a
+splash, and the entire plan must be written down before the frog
+makes its choice. The question becomes: *can the shooter devise a
+single plan that guarantees a hit, no matter which pair $(d, k)$
+the frog chooses?*
+
+## Taming the two-dimensional infinity
+
+The set of choices available to the frog is now the set of all
+pairs of natural numbers, which we denote by $\mathbb{N} \times \mathbb{N}$.
+For example, if the frog picks $(d, k) = (5, 2)$, it traces out the
+pads $7, 9, 11, 13, \ldots$ at times $t = 1, 2, 3, \ldots$.
+
+At first sight we seem to have made the problem infinitely harder.
+Instead of a single infinite set of choices, the frog now has an
+infinite family of infinite choices. Can the pairs of natural
+numbers even be arranged into a single list?
+
+Remarkably, they can. The set $\mathbb{N} \times \mathbb{N}$ is
+also listable. The trick is not to march straight across or
+straight down — either sweep would leave entire rows or columns
+untouched forever — but to sweep along the *diagonals*, where each
+diagonal contains only finitely many pairs and is therefore
+exhausted in finitely many steps before we move on to the next.
+This method is often called **dovetailing**, and it is due to
+Cantor.
+
+<div style={{display:'flex', justifyContent:'center', margin:'24px 0'}}>
+<svg viewBox="0 0 360 320" style={{width:'100%', maxWidth:360, height:'auto', background:'var(--surface)', border:'1px solid var(--rule)', borderRadius:6}}>
+  {/* arrows along the dovetail path */}
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--gate-wire-on)" />
+    </marker>
+  </defs>
+  {/* dotted ellipses for continuation */}
+  <text x="320" y="60"  fill="var(--muted)" fontSize="14">…</text>
+  <text x="320" y="120" fill="var(--muted)" fontSize="14">…</text>
+  <text x="320" y="180" fill="var(--muted)" fontSize="14">…</text>
+  <text x="320" y="240" fill="var(--muted)" fontSize="14">…</text>
+  <text x="60"  y="300" fill="var(--muted)" fontSize="14">⋮</text>
+  <text x="120" y="300" fill="var(--muted)" fontSize="14">⋮</text>
+  <text x="180" y="300" fill="var(--muted)" fontSize="14">⋮</text>
+  <text x="240" y="300" fill="var(--muted)" fontSize="14">⋮</text>
+  {/* path arrows: (1,1)->(2,1)->(1,2)->(3,1)->(2,2)->(1,3)->(4,1)->(3,2)->(2,3)->(1,4)->(5,1) */}
+  {[
+    [60,240, 120,240], [120,240, 60,180],
+    [60,180, 180,240], [180,240, 120,180], [120,180, 60,120],
+    [60,120, 240,240], [240,240, 180,180], [180,180, 120,120], [120,120, 60,60],
+    [60,60, 300,240],
+  ].map(([x1,y1,x2,y2], i) => (
+    <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--gate-wire-on)" strokeWidth="1.6" markerEnd="url(#arr)" />
+  ))}
+  {/* numbered pair-circles, with d (column) and k (row) */}
+  {[
+    {x:60,y:240,n:1, lab:"(1,1)"},
+    {x:120,y:240,n:2, lab:"(2,1)"},
+    {x:60,y:180,n:3, lab:"(1,2)"},
+    {x:180,y:240,n:4, lab:"(3,1)"},
+    {x:120,y:180,n:5, lab:"(2,2)"},
+    {x:60,y:120,n:6, lab:"(1,3)"},
+    {x:240,y:240,n:7, lab:"(4,1)"},
+    {x:180,y:180,n:8, lab:"(3,2)"},
+    {x:120,y:120,n:9, lab:"(2,3)"},
+    {x:60,y:60,n:10, lab:"(1,4)"},
+    {x:300,y:240,n:11, lab:"(5,1)"},
+  ].map((c) => (
+    <g key={c.n}>
+      <circle cx={c.x} cy={c.y} r="13" fill="var(--accent)" stroke="var(--gate-ink)" strokeWidth="1" />
+      <text x={c.x} y={c.y + 4} fontSize="11" fontFamily="ui-monospace, monospace" fill="white" textAnchor="middle" fontWeight="700">{c.n}</text>
+      <text x={c.x} y={c.y + 28} fontSize="9" fontFamily="ui-monospace, monospace" fill="var(--muted)" textAnchor="middle">{c.lab}</text>
+    </g>
+  ))}
+  {/* unreached grey pairs at corners */}
+  {[
+    {x:240,y:180}, {x:300,y:180},
+    {x:180,y:120}, {x:240,y:120}, {x:300,y:120},
+    {x:120,y:60}, {x:180,y:60}, {x:240,y:60}, {x:300,y:60},
+  ].map((c, i) => (
+    <text key={`g-${i}`} x={c.x} y={c.y + 4} fill="var(--muted)" fontSize="11" textAnchor="middle" fontFamily="ui-monospace, monospace">·</text>
+  ))}
+</svg>
+</div>
+
+<div style={{textAlign:'center', color:'var(--muted)', fontSize:12, marginTop:-8, marginBottom:24}}>
+The diagonal enumeration of $\mathbb{N} \times \mathbb{N}$. Position
+$n$ in the list is shown inside each circle; the underlying pair
+$(d, k)$ sits below.
+</div>
+
+The resulting list begins
+
+$$
+(1,1), \quad (2,1), \quad (1,2), \quad (3,1), \quad (2,2), \quad (1,3), \quad \ldots,
+$$
+
+and every pair $(d, k)$ eventually appears somewhere in it. Let us
+write $(d_n, k_n)$ for the $n$-th pair in the list.
+
+The shooter's strategy now writes itself. At time $n$, target the
+frog corresponding to the $n$-th pair in the list:
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+at time $n$, shoot at pad $d_n + n k_n$.
+</div>
+
+Suppose the frog chose the pair $(d, k)$. This pair sits somewhere
+in our list — say at position $m$, so $(d, k) = (d_m, k_m)$.
+
+- *shooter's action at time $m$*: shoots at pad $d_m + m k_m$;
+- *frog's position at time $m$*: pad $d + m k = d_m + m k_m$.
+
+Another direct hit.
+
+The victory rests entirely on the fact that *every* pair of natural
+numbers could be lined up in a single list. This hints at a deep
+fact: the "amount" of infinity in $\mathbb{N} \times \mathbb{N}$ is
+no greater than the "amount" of infinity in $\mathbb{N}$. Both sets
+are countably infinite.
+
+## The explicit strategy
+
+The diagonal enumeration above can be written down as an explicit
+formula. To do so, we first identify which diagonal the $n$-th
+pair $(d_n, k_n)$ lives on. In our listing, the pairs with
+$d + k = s$ form the $s$-th diagonal, and this diagonal contains
+$s - 1$ pairs. The diagonals strictly before the $s$-th one
+therefore account for a total of
+
+$$
+1 + 2 + \cdots + (s - 2) = \frac{(s - 2)(s - 1)}{2}
+$$
+
+pairs. Solving for the smallest $s$ whose cumulative count reaches
+$n$ gives the diagonal index
+
+$$
+s_n = \left\lfloor \frac{\sqrt{8n - 7} + 3}{2} \right\rfloor.
+$$
+
+Once $s_n$ is known, the position of $n$ within its diagonal pins
+down the two coordinates:
+
+$$
+d_n = \frac{s_n(s_n - 1)}{2} - n + 1,
+\qquad
+k_n = n - \frac{(s_n - 2)(s_n - 1)}{2}.
+$$
+
+Our strategy is therefore to shoot, at time $n$, the pad
+
+$$
+f(n) = d_n + n\, k_n
+= \left(\frac{s_n(s_n - 1)}{2} - n + 1\right) + n\!\left(n - \frac{(s_n - 2)(s_n - 1)}{2}\right).
+$$
+
+Running the correspondence in the other direction, the pair $(d, k)$
+appears at position
+
+$$
+g(d, k) = \frac{(d + k - 2)(d + k - 1)}{2} + k
+$$
+
+in the list, so the frog $(d, k)$ gets soaked the moment the clock
+hits $t = g(d, k)$.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — Hopper on a two-way pond</div>
+
+Picture an infinite, icy-cold pond. Stretching out in both
+directions are lilypads, conveniently numbered by all the
+integers:
+
+$$
+\ldots, -3, -2, -1, 0, 1, 2, 3, \ldots
+$$
+
+A mischievous frog, code-named *Hopper*, sits on pad $0$. At time
+$0$, a buzzer sounds, and Hopper secretly chooses two **integers**
+$d$ and $k$ (an integer can be positive, negative, or $0$). His
+position at any future time $t$ is $d + tk$. Note that he could be
+jumping forwards (if $k > 0$), backwards (if $k < 0$), or sitting
+on pad $d$ (if $k = 0$).
+
+The shooter must write down the entire plan in advance — a list of
+shots of the form (pad number, time). Can the shooter devise one
+single, universal plan that guarantees Hopper gets wet, no matter
+what secret integers $d$ and $k$ Hopper chooses?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Two splashes for Leapy</div>
+
+A different frog, *Leapy*, is on a *semi*-infinite pond. The pads
+are $0, 1, 2, 3, \ldots$ in one direction. Leapy starts at pad
+$0$ and secretly chooses two natural numbers $d$ and $k$. His
+position at time $t$ is $d + tk$.
+
+The shooter's challenge is the same — one pre-determined plan of
+(pad, time) shots — except: a single splash just annoys Leapy. To
+win, the shooter must hit him at *least two different times*.
+
+Can the shooter devise one single, universal plan that guarantees
+Leapy gets soaked twice, regardless of which natural numbers $d$
+and $k$ he chooses?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — Fool me twice, shame on… frog?</div>
+
+A frog named *Ribbit* sits on the centre of a 2-dimensional grid
+of lilypads, indexed by two integers, currently at pad $(0, 0)$.
+At time $0$ a buzzer sounds, and Ribbit secretly chooses two
+**integers** $a$ and $b$. His position at time $t$ is $(at, bt^2)$
+for $t = 1, 2, 3, \ldots$.
+
+For example, if Ribbit chose $a = 2$ and $b = 3$:
+
+- at time $1$ he is at $(2, 3)$;
+- at time $2$ he is at $(4, 12)$;
+- at time $3$ he is at $(6, 27)$;
+- $\vdots$
+
+The shooter must write down a single pre-determined shooting plan:
+at time $t$, shoot at some pad address (a function of $t$). The
+shooter wants to guarantee *two* splashes on Ribbit.
+
+Can the shooter devise one universal plan that guarantees Ribbit
+gets soaked twice, regardless of which integers $a$ and $b$ he
+chooses? If yes, describe the plan and show it succeeds. If no,
+prove that this cannot be done.
+</div>

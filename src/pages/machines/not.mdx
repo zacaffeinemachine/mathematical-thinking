@@ -1,0 +1,61 @@
+---
+layout: ../../layouts/Chapter.astro
+title: NOT — flipping a machine
+order: 3
+chapter: machines
+chapterTitle: Machines
+blurb: Same wires, opposite verdict. The simplest way to combine machines is to invert one.
+description: How to build a machine that accepts exactly the strings another machine rejects — by flipping the accepting set.
+---
+import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
+import { divisibleBy3Ones, notDivisibleBy3Ones } from "../../components/games/fsm/machines.ts";
+
+Suppose you have a machine *M* that accepts every string with some
+property *P*. You want a machine that accepts every string *without*
+that property — every string *M* rejects.
+
+The trick is almost embarrassing. Take *M*, change nothing about
+the wiring, and **swap which states are accepting.** Every double
+circle becomes a single circle; every single circle becomes a
+double circle.
+
+Below, on the left, is the machine that accepts when the count of
+`1`s is divisible by 3. On the right is the very same wiring with
+the accepting set flipped — it accepts when the count is *not*
+divisible by 3. Type the same input into both and watch the
+verdicts disagree.
+
+<div style={{display:'flex', flexWrap:'wrap', gap:24, justifyContent:'center', marginTop:16}}>
+  <div style={{flex:'0 1 360px', minWidth:300}}>
+    <div style={{fontSize:13, color:'var(--muted)', textAlign:'center', marginBottom:6}}>
+      M : count of <code>1</code>s divisible by 3
+    </div>
+    <FSMRunner
+      client:visible
+      machine={divisibleBy3Ones}
+      defaultInput="111"
+      examples={["", "1", "11", "111", "1010", "111111"]}
+      width={340}
+    />
+  </div>
+  <div style={{flex:'0 1 360px', minWidth:300}}>
+    <div style={{fontSize:13, color:'var(--muted)', textAlign:'center', marginBottom:6}}>
+      M<sup>c</sup> : count of <code>1</code>s <em>not</em> divisible by 3
+    </div>
+    <FSMRunner
+      client:visible
+      machine={notDivisibleBy3Ones}
+      defaultInput="111"
+      examples={["", "1", "11", "111", "1010", "111111"]}
+      width={340}
+    />
+  </div>
+</div>
+
+Notice that the two machines are *literally* the same drawing, save
+for which circles are double-bordered. They will always disagree on
+every input, because between them they cover every possible final
+state.
+
+This costs no new wiring and no new states. You get **NOT** for
+free, on any machine you have already built.

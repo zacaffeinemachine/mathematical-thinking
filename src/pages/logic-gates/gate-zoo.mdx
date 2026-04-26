@@ -1,0 +1,222 @@
+---
+layout: ../../layouts/Chapter.astro
+title: A vocabulary for little boxes
+order: 1
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: Four gates, four shapes, four tiny truth tables. Click a knob and watch the wires light up.
+description: An interactive tour of NOT, AND, OR, and XOR — the smallest alphabet of logic gates.
+---
+import CircuitDiagram from "../../components/games/circuits/CircuitDiagram.tsx";
+import {
+  notGate,
+  andGate,
+  orGate,
+  xorGate,
+  alwaysZero,
+  orChain3,
+} from "../../components/games/circuits/circuits.ts";
+
+A computer is a great wall of little boxes. Each box has some wires
+going in on the left and one wire coming out on the right. Each
+wire is in one of two states — *carrying current* (we'll call it
+$\texttt{1}$) or *not carrying current* ($\texttt{0}$) — and the
+rule connecting the inputs to the output is fixed in advance and
+listens only to the *current* values on the wires. The boxes are
+called **logic gates**, and a wiring of them together is called a
+**circuit**.
+
+Every diagram on this page is live. Click an input knob to flip it
+between $\texttt{0}$ and $\texttt{1}$, and watch the output respond.
+The truth table beside each circuit highlights the row matching the
+current inputs.
+
+## NOT — the flipper
+
+The simplest gate has one input and one output, and its job is to
+flip whatever comes in. Its shape — a triangle pointing right with
+a tiny circle stuck to its tip — will be a standing companion. The
+circle is the universal "and then flip" mark.
+
+<CircuitDiagram client:visible circuit={notGate} showTruthTable />
+
+We write the output of NOT on input $a$ as $\mathord{\texttt{!}}a$.
+On the algebraic side it is the simplest possible expression:
+
+$$
+\mathord{\texttt{!}}a = a + \texttt{1}.
+$$
+
+(Check: $\texttt{0} + \texttt{1} = \texttt{1}$ and
+$\texttt{1} + \texttt{1} = \texttt{0}$.) From now on, whenever a
+circuit feeds a wire $a$ through a NOT gate, we may equally well
+write the output as $a + \texttt{1}$ in our algebra and forget that
+there ever was a gate.
+
+## AND — both must say yes
+
+The AND gate has two inputs. It outputs $\texttt{1}$ exactly when
+*both* inputs are $\texttt{1}$. A useful mental picture: AND is a
+strict committee of two. Its shape is a flat-backed "D" — a plain
+back with a rounded nose.
+
+<CircuitDiagram client:visible circuit={andGate} showTruthTable />
+
+We write the output as $a \mathbin{\texttt{\&}} b$. Lined up against
+boolean multiplication, the columns agree row for row, so
+
+$$
+a \mathbin{\texttt{\&}} b = ab.
+$$
+
+The strict committee *is* boolean multiplication.
+
+## OR — at least one
+
+The OR gate outputs $\texttt{1}$ whenever *at least one* of its
+inputs is $\texttt{1}$. It outputs $\texttt{0}$ only when both are
+$\texttt{0}$. OR is a generous committee: it cheers if anyone
+cheers. Its shape is a shield with a curved, swept-back back.
+
+<CircuitDiagram client:visible circuit={orGate} showTruthTable />
+
+We write the output as $a \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} b$.
+Lined up against $a + b + ab$:
+
+$$
+a \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} b = a + b + ab.
+$$
+
+A reading note. The bottom row evaluates to
+$\texttt{1} + \texttt{1} + \texttt{1}\cdot\texttt{1} = \texttt{0} + \texttt{1} = \texttt{1}$,
+which is what we want. The surprise that boolean
+$\texttt{1} + \texttt{1} = \texttt{0}$ would otherwise produce on its
+own is repaired by the extra $ab$ term.
+
+A small trap worth naming: the everyday English word "or" is often
+used to mean *one or the other, but not both* ("would you like tea
+or coffee?"). The OR gate is **not** that gate. OR is happy with
+both. The picky one is below.
+
+## XOR — the disagreement detector
+
+XOR (pronounced "ex-or," short for *exclusive or*) outputs
+$\texttt{1}$ exactly when its two inputs *disagree*. We write the
+output as $a \oplus b$.
+
+<CircuitDiagram client:visible circuit={xorGate} showTruthTable />
+
+Side by side with the boolean sum $a + b$, the columns agree, so
+
+$$
+a \oplus b = a + b.
+$$
+
+The disagreement detector is, on the algebraic side, nothing but
+boolean addition. Its shape is the OR shape with a second curve
+peeled back behind it — as if announcing "I am OR, but pickier."
+
+## A gate that always says no
+
+A small curiosity that uses no new vocabulary. Can we build a
+one-input gadget whose output is $\texttt{0}$ *no matter* what the
+input is? At first this sounds either silly or impossible — AND, OR,
+and NOT all *listen* to their inputs. The trick is to make two
+listening parts *contradict* each other. Take $a$, feed one copy
+straight in, and feed another copy through a NOT first:
+
+<CircuitDiagram client:visible circuit={alwaysZero} steppable showTruthTable />
+
+Press **Step ▸** to walk through the gates one at a time. Whatever
+you set $a$ to, the two inputs of the AND can never agree on the
+value $\texttt{1}$, so the AND's strict-committee rule is never
+satisfied. The output is $\texttt{0}$ on every input. We have built
+a deaf "always-no" gadget out of two listening parts.
+
+The algebra says the same thing in one line:
+
+$$
+a \cdot (a + \texttt{1}) = a^2 + a = a + a = \texttt{0},
+$$
+
+using $a^2 = a$ and $a + a = \texttt{0}$.
+
+## Three inputs, no new gate
+
+The fire-alarm wish — a box that lights up the moment *any one* of
+several detectors sees smoke — has three or more inputs. A natural
+worry: do we need a brand-new "three-input OR" gate? No. The
+two-input OR we already have is enough. Use it twice:
+
+<CircuitDiagram client:visible circuit={orChain3} steppable showTruthTable />
+
+Read along the wires. The first OR reports $\texttt{1}$ exactly
+when at least one of $a$ or $b$ is $\texttt{1}$. The second OR
+takes that report and $c$. Putting them together: the final wire
+carries $\texttt{1}$ exactly when at least one of $a, b, c$ is
+$\texttt{1}$. The same idea keeps working past three: $n$ inputs
+can be ORed together using $n - 1$ ordinary two-input ORs.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — A deaf "always-yes"</div>
+
+Build a one-input gadget whose output is $\texttt{1}$ no matter
+what the input is. (Hint: what is the mirror image, with OR and
+NOT, of the always-zero construction above? Check on the algebraic
+side that $a + (a + \texttt{1}) + a(a + \texttt{1}) = \texttt{1}$.)
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — A three-input XOR</div>
+
+The previous section showed that three inputs can be ORed together
+with two two-input ORs. Do the same for XOR: build a circuit with
+three input wires $a, b, c$ and one output wire that carries
+$(a \oplus b) \oplus c$, using only two ordinary two-input XOR
+gates. Check on the algebraic side — using $a \oplus b = a + b$ and
+the boolean rule $x + x = \texttt{0}$ — that the output simplifies
+to $a + b + c$.
+</div>

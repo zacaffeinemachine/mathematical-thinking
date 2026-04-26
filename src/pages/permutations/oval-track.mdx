@@ -1,0 +1,282 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The oval track puzzle
+order: 8
+chapter: permutations
+chapterTitle: Permutations
+blurb: Seven tokens, a rotate, and a flip — both even, so half of all arrangements stay forever out of reach.
+description: TopSpin and the parity argument that rules out half of the configurations of an oval-track puzzle.
+---
+
+The 15 puzzle was not the only mass-market toy whose secret turned
+out to be the sign of a permutation. Another classic, sold under
+the name *TopSpin* and many imitators, lives on an oval track
+instead of a square grid. Its rules are different from the 15
+puzzle, but the question one ends up asking is the same: out of
+the enormous number of arrangements the tokens *look* as if they
+could reach, exactly which ones can they actually reach? And once
+again the answer is decided, before any case analysis, by parity.
+
+## The puzzle
+
+Imagine an oval track with seven slots evenly spaced around it,
+and seven numbered tokens, labelled $1$ through $7$, sitting one
+in each slot. The four slots at the top of the oval are special:
+they sit inside a small movable cradle that can be lifted, turned
+over, and dropped back in. We shall call this cradle the **flip
+window**.
+
+The puzzle allows exactly two kinds of move:
+
+- **Rotate.** Push every token one slot clockwise around the
+  oval. The token formerly at slot $7$ comes around to slot $1$,
+  and every other token shifts one place along.
+- **Flip.** Reverse the order of the four tokens currently inside
+  the flip window. The token at the leftmost window slot trades
+  places with the one at the rightmost, and the two middle tokens
+  trade places with each other.
+
+The tokens come scrambled out of the box, and the goal is to
+bring them back to the sorted order $1, 2, 3, 4, 5, 6, 7$ around
+the track using only these two moves.
+
+## The two moves as permutations
+
+The slots are fixed in space; only the tokens move. So each move
+is a permutation of the seven tokens, and we can write down the
+permutations explicitly.
+
+*The rotate.* Every token moves one step clockwise. In cycle
+notation, this is the single seven-cycle
+
+$$
+R = (1, 2, 3, 4, 5, 6, 7).
+$$
+
+*The flip.* The flip leaves slots $5, 6, 7$ alone and reverses
+the contents of slots $1, 2, 3, 4$. Slot $1$ trades with slot $4$,
+slot $2$ trades with slot $3$. As a product of swaps,
+
+$$
+F = (1,\ 4)(2,\ 3).
+$$
+
+## Both moves are even
+
+With $R$ and $F$ in hand, we read off their signs.
+
+*Sign of $R$.* $R$ is a single seven-cycle, so its cycle
+decomposition has one cycle. With $n = 7$ slots and $\ell = 1$
+cycle,
+
+$$
+\mathrm{st}(R) = n - \ell = 7 - 1 = 6,
+$$
+
+which is even. Therefore $\mathrm{sgn}(R) = \mathsf{even}$.
+
+*Sign of $F$.* $F$ is the product of two disjoint two-cycles
+together with three fixed points (slots $5, 6, 7$), for a total
+of $\ell = 5$ cycles. So
+
+$$
+\mathrm{st}(F) = 7 - 5 = 2,
+$$
+
+which is also even. Therefore $\mathrm{sgn}(F) = \mathsf{even}$.
+
+*Both* of the puzzle's moves are even permutations. This is the
+only fact about the moves we shall need.
+
+## An unreachable target
+
+Out of the box, suppose the tokens come within one whisker of
+being sorted: $1$ and $2$ are in each other's slots, but
+everything else is already correct. The starting configuration is
+obtained from the solved one by the single swap
+
+$$
+\tau = (1,\ 2),
+$$
+
+which has $\mathrm{st}(\tau) = 1$ and hence
+$\mathrm{sgn}(\tau) = \mathsf{odd}$.
+
+Now suppose, for contradiction, that some sequence of $k$ moves
+brings the swapped board back to the sorted one. Each move is
+either an $R$ or an $F$, so the overall effect is a composition
+of $k$ permutations, each of which is even.
+
+By the sign-of-a-composition rule, the sign of a composition is
+the Boolean sum of the signs of its pieces. Each piece contributes
+$\mathsf{even}$, and adding $\mathsf{even}$ to itself any number
+of times in Boolean addition gives $\mathsf{even}$:
+
+$$
+\mathrm{sgn}(\text{$k$ moves}) = \underbrace{\mathsf{even} + \mathsf{even} + \cdots + \mathsf{even}}_{k \text{ times}} = \mathsf{even}.
+$$
+
+But the overall effect of the moves is supposed to equal $\tau$
+(or its inverse, which has the same sign), so
+$\mathrm{sgn}(\tau) = \mathsf{even}$. This contradicts
+$\mathrm{sgn}(\tau) = \mathsf{odd}$. The assumed sequence of moves
+cannot exist.
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+The configuration with tokens $1$ and $2$ swapped (and every other
+token in its solved slot) cannot be reached from the solved
+configuration by any sequence of rotates and flips.
+
+</div>
+
+## Half of all arrangements are out of reach
+
+The argument we just made did not really lean on the particular
+pair $1, 2$; it used only that a single swap is odd. The same
+argument therefore rules out *every* odd target:
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Starting from the solved configuration, no odd permutation of the
+seven tokens is reachable.
+
+</div>
+
+The seven tokens admit $7! = 5040$ arrangements in total, and
+exactly half of them — namely the $2520$ even ones — survive the
+parity test. The other half are unreachable, no matter how
+cleverly one combines rotates and flips.
+
+One could go further and ask whether every *even* permutation is
+reachable. The answer turns out to be yes, but the proof requires
+more than parity: it needs an honest construction that, given any
+even target, exhibits a sequence of moves that achieves it.
+Parity alone settles only the negative half of the question —
+which arrangements are forbidden — and that is already a striking
+amount to learn from a single Boolean addition.
+
+## A note on the commercial puzzle
+
+The toy sold as TopSpin uses twenty tokens around the oval, with
+the same flip window of size four. The flip is still a product of
+two disjoint swaps — an even permutation — but the rotate is now
+a single twenty-cycle, with
+
+$$
+\mathrm{st}(R) = 20 - 1 = 19,
+$$
+
+an *odd* number. So in the commercial version one move is even
+and the other is odd, which means the parity test rules nothing
+out: every permutation of the twenty tokens has at least the
+right parity to be reachable. (And indeed, with twenty tokens,
+every permutation *is* reachable.)
+
+The contrast is instructive. Changing only the number of slots
+around the track turns a puzzle whose configuration space is cut
+in half by parity into one where parity is silent. The same
+simple Boolean addition decides the matter in both cases; it just
+happens to give different verdicts.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — A four-cycle of odd indices</div>
+
+On the seven-token oval track, suppose the starting configuration
+is the cycle
+
+$$
+1 \to 3,\quad 3 \to 5,\quad 5 \to 7,\quad 7 \to 1,
+$$
+
+with tokens $2, 4, 6$ all in their solved slots. Is this
+configuration reachable from the solved one by a sequence of
+rotates and flips? Justify your answer.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — Six tokens, flip window of four</div>
+
+Repeat the parity analysis for an oval track with *six* tokens
+and a flip window of size four. Which permutations does the
+parity test rule out?
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 3 — Seven tokens, flip window of three</div>
+
+Repeat the parity analysis for an oval track with seven tokens,
+but now suppose the flip window has size *three* instead of four
+— so a flip reverses three consecutive tokens. Does the parity
+test still rule out half of all arrangements? Justify your
+answer.
+</div>

@@ -1,0 +1,174 @@
+---
+layout: ../../layouts/Chapter.astro
+title: One gate to rule them all
+order: 5
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: A single two-input gate from which AND, OR, and NOT can all be rebuilt — and therefore every circuit.
+description: NAND universality — building NOT, AND, and OR from NAND alone.
+---
+import CircuitDiagram from "../../components/games/circuits/CircuitDiagram.tsx";
+import {
+  nandGate,
+  nandNot,
+  nandAnd,
+  nandOr,
+} from "../../components/games/circuits/circuits.ts";
+
+So far we have allowed three kinds of gates: AND, OR, and NOT. The
+recipe of the previous page shows that this toolkit is *enough* —
+enough to realize any table whatsoever. A natural next question:
+is it *minimum*? Can we do it with fewer kinds of gates?
+
+Remarkably, the answer is yes, and in a surprisingly extreme way.
+There is a *single* two-input gate from which all of AND, OR, and
+NOT can be rebuilt. Once you have that one gate on your shelf, you
+never need to buy any of the other three again.
+
+## Meet NAND
+
+The gate is called **NAND**, and it is simply AND followed by NOT.
+NAND outputs $\texttt{1}$ unless *both* of its inputs are
+$\texttt{1}$, in which case it outputs $\texttt{0}$. Its shape is
+the familiar AND "D" with a little circle pinned to the nose — the
+same "and then flip" circle you saw on NOT.
+
+<CircuitDiagram client:visible circuit={nandGate} showTruthTable />
+
+Its table is the AND table with the output column flipped.
+
+## NAND builds NOT
+
+To build a NOT from a NAND, feed the same wire $a$ into *both* of
+NAND's inputs.
+
+<CircuitDiagram client:visible circuit={nandNot} steppable showTruthTable />
+
+Check the table: if $a = \texttt{0}$, the inputs are
+$(\texttt{0}, \texttt{0})$ and NAND outputs $\texttt{1}$; if
+$a = \texttt{1}$, the inputs are $(\texttt{1}, \texttt{1})$ and
+NAND outputs $\texttt{0}$. Input $a$, output the flip of $a$. That
+is a NOT.
+
+## NAND builds AND
+
+NAND is AND followed by NOT. So to recover AND, we just have to
+undo the NOT — that is, chain another NOT on top of NAND. But we
+just showed how to build a NOT out of NANDs by feeding the same
+wire into both inputs:
+
+<CircuitDiagram client:visible circuit={nandAnd} steppable showTruthTable />
+
+Two NANDs, a little tangle of wires, and you have recovered AND.
+
+## NAND builds OR
+
+This one takes a moment of thought. Recall that
+$a \mathbin{\texttt{|}\hspace{-0.1em}\texttt{|}} b$ is $\texttt{1}$
+unless both $a$ and $b$ are $\texttt{0}$, and notice that the
+second half of that sentence is exactly *not (both $a$ and $b$ are
+$\texttt{0}$)*. If we first flip $a$ and $b$ individually, and
+*then* feed those into a NAND, we get this:
+
+<CircuitDiagram client:visible circuit={nandOr} steppable showTruthTable />
+
+The only way for the two inputs of the final NAND to both be
+$\texttt{1}$ is for $a$ and $b$ both to be $\texttt{0}$; in that
+case the NAND outputs $\texttt{0}$. In every other case at least
+one of the flipped inputs is $\texttt{0}$, the NAND sees a
+$\texttt{0}$ and outputs $\texttt{1}$. That is the OR table. And
+since each flipping NOT is itself a NAND with its inputs tied
+together, the whole circuit is made entirely out of NANDs.
+
+## NAND is enough on its own
+
+Putting the last three constructions together:
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px',
+  borderLeft:'4px solid var(--accent)',
+  background:'var(--surface)',
+  borderRadius:4,
+}}>
+
+Every circuit that can be built out of AND, OR, and NOT gates can
+also be built using only NAND gates.
+
+</div>
+
+And we already know, from the previous page, that AND, OR, and
+NOT are enough to realize every possible table. Combining the two
+statements: NAND, on its own, is enough to realize every possible
+table. **A single kind of gate, replicated and wired up in enough
+copies, can compute anything a circuit can compute.**
+
+This is not a party trick. Real digital chips are designed around
+exactly this principle: manufacture one kind of gate very, very
+well, and then build the entire machine out of billions of copies
+of it.
+
+---
+
+<div style={{margin:'48px 0 8px', textAlign:'center'}}>
+  <div style={{
+    display:'inline-block',
+    padding:'4px 16px',
+    fontSize:12,
+    letterSpacing:'0.18em',
+    textTransform:'uppercase',
+    color:'var(--muted)',
+    border:'1px solid var(--rule)',
+    borderRadius:999,
+  }}>Exercises</div>
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 1 — XOR from NAND alone</div>
+
+Build XOR using only NAND gates. (Strategy: first write XOR as a
+combination of AND, OR, and NOT; then replace each such gate by
+its NAND-based construction. You will end up with a somewhat long
+expression. Try to check, row by row, that it agrees with the XOR
+table.)
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 2 — NOR is also universal</div>
+
+There is a sibling gate called **NOR**: OR followed by NOT, drawn
+as the OR shield with a little circle at its nose. Its output is
+$\texttt{1}$ only when both inputs are $\texttt{0}$. Show that
+NOR, on its own, is also enough to build NOT, AND, and OR — and
+therefore also enough to build any circuit. (The story is almost
+identical to the NAND story, with the roles of AND and OR
+interchanged.)
+</div>

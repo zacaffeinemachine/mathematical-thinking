@@ -1,0 +1,95 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The Mechanical Sandbox
+order: 6
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: A box of rods, sleeves, pivots, and connecting bars. Build a gate that thinks — then copy it and build a bigger one.
+description: Interactive sandbox for constructing mechanical logic gates from rods, sleeves, revolute joints, and rigid connectors.
+---
+import LogicGateSandbox from "../../components/games/LogicGateSandbox.tsx";
+
+Imagine a small wooden box with rods sticking out of either side. You
+push a rod on the left — something clicks inside — and a rod on the
+right either pops out or pulls back in. We say the rods on the left
+are *inputs* and the ones on the right are *outputs*, and we read the
+state of each rod as either **0** (pulled out for an input, retracted
+for an output) or **1** (pushed in for an input, sticking out for an
+output).
+
+Our question: can we arrange enough rods, pivots, and rigid bars
+inside the box so that the output rod does exactly what we want —
+for *every* combination of inputs? If we can, we have built a
+mechanical **logic gate**.
+
+Below is a workbench. The pieces you have are
+
+- **sleeves**, which hold a rod in a single line and let it slide,
+- **inputs** (click the red knob to push the rod in; click again to
+  pull it out),
+- **outputs**, whose state is read off the dashed knob,
+- **revolute joints**, pin-points about which rigid pieces can turn
+  freely,
+- **connectors**, which are rigid bars between two revolute joints,
+  and
+- **springs**, decorative pieces that remind you what is pushing back.
+
+With these six primitives you can build any mechanical gate you like.
+A revolute joint placed in *empty space* is anchored to the workbench
+(we draw a little ground-tick beneath it); a joint placed on *a rod or
+a connector* rides with that piece. Two or more pieces pinned at the
+same joint can swing freely relative to one another — that is the
+entire mechanical content of a pivot.
+
+<LogicGateSandbox client:visible />
+
+**Tools.**
+*Select* clicks bodies (shift-click adds to the selection).
+*Drag* moves a body (or a whole group) around the grid.
+*Revolute* places a joint; clicking an existing joint merges with it,
+letting you pin, say, a connector to a rod at the connector's
+midpoint. *Connector* wants two joint clicks and will draw a rigid
+bar between them. *Anchor* toggles a frame-anchor tick on any joint
+you click.
+
+**Setting the initial state of inputs and outputs.** A gate design
+normally begins with a statement like *"when the input is 0, the
+output should be 1"*. You can set up exactly that on the workbench
+before wiring anything: click an input's knob to put it in state 1
+(or leave it at state 0), and click an output's dashed readout to
+flip it between 1 and 0. Once the output is wired into the mechanism
+the solver will take over, but this lets you arrange the pieces so
+the *rest configuration* is the relationship you want.
+
+**The Bisector tool.** Many gate designs demand that some piece sit
+*equidistant* from two other points — for instance, a shared pivot
+that lies on the line equidistant from the input's end and the
+output's end. The Bisector tool gives you that line as a dashed
+guide: click two joints (or two empty points) and the perpendicular
+bisector appears, following the joints if you drag them later.
+
+**Your first exercise — build an inverter.**
+Place the input horizontally at, say, (5, 6) and leave it at state 0.
+Place the output horizontally at (13, 6) and click its readout to set
+it to state 1. Put a revolute joint on the input's far end and
+another on the output's near end; these will sit at two points that
+you now want to connect to a shared, equidistant pivot. Click
+**Bisector**, then click those two joints — a vertical guide appears
+at x = 9.
+
+Place a *sleeve* somewhere on that guide line (say at (9, 3), oriented
+vertically). Place a revolute joint at one end of the sleeve's rod,
+on the bisector. Now use the Connector tool twice: once from the
+input-end joint to the new joint on the sleeve rod, once from the
+output-end joint to it. The two connectors are equal-length (because
+of the bisector), and the sleeve rod can only slide along the guide
+line, so when you push the input in the sleeve rod slides and the
+output retracts by the same amount. You have built a **NOT** gate —
+a mechanism that flips its input.
+
+**Tips.** Press **R** while a placement tool is active to flip
+orientation. **Esc** returns to Select. **Delete** removes a
+selection. When you are happy with a mechanism, name it and press
+**Save** — and when you want a clean view for class, select the
+internals, press **Group**, then **Scaffold** to hide them behind a
+haze.

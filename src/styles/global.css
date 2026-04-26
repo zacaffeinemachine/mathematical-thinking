@@ -18,6 +18,17 @@
   --sq-forbidden: #5c3a24;
   --sq-border: #d4d4d8;
   --piece: #18181b;
+
+  /* Logic gates — QRMT pastel palette */
+  --gate-not:  #E89898;
+  --gate-and:  #A8BCD8;
+  --gate-or:   #9FD0B3;
+  --gate-xor:  #C8AEDD;
+  --gate-nand: #E8D080;
+  --gate-nor:  #BFBFBF;
+  --gate-ink:  #1A1008;
+  --gate-wire-on:  #b91c1c;
+  --gate-wire-off: #71717a;
 }
 
 :root[data-theme="dark"] {
@@ -35,6 +46,17 @@
   --sq-forbidden: #1a0f09;
   --sq-border: #3f3f46;
   --piece: #f4f4f5;
+
+  /* Logic gates — saturated for dark backgrounds */
+  --gate-not:  #ef4444;  /* vivid red */
+  --gate-and:  #3b82f6;  /* bright blue */
+  --gate-or:   #4ade80;  /* vivid lime green */
+  --gate-xor:  #a855f7;  /* vivid purple */
+  --gate-nand: #f59e0b;  /* amber */
+  --gate-nor:  #94a3b8;  /* slate */
+  --gate-ink:  #f4f4f5;
+  --gate-wire-on:  #fb923c;  /* warm orange — pops against dark surface */
+  --gate-wire-off: #6b7280;
 }
 
 html {

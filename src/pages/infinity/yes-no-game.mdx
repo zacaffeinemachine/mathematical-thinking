@@ -1,0 +1,115 @@
+---
+layout: ../../layouts/Chapter.astro
+title: The yes/no number game
+order: 1
+chapter: infinity
+chapterTitle: Infinity
+blurb: A guessing game with infinitely many possibilities and a strategy that always finishes in finite time.
+description: A simple yes/no guessing game shows that the natural numbers can be threaded one by one.
+---
+
+For most of recorded history, infinity was a word mathematicians used
+uneasily and tried not to use at all. Aristotle had ruled, in the
+fourth century BCE, that one could speak of a *potential* infinity —
+a process that could be continued for as long as one liked — but
+never of an *actual* infinity given all at once. Two thousand years
+later, this verdict was still in force. *Galileo Galilei*, in the
+*Two New Sciences* of $1638$, noticed that the perfect squares can
+be paired one-for-one with the positive integers
+($1 \leftrightarrow 1$, $2 \leftrightarrow 4$, $3 \leftrightarrow 9$, …),
+even though most positive integers are not squares; rather than draw
+a conclusion, he concluded sorrowfully that the words "equal,"
+"greater," and "less" simply could not be applied to infinite
+collections at all.
+
+The man who finally faced it was the German mathematician *Georg
+Cantor*, working in the otherwise quiet university town of Halle in
+the $1870$s and $1880$s. In a paper of $1874$ Cantor proved, for the
+first time, that there are strictly more real numbers than integers
+— that the apparent unity of the word "infinite" conceals a
+hierarchy of distinct sizes. Seventeen years later he gave the
+cleaner proof we use today, the diagonal argument that closes this
+chapter, and showed in passing that the same trick works for almost
+any collection one cares to consider. *David Hilbert*, in $1926$,
+declared that "no one shall expel us from the paradise that Cantor
+has created" — and it was the same Hilbert, in a popular lecture,
+who first told the story of the hotel with infinitely many rooms.
+
+What survives, stripped of the polemic, is a small handful of
+arguments of extraordinary clarity. The diagonal argument is one of
+them. The dovetailing argument that lists pairs of natural numbers
+along finite diagonals is another. The bijection trick that lets a
+fully booked hotel accommodate one more guest is a third. None of
+these requires more than the patience to read a single page of
+bookkeeping; together they show that infinity is not one thing but
+a country with at least two distinct cities, and that the boundary
+between them is sharp.
+
+Our exploration will not begin with dry formulas, but with puzzles.
+Let's play a game.
+
+## A simple guessing game
+
+I am thinking of a positive whole number. You may ask me any
+sequence of yes/no questions you like, and I promise to answer each
+one truthfully. Your task is to identify my number.
+
+The catch: you must commit, in advance, to a strategy that is
+*guaranteed* to pin down my number in finitely many questions, no
+matter which positive whole number I picked.
+
+Can you do it?
+
+A first reaction might be: "of course — ask 'is it less than $100$?',
+then narrow it down." But what if my number is $10^{100}$? Or
+$10^{10^{100}}$? You have no upper bound on what I might be
+thinking of. The set of possibilities is infinite.
+
+And yet there is a strategy that works. Ask, in order:
+
+<div style={{textAlign:'center', margin:'12px 0'}}>
+"Is it $1$?" &nbsp; "Is it $2$?" &nbsp; "Is it $3$?" &nbsp; "Is it $4$?" &nbsp; …
+</div>
+
+Whatever number $N$ I picked, my answer to your $N$-th question
+will be "yes," and the game ends. Every positive whole number is
+reached in finite time, simply because every positive whole number
+appears at some finite position in the list $1, 2, 3, \ldots$.
+
+The reason this works is so plain it is easy to miss: the
+possibilities can be arranged in a single list, and your strategy
+walks down the list one step at a time. Hold on to this idea — it
+is the engine of the entire chapter.
+
+## Raising the stakes
+
+Now suppose I tell you my number could be *any* integer — positive,
+negative, or zero. Can you still guarantee to find it in finite
+time?
+
+The naive list $0, 1, 2, 3, \ldots$ now misses every negative
+number. But here is a fix: interleave the positives and negatives.
+Ask in the order
+
+$$
+0,\ 1,\ -1,\ 2,\ -2,\ 3,\ -3,\ \ldots
+$$
+
+Every integer — positive, negative, or zero — appears at some
+finite position in this new list, so the strategy still terminates.
+The trick is to weave two infinite lists together into one.
+
+Push further: suppose my number is a fraction $p/q$ (with $p$ a
+whole number and $q$ a positive whole number). The fractions look
+much wilder than the integers — between any two of them lies
+another. Can you still pin one down with yes/no questions?
+
+The remarkable answer is yes, and the technique — weaving a
+two-dimensional grid of possibilities into a single list — is
+exactly what we will need to disarm an upgraded version of the
+puzzle in the next sections. We will return to the fractions once
+we have that technique in hand.
+
+The chapter is, in essence, the story of which infinite collections
+*can* be threaded into a single list and which cannot. Let us begin
+with a puzzle that demands exactly this kind of threading.
