@@ -162,6 +162,34 @@ export const endsInZero: FSM = {
   },
 };
 
+// Recognises binary strings ending in "101".
+//
+// Each state is named after how much of "101" currently sits at the end of
+// the input, so the fall-back edges are readable: from "101" a 1 does not
+// reset to none — the input now ends in 1, which is one symbol of progress.
+//
+// Layout note: the two inner states are lifted so the long fall-back edges
+// (s10 → none, s101 → s1) sweep along the bottom without crossing them.
+export const endsIn101: FSM = {
+  states: ["none", "s1", "s10", "s101"],
+  alphabet: ["0", "1"],
+  start: "none",
+  accepting: new Set(["s101"]),
+  delta: {
+    none: { "0": "none", "1": "s1" },
+    s1: { "0": "s10", "1": "s1" },
+    s10: { "0": "none", "1": "s101" },
+    s101: { "0": "s10", "1": "s1" },
+  },
+  layout: {
+    none: { x: 0.1, y: 0.75 },
+    s1: { x: 0.37, y: 0.26 },
+    s10: { x: 0.63, y: 0.26 },
+    s101: { x: 0.9, y: 0.75 },
+  },
+  labels: { none: "none", s1: "1", s10: "10", s101: "101" },
+};
+
 // Accepts binary strings with an even number of 0s. (E is start *and*
 // accepting because zero is even.)
 export const evenZeros: FSM = {
@@ -177,6 +205,28 @@ export const evenZeros: FSM = {
     E: { x: 0.28, y: 0.5 },
     O: { x: 0.72, y: 0.5 },
   },
+};
+
+// Accepts binary strings in which every uninterrupted block of 1s has even
+// length. "odd" is not accepting but is still repairable — one more 1 and
+// the block is even again. A 0 arriving there closes an odd block, which
+// nothing can undo, so that is the edge into "dead".
+export const evenBlocksOfOnes: FSM = {
+  states: ["even", "odd", "dead"],
+  alphabet: ["0", "1"],
+  start: "even",
+  accepting: new Set(["even"]),
+  delta: {
+    even: { "0": "even", "1": "odd" },
+    odd: { "0": "dead", "1": "even" },
+    dead: { "0": "dead", "1": "dead" },
+  },
+  layout: {
+    even: { x: 0.2, y: 0.3 },
+    odd: { x: 0.62, y: 0.3 },
+    dead: { x: 0.85, y: 0.82 },
+  },
+  labels: { even: "even", odd: "odd", dead: "dead" },
 };
 
 // Accepts binary strings containing at least two 1s.
@@ -287,6 +337,45 @@ export const divBy3Binary: FSM = {
   },
 };
 
+// Reads a binary string as a number, left to right: each new digit doubles
+// what has been read and adds itself. State Ri means "the number so far
+// leaves remainder i on division by 5".
+//
+// Layout note: reading a 0 permutes R1 → R2 → R4 → R3 → R1, so those four
+// sit at the corners of a square and every 0-edge is one of its sides;
+// only R3 → R2 crosses the middle. "start" duplicates R0's transitions but
+// is not accepting, which is what keeps the empty string out.
+export const divBy5Binary: FSM = {
+  states: ["start", "R0", "R1", "R2", "R3", "R4"],
+  alphabet: ["0", "1"],
+  start: "start",
+  accepting: new Set(["R0"]),
+  delta: {
+    start: { "0": "R0", "1": "R1" },
+    R0: { "0": "R0", "1": "R1" },
+    R1: { "0": "R2", "1": "R3" },
+    R2: { "0": "R4", "1": "R0" },
+    R3: { "0": "R1", "1": "R2" },
+    R4: { "0": "R3", "1": "R4" },
+  },
+  layout: {
+    start: { x: 0.09, y: 0.16 },
+    R0: { x: 0.36, y: 0.16 },
+    R1: { x: 0.3, y: 0.56 },
+    R2: { x: 0.76, y: 0.56 },
+    R3: { x: 0.3, y: 0.9 },
+    R4: { x: 0.76, y: 0.9 },
+  },
+  labels: {
+    start: "start",
+    R0: "R₀",
+    R1: "R₁",
+    R2: "R₂",
+    R3: "R₃",
+    R4: "R₄",
+  },
+};
+
 // Accepts strings containing the substring "bfs". The alphabet is kept
 // small: {b, f, s, x}, where x stands for "any other letter."
 export const substringBfs: FSM = {
@@ -307,6 +396,30 @@ export const substringBfs: FSM = {
     A: { x: 0.9, y: 0.78 },
   },
   labels: { Start: "Start", B: "b", BF: "bf", A: "accept" },
+};
+
+// Accepts binary strings of length at least 2 whose second-to-last symbol
+// is a 1. The state named "ab" means the last two symbols read were a then
+// b; reading c slides the window along, ab → bc. Two imagined 0s before the
+// string starts make length 0 and length 1 come out rejected for free.
+export const secondToLastIsOne: FSM = {
+  states: ["m00", "m01", "m10", "m11"],
+  alphabet: ["0", "1"],
+  start: "m00",
+  accepting: new Set(["m10", "m11"]),
+  delta: {
+    m00: { "0": "m00", "1": "m01" },
+    m01: { "0": "m10", "1": "m11" },
+    m10: { "0": "m00", "1": "m01" },
+    m11: { "0": "m10", "1": "m11" },
+  },
+  layout: {
+    m00: { x: 0.25, y: 0.26 },
+    m01: { x: 0.75, y: 0.26 },
+    m10: { x: 0.25, y: 0.8 },
+    m11: { x: 0.75, y: 0.8 },
+  },
+  labels: { m00: "00", m01: "01", m10: "10", m11: "11" },
 };
 
 // Accepts only the exact string "qrmt". Alphabet trimmed to
@@ -344,9 +457,9 @@ export const passwordQrmt: FSM = {
   },
   labels: {
     start: "start",
-    alpha: "α",
-    beta: "β",
-    gamma: "γ",
+    alpha: "Q",
+    beta: "QR",
+    gamma: "QRM",
     accept: "accept",
     dead: "dead",
   },

@@ -12,14 +12,18 @@ import {
   lightSwitch,
   turnstile,
   endsInZero,
+  endsIn101,
   startsOneEndsZero,
   passwordQrmt,
   atLeastTwoOnes,
   evenZeros,
+  evenBlocksOfOnes,
   lengthAtMost4,
   divisibleBy3Ones,
+  divBy5Binary,
   divBy3Binary,
   substringBfs,
+  secondToLastIsOne,
 } from "../../components/games/fsm/machines.ts";
 
 A **finite state machine** can be in one of a few **moods** at any
@@ -83,6 +87,31 @@ That single bit of memory is enough to know whether to accept.
   defaultInput="1010"
   examples={["", "0", "1", "10", "01", "100", "111", "1010"]}
 />
+
+## Ending in 101
+
+The same idea, with a longer memory. Each mood is named after *how
+much of* <code>101</code> *currently sits at the end of the input* —
+nothing, <code>1</code>, <code>10</code>, or the whole thing.
+
+<FSMRunner
+  client:visible
+  machine={endsIn101}
+  defaultInput="10101"
+  examples={["101", "0101", "1101", "10101", "10", "011", "1010", "1011"]}
+/>
+
+Watch the two arrows leaving <code>101</code>, because they are where
+a first attempt usually goes wrong. A <code>1</code> does *not* send
+you back to the start: the input now ends in <code>1011</code>, whose
+last symbol is a <code>1</code>, so one symbol of progress is already
+banked. A <code>0</code> leaves the input ending <code>1010</code> —
+two symbols of progress, not none.
+
+Notice also that accepting is not permanent here. Run
+<code>10101</code> and watch the machine enter, leave, and re-enter
+the double circle. All that matters is where it stands when the
+input runs out.
 
 ## Start with 1, end with 0
 
@@ -148,6 +177,32 @@ leaves it alone.
   examples={["", "0", "1", "00", "01", "11", "0011", "11011", "0010"]}
 />
 
+## Every block of 1s has even length
+
+Call an uninterrupted stretch of <code>1</code>s a *block*. In
+<code>0110011</code> the blocks are <code>11</code> and
+<code>11</code>; in <code>0111011</code> they are <code>111</code>
+and <code>11</code>. This machine accepts exactly when every block
+has even length.
+
+<FSMRunner
+  client:visible
+  machine={evenBlocksOfOnes}
+  defaultInput="0110011"
+  examples={["", "0", "11", "0110011", "1", "010", "111", "0111011"]}
+/>
+
+This one is worth sitting with, because it separates two things
+that are easy to run together. The mood <code>odd</code> is *not*
+accepting — but it is not hopeless either: one more <code>1</code>
+and the block is even again. A <code>0</code> arriving there is a
+different matter. It *closes* a block of odd length, and no later
+symbol can undo that, which is exactly what <code>dead</code> is
+for.
+
+"Not accepting" and "doomed" are different conditions, and a
+machine needs different moods for them.
+
 ## Length at most 4
 
 A pure counter. Each symbol — whatever it is — bumps the state one
@@ -181,21 +236,52 @@ The machine cannot remember *how many* <code>1</code>s it has seen
 need a fresh state for every possible count, and that ladder would
 never end. Hold that thought; it returns at the end of the chapter.
 
-## Divisibility by 3, in binary
+## Divisible by 5
 
-A subtler counting machine. Read a binary string left-to-right as
-the binary representation of a number *n*; this machine accepts if
-*n* is divisible by 3. The trick is the rule
+So far our counters have counted symbols. This one reads a
+*number*. A string of <code>0</code>s and <code>1</code>s can be
+read left to right by a single rule: **start at 0, and on each new
+digit, double what you have and then add the digit.** So
+<code>1011</code> runs 0 → 1 → 2 → 5 → 11.
+
+The number itself grows without limit, so the machine cannot
+remember it — and does not need to. To know whether the final
+number is divisible by 5, it is enough to remember the *remainder*
+on division by 5, and there are only five of those. From remainder
+*i*, reading digit *d* lands on the remainder of 2*i* + *d*.
+
+<FSMRunner
+  client:visible
+  machine={divBy5Binary}
+  defaultInput="1010"
+  examples={["0", "101", "1010", "1111", "", "1", "10", "1011"]}
+  width={600}
+/>
+
+The extra <code>start</code> mood exists for one reason only: it
+behaves exactly as <code>R₀</code> does, but it is not accepting,
+which is what keeps the empty string out.
+
+## An alternating sum
+
+Given a string *s*₁*s*₂…*s*<sub>k</sub> of <code>0</code>s and
+<code>1</code>s, form its **alternating sum**: add the first
+symbol, subtract the second, add the third, subtract the fourth,
+and so on. This machine accepts exactly when
 
 <div style={{textAlign:'center', margin:'8px 0', fontFamily:'ui-monospace, monospace'}}>
-n ≡ 0 (mod 3) &nbsp;⟺&nbsp; s₁ − s₂ + s₃ − s₄ + … ≡ 0 (mod 3),
+s₁ − s₂ + s₃ − s₄ + … is divisible by 3.
 </div>
 
-a binary cousin of the familiar mod-11 rule. The state's letter
-(A or B) tracks whether the *next* bit is at an odd or even
-position; the subscript is the running residue. The machine
-alternates between the two layers as it reads, *adding* a bit at
-A-states and *subtracting* (≡ adding 2 mod 3) at B-states.
+Note the sum can be negative — for <code>01</code> it is
+0 − 1 = −1 — so "divisible by 3" means the usual thing for whole
+numbers of either sign.
+
+The state's letter (A or B) tracks whether the *next* symbol sits
+at an odd or an even position; the subscript is the running
+remainder. The machine alternates between the two layers as it
+reads, *adding* at A-states and *subtracting* (the same as adding
+2, mod 3) at B-states.
 
 <FSMRunner
   client:visible
@@ -206,10 +292,18 @@ A-states and *subtracting* (≡ adding 2 mod 3) at B-states.
 />
 
 The accepting states are <code>A₀</code> and <code>B₀</code>: the
-running residue is zero whether the next bit would be at an odd
-or even position. The diagram is dense by design — there are six
-states with twelve transitions — but each arrow really is just
-one of the four arithmetic rules above.
+running remainder is zero whether the next symbol would sit at an
+odd or an even position. The diagram is dense by design — six
+states, twelve transitions — but every arrow is just one of the
+four arithmetic rules above.
+
+It is worth saying why this particular condition is worth
+checking at all. Read the string as the binary representation of
+a number *n*, and *n* turns out to be divisible by 3 exactly when
+this alternating sum is — the binary cousin of the familiar rule
+that 121 is divisible by 11 because 1 − 2 + 1 = 0. So the machine
+above is, in disguise, a recognizer for the multiples of 3
+written in binary.
 
 ## Substring detection: "bfs"
 
@@ -231,6 +325,37 @@ The transitions are all about *keeping hope alive*. A
 <code>b</code> always lets us start a fresh attempt; a stray
 <code>f</code> or <code>s</code> from the empty mood does nothing.
 Once we have seen the whole substring we lock into accept.
+
+## The second-to-last symbol
+
+This looks like the very first recognizer we built, but it is a
+different animal. There the answer was decided by the last symbol,
+which the machine could simply hold on to. Here it must know a
+symbol that is *not* the last one — and while reading it cannot
+know which symbol will turn out to be second-to-last.
+
+The way out is to remember the last *two* symbols at all times.
+Four possibilities, four moods. The mood named <code>ab</code>
+means the last two symbols read were *a* then *b*; reading *c*
+slides the window along, <code>ab</code> → <code>bc</code>, and the
+oldest symbol is forgotten because it can never be needed again.
+
+<FSMRunner
+  client:visible
+  machine={secondToLastIsOne}
+  defaultInput="0111"
+  examples={["10", "11", "010", "0111", "", "1", "001", "100"]}
+/>
+
+We pretend two <code>0</code>s were read before the string began,
+which costs nothing and conveniently makes strings of length 0 and
+1 come out rejected, as they should. The accepting moods are
+<code>10</code> and <code>11</code> — exactly those whose *first*
+remembered symbol is a <code>1</code>, since that is the
+second-to-last symbol of the input.
+
+Wanting the *third*-to-last symbol needs a window of three, and so
+eight moods. Bigger, but not one bit cleverer.
 
 ---
 
@@ -329,7 +454,119 @@ English alphabet and accepts *only* the two specific strings
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 3 — Looking back from the end</div>
+}}>Exercise 3 — Exactly two `1`s</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts exactly
+those strings containing **exactly** two `1`s.
+
+Compare this with the machine for *at least two* `1`s above. There,
+once the machine had succeeded it stayed successful forever. Here it
+cannot: a third `1` must undo the success permanently. Alongside your
+diagram, write one plain-English sentence saying what each mood means.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 4 — Forgetting on command</div>
+
+The alphabet is `{0, 1, reset}`. Design a machine that accepts
+exactly those strings in which an **even** number of `1`s have
+appeared *since the most recent* `reset`. If no `reset` has appeared
+at all, count from the beginning of the string.
+
+For example, `1 1` is accepted, `1 reset 1` is not, and
+`1 reset 1 1` is. This is the first machine here with an input whose
+whole job is to make it forget.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 5 — Paying exactly five credits</div>
+
+A vending machine takes two kinds of coin: one worth 1 credit and
+one worth 2 credits. Design a machine that reads a sequence of coins
+and accepts exactly those sequences whose total value is exactly 5
+credits.
+
+Every counter so far has advanced one notch per symbol. Here two
+different inputs move the total by two different amounts, and a total
+that overshoots 5 can never come back.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 6 — More `1`s than `0`s, by a multiple of three</div>
+
+The alphabet is `{0, 1}`. Design a machine that accepts exactly
+those strings for which
+
+<div style={{textAlign:'center', margin:'8px 0', fontFamily:'ui-monospace, monospace'}}>
+(number of 1s) − (number of 0s)
+</div>
+
+is divisible by 3. Note that this difference may well be negative,
+and that three moods are enough.
+
+In the machine for *the number of `1`s is divisible by 3*, a `0`
+changed nothing. Here both symbols matter, and they push the
+remembered remainder in opposite directions.
+</div>
+
+<div style={{
+  margin:'20px 0',
+  padding:'14px 18px 16px',
+  border:'1px solid var(--rule)',
+  borderLeft:'4px solid var(--accent)',
+  borderRadius:4,
+  background:'var(--surface)',
+}}>
+<div style={{
+  fontSize:11,
+  letterSpacing:'0.12em',
+  textTransform:'uppercase',
+  color:'var(--muted)',
+  fontWeight:600,
+  marginBottom:6,
+}}>Exercise 7 — Looking back from the end</div>
 
 The alphabet is `{0, 1}`. Design a machine that accepts a binary
 string *w* exactly when both of the following hold:
@@ -353,7 +590,7 @@ string *w* exactly when both of the following hold:
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 4 — Every `0` immediately followed by a `1`</div>
+}}>Exercise 8 — Every `0` immediately followed by a `1`</div>
 
 The alphabet is `{0, 1}`. Design a machine that accepts exactly
 those strings in which every `0` is immediately followed by a
@@ -375,7 +612,7 @@ those strings in which every `0` is immediately followed by a
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 5 — Length a multiple of 3, ending in `1`</div>
+}}>Exercise 9 — Length a multiple of 3, ending in `1`</div>
 
 The alphabet is `{0, 1}`. Design a machine that accepts exactly
 those strings whose length is a multiple of 3 *and* whose final
@@ -397,7 +634,7 @@ symbol is `1`.
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 6 — start, stop, pause</div>
+}}>Exercise 10 — start, stop, pause</div>
 
 Design a machine that reads the 26 lowercase letters and accepts
 *only* the three strings `start`, `stop`, and `pause`.
@@ -418,7 +655,7 @@ Design a machine that reads the 26 lowercase letters and accepts
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 7 — First symbol equals second-to-last</div>
+}}>Exercise 11 — First symbol equals second-to-last</div>
 
 The alphabet is `{0, 1}`. Design a machine that accepts exactly
 those binary strings *w* satisfying both of the following:
@@ -446,7 +683,7 @@ be rejected.
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 8 — Odd projection contains `dfa`</div>
+}}>Exercise 12 — Odd projection contains `dfa`</div>
 
 For a string *x*₁*x*₂…*x*<sub>n</sub>, the **odd projection** is
 the string formed by deleting every symbol at an even position —
