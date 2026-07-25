@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Color = "red" | "blue";
 
@@ -59,54 +65,12 @@ const TARGET_COLOR_BY_SQ: Record<number, Color> = {
   10: "blue", 6: "blue", 1: "red", 3: "red",
 };
 
-// L-shaped tree layout in unit grid (gx, gy); gy grows downward.
-// Fits into a 4×3 box.
-const GRAPH_LAYOUT: Record<number, [number, number]> = {
-  8:  [1, 0],
-  3:  [0, 0],
-  1:  [1, 1],
-  6:  [1, 2],
-  10: [1, 3],
-  7:  [2, 0],
-  2:  [3, 0],
-  9:  [4, 0],
-  4:  [4, 1],
-  5:  [4, 2],
-};
-const GRAPH_W_UNITS = 4;
-const GRAPH_H_UNITS = 3;
-
-const EDGES: Array<[number, number]> = [
-  [1, 6], [1, 8],
-  [2, 7], [2, 9],
-  [3, 8],
-  [4, 5], [4, 9],
-  [6, 10],
-  [7, 8],
-];
-
 export default function GreaterChallengePuzzle({ title, hint }: Props) {
   const [pieces, setPieces] = useState<Piece[]>(() =>
     START_PIECES.map((p) => ({ ...p })),
   );
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
-
-  const [riddleOpen, setRiddleOpen] = useState(false);
-  const [riddleAnswer, setRiddleAnswer] = useState("");
-  const [riddleError, setRiddleError] = useState(false);
-  const [graphUnlocked, setGraphUnlocked] = useState(false);
-
-  const submitRiddle = () => {
-    const normalized = riddleAnswer.trim().toLowerCase();
-    if (normalized === "face" || normalized === "faces") {
-      setGraphUnlocked(true);
-      setRiddleOpen(false);
-      setRiddleError(false);
-    } else {
-      setRiddleError(true);
-    }
-  };
 
   const pieceBySq = useMemo(() => {
     const m = new Map<number, Piece>();
@@ -154,11 +118,10 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
     setMoves(0);
   };
 
-  const boardCellPx = 70;
-  const boardSize = COLS * boardCellPx + 16; // matches Board frame width
-
-  const goalCellPx = 54;
-  const goalSize = COLS * goalCellPx + 16;
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const boardCellPx = fitCell(Math.round(70 * factor), COLS, availWidth);
+  const goalCellPx = fitCell(Math.round(54 * factor), COLS, availWidth);
 
   return (
     <figure className="not-prose my-10">
@@ -169,7 +132,7 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div className="flex flex-wrap items-start justify-center gap-8">
           <BoardFrame label="Board">
             <Board
@@ -180,13 +143,6 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
               onSquareClick={handleSquareClick}
               cellPx={boardCellPx}
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceBySq={pieceBySq}
-                selectedId={selectedId}
-                size={boardSize}
-              />
-            )}
           </BoardFrame>
 
           <BoardFrame label="Goal" faded>
@@ -195,14 +151,6 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
               cellPx={goalCellPx}
               faded
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceBySq={piecesToMap(GOAL_PIECES)}
-                selectedId={null}
-                size={goalSize}
-                faded
-              />
-            )}
           </BoardFrame>
         </div>
 
@@ -216,75 +164,13 @@ export default function GreaterChallengePuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
             </span>
           )}
         </div>
-
-        {!graphUnlocked && (
-          <button
-            onClick={() => {
-              setRiddleOpen((v) => !v);
-              setRiddleError(false);
-            }}
-            className="text-[10px] tracking-wider uppercase text-[var(--muted)] hover:text-[var(--ink)] transition-colors mt-2 opacity-40 hover:opacity-80"
-            style={{ background: "none", border: "none", padding: "2px 4px", cursor: "pointer" }}
-            aria-label="Reveal hint"
-          >
-            mind over matter
-          </button>
-        )}
-
-        {riddleOpen && !graphUnlocked && (
-          <div
-            className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
-          >
-            <p className="text-sm mb-3">
-              In the shinigami's dreadful gift, a name alone will not kill. The
-              writer must summon, in the theatre of the mind, that which the
-              name adorns — a single portrait, clear enough for the god of
-              death to recognise. Without this second vision, every page of
-              the cursed ledger is dead ink, and no soul falls. In a single
-              word: what must the writer picture?
-              <br />
-              <em className="text-[var(--muted)]">One word.</em>
-            </p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submitRiddle();
-              }}
-              className="flex items-center gap-2"
-            >
-              <input
-                type="text"
-                value={riddleAnswer}
-                onChange={(e) => {
-                  setRiddleAnswer(e.target.value);
-                  setRiddleError(false);
-                }}
-                placeholder="your answer"
-                aria-label="Riddle answer"
-                autoFocus
-                className="flex-1 px-3 py-1.5 rounded-md border border-[var(--rule)] bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--accent)]"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] text-sm transition-colors"
-              >
-                Answer
-              </button>
-            </form>
-            {riddleError && (
-              <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
-                Not quite — recall the rule that forces Light to hunt for
-                something before he can write.
-              </p>
-            )}
-          </div>
-        )}
       </div>
     </figure>
   );
@@ -486,117 +372,6 @@ function Knight({
           strokeWidth="1.5"
         />
       </g>
-    </svg>
-  );
-}
-
-function graphPos(sq: number, size: number): { x: number; y: number } {
-  const [gx, gy] = GRAPH_LAYOUT[sq];
-  const pad = Math.max(22, size * 0.11);
-  const inner = size - 2 * pad;
-  const scale = Math.min(inner / GRAPH_W_UNITS, inner / GRAPH_H_UNITS);
-  const offX = (size - GRAPH_W_UNITS * scale) / 2;
-  const offY = (size - GRAPH_H_UNITS * scale) / 2;
-  return { x: offX + gx * scale, y: offY + gy * scale };
-}
-
-function KnightGraph({
-  pieceBySq,
-  selectedId,
-  size,
-  faded = false,
-}: {
-  pieceBySq: Map<number, Piece>;
-  selectedId: number | null;
-  size: number;
-  faded?: boolean;
-}) {
-  const nodeR = Math.max(9, Math.round(size * 0.055));
-  const fontSize = Math.max(9, Math.round(size * 0.05));
-  const edgeWidth = Math.max(3, Math.round(size * 0.016));
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      role="img"
-      aria-label={faded ? "Knight-move graph, goal state" : "Knight-move graph"}
-      style={{
-        background: "var(--surface)",
-        border: `1px ${faded ? "dashed" : "solid"} var(--rule)`,
-        borderRadius: 12,
-        opacity: faded ? 0.75 : 1,
-        filter: faded ? "saturate(0.55)" : "none",
-      }}
-    >
-      {EDGES.map(([a, b], i) => {
-        const pa = graphPos(a, size);
-        const pb = graphPos(b, size);
-        return (
-          <line
-            key={i}
-            x1={pa.x}
-            y1={pa.y}
-            x2={pb.x}
-            y2={pb.y}
-            stroke="var(--ink)"
-            strokeOpacity={0.7}
-            strokeWidth={edgeWidth}
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {Object.keys(GRAPH_LAYOUT).map((key) => {
-        const sq = Number(key);
-        const { x, y } = graphPos(sq, size);
-        const here = pieceBySq.get(sq);
-        const isSelected = here != null && selectedId === here.id;
-
-        const fill = here
-          ? here.color === "red" ? "#c0392b" : "#2563eb"
-          : "var(--surface)";
-        const stroke = here
-          ? here.color === "red" ? "#7a1d13" : "#1e3a8a"
-          : "var(--muted)";
-        const textColor = here ? "#ffffff" : "var(--muted)";
-
-        return (
-          <g key={sq}>
-            <circle
-              cx={x}
-              cy={y}
-              r={nodeR}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={isSelected ? 3 : 1.8}
-            />
-            {isSelected && (
-              <circle
-                cx={x}
-                cy={y}
-                r={nodeR + 5}
-                fill="none"
-                stroke="var(--accent)"
-                strokeWidth={2}
-              />
-            )}
-            <text
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={fontSize}
-              fontWeight={600}
-              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              fill={textColor}
-            >
-              {sq}
-            </text>
-          </g>
-        );
-      })}
     </svg>
   );
 }

@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Color = "red" | "blue";
 type Terrain = "brown" | "red-land" | "blue-land";
@@ -149,6 +155,11 @@ export default function ConstrainedCavalryPuzzle({ title, hint }: Props) {
     setDeathMsg(null);
   };
 
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const boardCellPx = fitCell(Math.round(62 * factor), COLS, availWidth);
+  const goalCellPx = fitCell(Math.round(46 * factor), COLS, availWidth);
+
   return (
     <figure className="not-prose my-10">
       {title && (
@@ -158,7 +169,7 @@ export default function ConstrainedCavalryPuzzle({ title, hint }: Props) {
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div className="flex flex-wrap items-start justify-center gap-8">
           <BoardFrame label="Board">
             <Board
@@ -169,14 +180,14 @@ export default function ConstrainedCavalryPuzzle({ title, hint }: Props) {
               solved={solved}
               frozen={anyDead}
               onSquareClick={handleClick}
-              cellPx={62}
+              cellPx={boardCellPx}
             />
           </BoardFrame>
           <BoardFrame label="Goal" faded>
             <Board
               pieceAt={piecesToMap(GOAL_PIECES)}
               deadPieces={[]}
-              cellPx={46}
+              cellPx={goalCellPx}
               faded
             />
           </BoardFrame>
@@ -192,6 +203,7 @@ export default function ConstrainedCavalryPuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Settled in {moves} {moves === 1 ? "move" : "moves"}.

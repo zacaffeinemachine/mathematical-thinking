@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Color = "red" | "blue";
 
@@ -70,13 +76,6 @@ const TARGET_BY_SQ: Record<number, Color> = {
   8: "blue", 10: "blue", 2: "red", 4: "red",
 };
 
-// Knight-move graph: 8-cycle 4-9-2-7-8-3-10-5 + pendant 1-4 + isolated 6.
-const GRAPH_CYCLE = [4, 9, 2, 7, 8, 3, 10, 5] as const;
-const EDGES: Array<[number, number]> = [
-  [4, 9], [9, 2], [2, 7], [7, 8], [8, 3], [3, 10], [10, 5], [5, 4],
-  [1, 4],
-];
-
 export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
   const [pieces, setPieces] = useState<Piece[]>(() =>
     START_PIECES.map((p) => ({ ...p })),
@@ -87,22 +86,6 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
   const [deathMsg, setDeathMsg] = useState<string | null>(null);
-
-  const [riddleOpen, setRiddleOpen] = useState(false);
-  const [riddleAnswer, setRiddleAnswer] = useState("");
-  const [riddleError, setRiddleError] = useState(false);
-  const [graphUnlocked, setGraphUnlocked] = useState(false);
-
-  const submitRiddle = () => {
-    const n = riddleAnswer.trim().toLowerCase();
-    if (n === "misa" || n === "misa amane" || n === "amane") {
-      setGraphUnlocked(true);
-      setRiddleOpen(false);
-      setRiddleError(false);
-    } else {
-      setRiddleError(true);
-    }
-  };
 
   const pieceBySq = useMemo(() => {
     const m = new Map<number, Piece>();
@@ -180,10 +163,10 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
     setDeathMsg(null);
   };
 
-  const boardCellPx = 60;
-  const boardSize = COLS * boardCellPx + 16;
-  const goalCellPx = 48;
-  const goalSize = COLS * goalCellPx + 16;
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const boardCellPx = fitCell(Math.round(60 * factor), COLS, availWidth);
+  const goalCellPx = fitCell(Math.round(48 * factor), COLS, availWidth);
 
   return (
     <figure className="not-prose my-10">
@@ -194,7 +177,7 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div className="flex flex-wrap items-start justify-center gap-8">
           <BoardFrame label="Board">
             <Board
@@ -208,14 +191,6 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
               onSquareClick={handleSquareClick}
               cellPx={boardCellPx}
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceBySq={pieceBySq}
-                fruitBySq={fruitBySq}
-                selectedId={selectedId}
-                size={boardSize}
-              />
-            )}
           </BoardFrame>
 
           <BoardFrame label="Goal" faded>
@@ -226,14 +201,6 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
               cellPx={goalCellPx}
               faded
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceBySq={piecesToMap(GOAL_PIECES)}
-                selectedId={null}
-                size={goalSize}
-                faded
-              />
-            )}
           </BoardFrame>
         </div>
 
@@ -247,6 +214,7 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
@@ -258,71 +226,6 @@ export default function ForbiddenFruitPuzzle({ title, hint }: Props) {
           <p className="text-sm font-medium text-center" style={{ color: "#c0392b" }}>
             {deathMsg}
           </p>
-        )}
-
-        {!graphUnlocked && (
-          <button
-            onClick={() => {
-              setRiddleOpen((v) => !v);
-              setRiddleError(false);
-            }}
-            className="text-[10px] tracking-wider uppercase text-[var(--muted)] hover:text-[var(--ink)] transition-colors mt-2 opacity-40 hover:opacity-80"
-            style={{
-              background: "none",
-              border: "none",
-              padding: "2px 4px",
-              cursor: "pointer",
-            }}
-            aria-label="Reveal hint"
-          >
-            mind over matter
-          </button>
-        )}
-
-        {riddleOpen && !graphUnlocked && (
-          <div className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]">
-            <p className="text-sm mb-3">
-              She is the young idol whose joyful grin hides a notebook pressed
-              to her heart. She traded half her life for the shinigami's eyes,
-              and blindly offered what remained of it to the boy she called
-              Light. She styled herself the Second Kira. Name her.
-              <br />
-              <em className="text-[var(--muted)]">One word.</em>
-            </p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submitRiddle();
-              }}
-              className="flex items-center gap-2"
-            >
-              <input
-                type="text"
-                value={riddleAnswer}
-                onChange={(e) => {
-                  setRiddleAnswer(e.target.value);
-                  setRiddleError(false);
-                }}
-                placeholder="your answer"
-                aria-label="Riddle answer"
-                autoFocus
-                className="flex-1 px-3 py-1.5 rounded-md border border-[var(--rule)] bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--accent)]"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] text-sm transition-colors"
-              >
-                Answer
-              </button>
-            </form>
-            {riddleError && (
-              <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
-                Not quite — the answer is the blonde idol who styled herself
-                the Second Kira and traded her lifespan for the shinigami's
-                eyes.
-              </p>
-            )}
-          </div>
         )}
       </div>
     </figure>
@@ -686,170 +589,6 @@ function ForbiddenCross({ size }: { size: number }) {
         strokeWidth={Math.max(2, Math.round(size * 0.05))}
         strokeLinecap="round"
       />
-    </svg>
-  );
-}
-
-// --- Graph -----------------------------------------------------------------
-
-function graphPos(sq: number, size: number): { x: number; y: number } {
-  const cycleIdx = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
-  const pendantOffset = size * 0.16;
-  const padding = size * 0.10;
-  const R = (size - 2 * padding - pendantOffset) / 2;
-  const cx = padding + R;
-  const cy = size / 2;
-
-  if (sq === 6) return { x: cx, y: cy };
-  if (sq === 1) return { x: cx + R + pendantOffset, y: cy };
-
-  const angle = -cycleIdx * (Math.PI / 4);
-  return {
-    x: cx + R * Math.cos(angle),
-    y: cy + R * Math.sin(angle),
-  };
-}
-
-function outwardDir(sq: number): { x: number; y: number } {
-  const cycleIdx = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
-  if (cycleIdx >= 0) {
-    const angle = -cycleIdx * (Math.PI / 4);
-    return { x: Math.cos(angle), y: Math.sin(angle) };
-  }
-  if (sq === 1) return { x: 1, y: 0 };
-  return { x: 0, y: -1 };
-}
-
-function KnightGraph({
-  pieceBySq,
-  fruitBySq,
-  selectedId,
-  size,
-  faded = false,
-}: {
-  pieceBySq: Map<number, Piece>;
-  fruitBySq?: Map<number, Fruit>;
-  selectedId: number | null;
-  size: number;
-  faded?: boolean;
-}) {
-  const nodeR = Math.max(9, Math.round(size * 0.055));
-  const fontSize = Math.max(9, Math.round(size * 0.05));
-  const edgeWidth = Math.max(3, Math.round(size * 0.016));
-  const fruitR = Math.max(6, Math.round(size * 0.032));
-  const fruitGap = nodeR + fruitR + Math.round(size * 0.012);
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      role="img"
-      aria-label={faded ? "Knight-move graph, goal state" : "Knight-move graph"}
-      style={{
-        background: "var(--surface)",
-        border: `1px ${faded ? "dashed" : "solid"} var(--rule)`,
-        borderRadius: 12,
-        opacity: faded ? 0.75 : 1,
-        filter: faded ? "saturate(0.55)" : "none",
-      }}
-    >
-      {EDGES.map(([a, b], i) => {
-        const pa = graphPos(a, size);
-        const pb = graphPos(b, size);
-        return (
-          <line
-            key={i}
-            x1={pa.x}
-            y1={pa.y}
-            x2={pb.x}
-            y2={pb.y}
-            stroke="var(--ink)"
-            strokeOpacity={0.7}
-            strokeWidth={edgeWidth}
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {Object.keys(SQ_TO_RC).map((key) => {
-        const sq = Number(key);
-        const { x, y } = graphPos(sq, size);
-        const here = pieceBySq.get(sq);
-        const isSelected = here != null && selectedId === here.id;
-
-        const fill = here
-          ? here.color === "red" ? "#c0392b" : "#2563eb"
-          : "var(--surface)";
-        const stroke = here
-          ? here.color === "red" ? "#7a1d13" : "#1e3a8a"
-          : "var(--muted)";
-        const textColor = here ? "#ffffff" : "var(--muted)";
-
-        return (
-          <g key={sq}>
-            <circle
-              cx={x}
-              cy={y}
-              r={nodeR}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={isSelected ? 3 : 1.8}
-            />
-            {isSelected && (
-              <circle
-                cx={x}
-                cy={y}
-                r={nodeR + 5}
-                fill="none"
-                stroke="var(--accent)"
-                strokeWidth={2}
-              />
-            )}
-            <text
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={fontSize}
-              fontWeight={600}
-              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              fill={textColor}
-            >
-              {sq}
-            </text>
-          </g>
-        );
-      })}
-
-      {fruitBySq &&
-        Array.from(fruitBySq.values()).map((f) => {
-          const { x, y } = graphPos(f.sq, size);
-          const dir = outwardDir(f.sq);
-          const fx = x + dir.x * fruitGap;
-          const fy = y + dir.y * fruitGap;
-          const fill = f.color === "red" ? "#c0392b" : "#2563eb";
-          const stroke = f.color === "red" ? "#7a1d13" : "#1e3a8a";
-          return (
-            <g key={`fruit-${f.sq}`}>
-              <circle
-                cx={fx}
-                cy={fy}
-                r={fruitR}
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={1.6}
-              />
-              <path
-                d={`M ${fx} ${fy - fruitR} Q ${fx + fruitR * 0.3} ${fy - fruitR * 1.6} ${fx + fruitR * 0.8} ${fy - fruitR * 1.4}`}
-                fill="none"
-                stroke="#3a2a1a"
-                strokeWidth={1.3}
-                strokeLinecap="round"
-              />
-            </g>
-          );
-        })}
     </svg>
   );
 }

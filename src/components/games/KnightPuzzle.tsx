@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Coord = [number, number];
 type CellState = "empty" | "missing" | "forbidden";
@@ -73,7 +79,9 @@ export default function KnightPuzzle({
     setSelected(true);
   };
 
-  const cellPx = 56;
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const cellPx = fitCell(Math.round(56 * factor), cols, availWidth);
 
   return (
     <figure className="not-prose my-10">
@@ -84,7 +92,7 @@ export default function KnightPuzzle({
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div
           className="rounded-xl"
           style={{
@@ -153,22 +161,27 @@ export default function KnightPuzzle({
                   fontSize: 24,
                 }}
               >
-                {st === "forbidden" && <Skull />}
+                {st === "forbidden" && (
+                  <Skull size={Math.round(cellPx * 0.4)} />
+                )}
 
                 {isTarget && !isKnight && (
-                  <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>
+                  <span
+                    aria-hidden="true"
+                    style={{ fontSize: Math.round(cellPx * 0.46), lineHeight: 1 }}
+                  >
                     🍎
                   </span>
                 )}
 
-                {isKnight && <Knight />}
+                {isKnight && <Knight size={Math.round(cellPx * 0.6)} />}
 
                 {isLegal && !isKnight && (
                   <span
                     aria-hidden="true"
                     style={{
-                      width: 14,
-                      height: 14,
+                      width: Math.round(cellPx * 0.25),
+                      height: Math.round(cellPx * 0.25),
                       borderRadius: "50%",
                       background: "var(--accent)",
                       opacity: 0.55,
@@ -181,7 +194,7 @@ export default function KnightPuzzle({
           })}
         </div>
 
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
           <span className="text-[var(--muted)]">
             Moves: <strong className="text-[var(--ink)]">{moves}</strong>
           </span>
@@ -191,6 +204,7 @@ export default function KnightPuzzle({
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Apple reached in {moves} {moves === 1 ? "move" : "moves"}.
@@ -202,12 +216,12 @@ export default function KnightPuzzle({
   );
 }
 
-function Knight() {
+function Knight({ size = 34 }: { size?: number }) {
   // Minimal chess knight silhouette.
   return (
     <svg
-      width="34"
-      height="34"
+      width={size}
+      height={size}
       viewBox="0 0 45 45"
       aria-hidden="true"
       style={{ color: "var(--piece)" }}
@@ -232,11 +246,11 @@ function Knight() {
   );
 }
 
-function Skull() {
+function Skull({ size = 22 }: { size?: number }) {
   return (
     <svg
-      width="22"
-      height="22"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       aria-hidden="true"
       style={{ color: "#a1a1aa" }}

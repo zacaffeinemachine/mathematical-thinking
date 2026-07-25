@@ -1,4 +1,10 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Coord = [number, number];
 type Color = "red" | "blue";
@@ -10,17 +16,10 @@ interface Piece {
   pos: Coord;
 }
 
-interface RiddleConfig {
-  prompt: ReactNode;
-  answers: string[];
-  wrongHint: ReactNode;
-}
-
 interface VariantConfig {
   start: Piece[];
   goal: Piece[];
   target: Record<string, Color>;
-  riddle: RiddleConfig;
 }
 
 interface Props {
@@ -59,21 +58,6 @@ const VARIANTS: Record<Variant, VariantConfig> = {
       [keyOf(0, 2)]: "red",
       [keyOf(2, 0)]: "red",
     },
-    riddle: {
-      prompt: (
-        <>
-          In the bone-dry realm where the shinigami drift, one withered
-          fruit is prized above all others — Ryuk would trade a name in the
-          notebook for a single taste. Wrinkled, sweet, and coveted even by
-          gods of death: name this dessicated fruit of their dreary world.
-          <br />
-          <em className="text-[var(--muted)]">One word.</em>
-        </>
-      ),
-      answers: ["apple", "apples"],
-      wrongHint:
-        "Not quite — think of what Ryuk craves on every page of the death god's ledger.",
-    },
   },
   rowpair: {
     start: [
@@ -93,23 +77,6 @@ const VARIANTS: Record<Variant, VariantConfig> = {
       [keyOf(0, 2)]: "blue",
       [keyOf(2, 0)]: "red",
       [keyOf(2, 2)]: "red",
-    },
-    riddle: {
-      prompt: (
-        <>
-          A young genius finds a black notebook fallen from the sky. With it
-          he begins a secret crusade — judging criminals from the safety of
-          his study, striking them down by name alone. The world soon learns
-          of this invisible judge and christens him with a single word that
-          means &ldquo;killer&rdquo; in the tongue of the island that bore
-          him. By what name does the world come to know him?
-          <br />
-          <em className="text-[var(--muted)]">One word.</em>
-        </>
-      ),
-      answers: ["kira"],
-      wrongHint:
-        "Not quite — this is the alias Light Yagami takes, the name whispered across every news broadcast in the series.",
     },
   },
   classical: {
@@ -131,23 +98,6 @@ const VARIANTS: Record<Variant, VariantConfig> = {
       [keyOf(0, 2)]: "red",
       [keyOf(2, 0)]: "red",
     },
-    riddle: {
-      prompt: (
-        <>
-          Among the shinigami, one bore a heart. Tall as a mast, her body all
-          bone and silver, she loved a human girl in defiance of every rule
-          her kind obeys. When the detectives' noose tightened around her
-          beloved, she took up her ledger and struck down two men to save
-          her — and was undone on the instant, crumbling to dust the moment
-          the ink dried. What was her name?
-          <br />
-          <em className="text-[var(--muted)]">One word.</em>
-        </>
-      ),
-      answers: ["rem"],
-      wrongHint:
-        "Not quite — the answer is the tall shinigami who gave her notebook to Misa and who was undone by her own love.",
-    },
   },
 };
 
@@ -160,28 +110,16 @@ export default function SwapKnightsPuzzle({
   const START_PIECES = config.start;
   const GOAL_PIECES = config.goal;
   const TARGET = config.target;
-  const RIDDLE = config.riddle;
   const [pieces, setPieces] = useState<Piece[]>(() =>
     START_PIECES.map((p) => ({ ...p, pos: [...p.pos] as Coord })),
   );
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
 
-  const [riddleOpen, setRiddleOpen] = useState(false);
-  const [riddleAnswer, setRiddleAnswer] = useState("");
-  const [riddleError, setRiddleError] = useState(false);
-  const [graphUnlocked, setGraphUnlocked] = useState(false);
-
-  const submitRiddle = () => {
-    const normalized = riddleAnswer.trim().toLowerCase();
-    if (RIDDLE.answers.includes(normalized)) {
-      setGraphUnlocked(true);
-      setRiddleOpen(false);
-      setRiddleError(false);
-    } else {
-      setRiddleError(true);
-    }
-  };
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const cellPx = fitCell(Math.round(72 * factor), COLS, availWidth);
+  const goalCellPx = fitCell(Math.round(56 * factor), COLS, availWidth);
 
   const pieceAt = useMemo(() => {
     const map = new Map<string, Piece>();
@@ -241,7 +179,7 @@ export default function SwapKnightsPuzzle({
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div className="flex flex-wrap items-start justify-center gap-8">
           <BoardFrame label="Board">
             <Board
@@ -250,31 +188,16 @@ export default function SwapKnightsPuzzle({
               isLegalMove={isLegalMove}
               solved={solved}
               onClick={handleClick}
-              cellPx={72}
+              cellPx={cellPx}
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceAt={pieceAt}
-                selectedId={selectedId}
-                size={COLS * 72 + 16}
-              />
-            )}
           </BoardFrame>
 
           <BoardFrame label="Goal" faded>
             <Board
               pieceAt={pieceMapOf(GOAL_PIECES)}
-              cellPx={56}
+              cellPx={goalCellPx}
               faded
             />
-            {graphUnlocked && (
-              <KnightGraph
-                pieceAt={pieceMapOf(GOAL_PIECES)}
-                selectedId={null}
-                size={COLS * 56 + 16}
-                faded
-              />
-            )}
           </BoardFrame>
         </div>
 
@@ -288,77 +211,13 @@ export default function SwapKnightsPuzzle({
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Swapped in {moves} {moves === 1 ? "move" : "moves"}.
             </span>
           )}
         </div>
-
-        {!graphUnlocked && (
-          <button
-            onClick={() => {
-              setRiddleOpen((v) => !v);
-              setRiddleError(false);
-            }}
-            className="text-[10px] tracking-wider uppercase text-[var(--muted)] hover:text-[var(--ink)] transition-colors mt-2 opacity-40 hover:opacity-80"
-            style={{ background: "none", border: "none", padding: "2px 4px", cursor: "pointer" }}
-            aria-label="Reveal hint"
-          >
-            mind over matter
-          </button>
-        )}
-
-        {riddleOpen && !graphUnlocked && (
-          <div
-            className="w-full max-w-md p-4 rounded-lg border border-[var(--rule)] bg-[var(--surface)]"
-          >
-            <p className="text-sm mb-3">{RIDDLE.prompt}</p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submitRiddle();
-              }}
-              className="flex items-center gap-2"
-            >
-              <input
-                type="text"
-                value={riddleAnswer}
-                onChange={(e) => {
-                  setRiddleAnswer(e.target.value);
-                  setRiddleError(false);
-                }}
-                placeholder="your answer"
-                aria-label="Riddle answer"
-                autoFocus
-                className="flex-1 px-3 py-1.5 rounded-md border border-[var(--rule)] bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--accent)]"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] text-sm transition-colors"
-              >
-                Answer
-              </button>
-            </form>
-            {riddleError && (
-              <p className="text-xs mt-2" style={{ color: "var(--accent)" }}>
-                {RIDDLE.wrongHint}
-              </p>
-            )}
-          </div>
-        )}
-
-        {graphUnlocked && (
-          <p className="text-sm text-[var(--muted)] max-w-lg text-center">
-            Each square is a vertex; an edge joins two squares whenever a knight
-            can jump between them. The knights on the graph move in lockstep
-            with those on the board.
-          </p>
-        )}
-
-        {graphUnlocked && (
-          <UntangleAnimation size={480} />
-        )}
       </div>
     </figure>
   );
@@ -558,366 +417,5 @@ function Knight({
         />
       </g>
     </svg>
-  );
-}
-
-// Knight-move graph on the 3x3 board: an 8-cycle around the outer squares
-// (1-6-7-2-9-4-3-8-1) plus the isolated centre vertex 5.
-const GRAPH_CYCLE = [1, 6, 7, 2, 9, 4, 3, 8] as const;
-
-function squareToCoord(sq: number): Coord {
-  const idx = sq - 1;
-  return [Math.floor(idx / COLS), idx % COLS];
-}
-
-function graphPos(sq: number, size: number): { x: number; y: number } {
-  const center = size / 2;
-  const radius = center - Math.max(24, size * 0.13);
-  if (sq === 5) return { x: center, y: center };
-  const i = GRAPH_CYCLE.indexOf(sq as (typeof GRAPH_CYCLE)[number]);
-  const angle = (-Math.PI / 2) + (i * 2 * Math.PI) / GRAPH_CYCLE.length;
-  return {
-    x: center + radius * Math.cos(angle),
-    y: center + radius * Math.sin(angle),
-  };
-}
-
-function KnightGraph({
-  pieceAt,
-  selectedId,
-  size,
-  faded = false,
-}: {
-  pieceAt: Map<string, Piece>;
-  selectedId: number | null;
-  size: number;
-  faded?: boolean;
-}) {
-  const nodeR = Math.max(9, Math.round(size * 0.055));
-  const fontSize = Math.max(9, Math.round(size * 0.05));
-  const edgeWidth = Math.max(3, Math.round(size * 0.016));
-
-  const edges: Array<[number, number]> = [];
-  for (let i = 0; i < GRAPH_CYCLE.length; i++) {
-    edges.push([GRAPH_CYCLE[i], GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length]]);
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      role="img"
-      aria-label={faded ? "Knight-move graph, goal state" : "Knight-move graph"}
-      style={{
-        background: "var(--surface)",
-        border: `1px ${faded ? "dashed" : "solid"} var(--rule)`,
-        borderRadius: 12,
-        opacity: faded ? 0.75 : 1,
-        filter: faded ? "saturate(0.55)" : "none",
-      }}
-    >
-      {edges.map(([a, b], i) => {
-        const pa = graphPos(a, size);
-        const pb = graphPos(b, size);
-        return (
-          <line
-            key={i}
-            x1={pa.x}
-            y1={pa.y}
-            x2={pb.x}
-            y2={pb.y}
-            stroke="var(--ink)"
-            strokeOpacity={0.7}
-            strokeWidth={edgeWidth}
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {Array.from({ length: 9 }, (_, i) => {
-        const sq = i + 1;
-        const { x, y } = graphPos(sq, size);
-        const [r, c] = squareToCoord(sq);
-        const here = pieceAt.get(keyOf(r, c));
-        const isSelected = here != null && selectedId === here.id;
-
-        const fill = here
-          ? here.color === "red" ? "#c0392b" : "#2563eb"
-          : "var(--surface)";
-        const stroke = here
-          ? here.color === "red" ? "#7a1d13" : "#1e3a8a"
-          : "var(--muted)";
-        const textColor = here ? "#ffffff" : "var(--muted)";
-
-        return (
-          <g key={sq}>
-            <circle
-              cx={x}
-              cy={y}
-              r={nodeR}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={isSelected ? 3 : 1.8}
-            />
-            {isSelected && (
-              <circle
-                cx={x}
-                cy={y}
-                r={nodeR + 5}
-                fill="none"
-                stroke="var(--accent)"
-                strokeWidth={2}
-              />
-            )}
-            <text
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={fontSize}
-              fontWeight={600}
-              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              fill={textColor}
-            >
-              {sq}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-function boardLayout(size: number) {
-  const boardSize = size * 0.55;
-  const offset = (size - boardSize) / 2;
-  const cellSize = boardSize / COLS;
-  return { boardSize, offset, cellSize };
-}
-
-function chessboardPos(sq: number, size: number): { x: number; y: number } {
-  const { offset, cellSize } = boardLayout(size);
-  const [r, c] = squareToCoord(sq);
-  return {
-    x: offset + (c + 0.5) * cellSize,
-    y: offset + (r + 0.5) * cellSize,
-  };
-}
-
-function segmentsCross(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-  c: { x: number; y: number },
-  d: { x: number; y: number },
-): boolean {
-  const orient = (
-    p: { x: number; y: number },
-    q: { x: number; y: number },
-    r: { x: number; y: number },
-  ) => Math.sign((q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x));
-  const o1 = orient(a, b, c);
-  const o2 = orient(a, b, d);
-  const o3 = orient(c, d, a);
-  const o4 = orient(c, d, b);
-  return o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0 && o1 !== o2 && o3 !== o4;
-}
-
-function UntangleAnimation({ size }: { size: number }) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const initial = useMemo(() => {
-    const p: Record<number, { x: number; y: number }> = {};
-    for (let sq = 1; sq <= 9; sq++) p[sq] = chessboardPos(sq, size);
-    return p;
-  }, [size]);
-
-  const [positions, setPositions] = useState(initial);
-  const [dragging, setDragging] = useState<number | null>(null);
-
-  const toSvgCoords = (clientX: number, clientY: number) => {
-    const svg = svgRef.current;
-    if (!svg) return { x: 0, y: 0 };
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return { x: 0, y: 0 };
-    const pt = svg.createSVGPoint();
-    pt.x = clientX;
-    pt.y = clientY;
-    const { x, y } = pt.matrixTransform(ctm.inverse());
-    return { x, y };
-  };
-
-  const startDrag = (sq: number) => (e: React.PointerEvent<SVGElement>) => {
-    e.preventDefault();
-    (e.currentTarget as SVGElement).setPointerCapture(e.pointerId);
-    setDragging(sq);
-  };
-
-  const onMove = (e: React.PointerEvent<SVGElement>) => {
-    if (dragging == null) return;
-    const { x, y } = toSvgCoords(e.clientX, e.clientY);
-    const pad = 12;
-    const cx = Math.max(pad, Math.min(size - pad, x));
-    const cy = Math.max(pad, Math.min(size - pad, y));
-    setPositions((prev) => ({ ...prev, [dragging]: { x: cx, y: cy } }));
-  };
-
-  const endDrag = (e: React.PointerEvent<SVGElement>) => {
-    if (dragging == null) return;
-    try {
-      (e.currentTarget as SVGElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // pointer may already be released
-    }
-    setDragging(null);
-  };
-
-  const reset = () => setPositions(initial);
-
-  const edges: Array<[number, number]> = [];
-  for (let i = 0; i < GRAPH_CYCLE.length; i++) {
-    edges.push([GRAPH_CYCLE[i], GRAPH_CYCLE[(i + 1) % GRAPH_CYCLE.length]]);
-  }
-
-  let crossings = 0;
-  for (let i = 0; i < edges.length; i++) {
-    for (let j = i + 1; j < edges.length; j++) {
-      const [a, b] = edges[i];
-      const [c, d] = edges[j];
-      if (a === c || a === d || b === c || b === d) continue;
-      if (segmentsCross(positions[a], positions[b], positions[c], positions[d])) {
-        crossings++;
-      }
-    }
-  }
-  const solved = crossings === 0;
-
-  const nodeR = Math.max(12, Math.round(size * 0.04));
-  const fontSize = Math.max(11, Math.round(size * 0.035));
-  const edgeWidth = Math.max(3, Math.round(size * 0.01));
-  const { offset, cellSize } = boardLayout(size);
-
-  return (
-    <div className="flex flex-col items-center gap-3 mt-4 w-full">
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${size} ${size}`}
-        role="img"
-        aria-label="Drag the vertices to untangle the knight-move graph"
-        onPointerMove={onMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        style={{
-          width: "100%",
-          maxWidth: size,
-          height: "auto",
-          background: "var(--surface)",
-          border: "1px solid var(--rule)",
-          borderRadius: 12,
-          touchAction: "none",
-          cursor: dragging != null ? "grabbing" : "default",
-        }}
-      >
-        <g opacity={0.4}>
-          {Array.from({ length: ROWS * COLS }, (_, idx) => {
-            const r = Math.floor(idx / COLS);
-            const c = idx % COLS;
-            const isLight = (r + c) % 2 === 0;
-            return (
-              <rect
-                key={idx}
-                x={offset + c * cellSize}
-                y={offset + r * cellSize}
-                width={cellSize}
-                height={cellSize}
-                fill={isLight ? "var(--sq-light)" : "var(--sq-dark)"}
-              />
-            );
-          })}
-        </g>
-
-        {edges.map(([a, b], i) => {
-          const pa = positions[a];
-          const pb = positions[b];
-          return (
-            <line
-              key={i}
-              x1={pa.x}
-              y1={pa.y}
-              x2={pb.x}
-              y2={pb.y}
-              stroke="var(--ink)"
-              strokeOpacity={0.7}
-              strokeWidth={edgeWidth}
-              strokeLinecap="round"
-            />
-          );
-        })}
-
-        {Array.from({ length: 9 }, (_, i) => {
-          const sq = i + 1;
-          const { x, y } = positions[sq];
-          const isDragging = dragging === sq;
-          return (
-            <g key={sq}>
-              <circle
-                cx={x}
-                cy={y}
-                r={nodeR}
-                fill="var(--surface)"
-                stroke={isDragging ? "var(--accent)" : "var(--muted)"}
-                strokeWidth={isDragging ? 2.6 : 1.8}
-                onPointerDown={startDrag(sq)}
-                style={{ cursor: isDragging ? "grabbing" : "grab" }}
-              />
-              <text
-                x={x}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize={fontSize}
-                fontWeight={600}
-                fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                fill="var(--muted)"
-                pointerEvents="none"
-              >
-                {sq}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      <div className="flex items-center gap-3 text-sm flex-wrap justify-center">
-        <span className="text-[var(--muted)]">
-          Crossings:{" "}
-          <strong
-            style={{ color: solved ? "var(--accent)" : "var(--ink)" }}
-          >
-            {crossings}
-          </strong>
-        </span>
-        <button
-          onClick={reset}
-          className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
-        >
-          Reset
-        </button>
-      </div>
-
-      <p className="text-sm text-[var(--muted)] max-w-lg text-center">
-        {solved ? (
-          <>
-            <strong style={{ color: "var(--accent)" }}>No crossings.</strong>{" "}
-            The knight-move graph is just an 8-cycle in disguise — and square 5
-            sits alone because no knight move lands there.
-          </>
-        ) : (
-          <>
-            Drag the vertices to untangle the graph. You&rsquo;re done when no
-            two edges cross.
-          </>
-        )}
-      </p>
-    </div>
   );
 }

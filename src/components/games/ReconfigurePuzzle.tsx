@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  BoardSizeControl,
+  fitCell,
+  useAvailableWidth,
+  useBoardSize,
+} from "./boardSize";
 
 type Color = "red" | "blue";
 
@@ -101,6 +107,11 @@ export default function ReconfigurePuzzle({ title, hint }: Props) {
     setMoves(0);
   };
 
+  const { sizeKey, factor, setSizeKey } = useBoardSize();
+  const { ref: sizerRef, width: availWidth } = useAvailableWidth<HTMLDivElement>();
+  const boardCellPx = fitCell(Math.round(70 * factor), COLS, availWidth);
+  const goalCellPx = fitCell(Math.round(52 * factor), COLS, availWidth);
+
   return (
     <figure className="not-prose my-10">
       {title && (
@@ -110,7 +121,7 @@ export default function ReconfigurePuzzle({ title, hint }: Props) {
         <p className="text-sm text-[var(--muted)] mb-4">{hint}</p>
       )}
 
-      <div className="flex flex-col items-center gap-5">
+      <div ref={sizerRef} className="flex flex-col items-center gap-5">
         <div className="flex flex-wrap items-start justify-center gap-8">
           <BoardFrame label="Board">
             <Board
@@ -119,13 +130,13 @@ export default function ReconfigurePuzzle({ title, hint }: Props) {
               isLegalTarget={isLegalTarget}
               solved={solved}
               onSquareClick={handleClick}
-              cellPx={70}
+              cellPx={boardCellPx}
             />
           </BoardFrame>
           <BoardFrame label="Goal" faded>
             <Board
               pieceBySq={piecesToMap(GOAL_PIECES)}
-              cellPx={52}
+              cellPx={goalCellPx}
               faded
             />
           </BoardFrame>
@@ -141,6 +152,7 @@ export default function ReconfigurePuzzle({ title, hint }: Props) {
           >
             Reset
           </button>
+          <BoardSizeControl sizeKey={sizeKey} onChange={setSizeKey} />
           {solved && (
             <span className="font-medium" style={{ color: "var(--accent)" }}>
               Reconfigured in {moves} {moves === 1 ? "move" : "moves"}.
