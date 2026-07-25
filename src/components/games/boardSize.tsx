@@ -20,7 +20,7 @@ const isSizeKey = (v: unknown): v is BoardSizeKey =>
   BOARD_SIZES.some((s) => s.key === v);
 
 export function useBoardSize() {
-  const [sizeKey, setKeyState] = useState<BoardSizeKey>("M");
+  const [sizeKey, setKeyState] = useState<BoardSizeKey>("XL");
 
   useEffect(() => {
     let stored: string | null = null;
