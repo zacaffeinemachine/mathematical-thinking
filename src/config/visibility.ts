@@ -25,7 +25,7 @@ export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
   // "logical-thinking",
   // "machines",
-  // "logic-gates",
+  "logic-gates",
   // "boolean-algebra",
   // "infinity",
   // "permutations",
@@ -52,12 +52,15 @@ export const VISIBLE_PAGES: readonly string[] = [
   "machines/xor",
   "machines/limitations",
 
-  "logic-gates/gate-zoo",
-  "logic-gates/building-from-others",
-  "logic-gates/design-challenge",
-  "logic-gates/majority-and-staircase",
-  "logic-gates/nand-universal",
-  "logic-gates/sandbox",
+  // Logic Gates is open, but only the dominoes page is released. The rest
+  // of the chapter stays hidden until its material is taught.
+  // "logic-gates/gate-zoo",
+  // "logic-gates/building-from-others",
+  "logic-gates/dominoes",
+  // "logic-gates/design-challenge",
+  // "logic-gates/majority-and-staircase",
+  // "logic-gates/nand-universal",
+  // "logic-gates/sandbox",
 
   "boolean-algebra/two-values",
   "boolean-algebra/the-laws",
