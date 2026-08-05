@@ -1,13 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DominoBoard from "./dominoes/DominoBoard";
+import { useClock } from "./dominoes/useClock";
 import { ROW_LABELS, simulate, type Bit } from "./dominoes/model";
 import { DEMOS, type Demo } from "./dominoes/presets";
 
+// Ticks per second. One tick is one cell of travel, and a tile spends
+// most of a tick visibly going over, so these are deliberately unhurried:
+// the default used to be four times faster and the wavefront was easy to
+// miss entirely.
 const SPEEDS = [
-  { label: "1×", ms: 260 },
-  { label: "2×", ms: 130 },
-  { label: "4×", ms: 65 },
+  { label: "½×", tps: 1.25 },
+  { label: "1×", tps: 2.5 },
+  { label: "2×", tps: 5 },
+  { label: "4×", tps: 10 },
 ];
+const DEFAULT_SPEED = 1;
 
 function btnStyle(enabled: boolean): React.CSSProperties {
   return {
@@ -38,10 +45,9 @@ function knobStyle(on: boolean): React.CSSProperties {
 }
 
 export interface DominoDemoProps {
-  /** Which preset to show, by id: "or" | "push-only" | "not" | "and". */
+  /** Preset id: "run" | "or" | "push-only" | "not" | "and". */
   demo: string;
   cellPx?: number;
-  /** Start with these inputs latched. */
   initialA?: Bit;
   initialB?: Bit;
   showTable?: boolean;
@@ -63,76 +69,29 @@ export default function DominoDemo({
 
   const [a, setA] = useState<Bit>(initialA);
   const [b, setB] = useState<Bit>(initialB);
-  const [tick, setTick] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [speedIdx, setSpeedIdx] = useState(0);
-  const timer = useRef<number | null>(null);
+  const [speedIdx, setSpeedIdx] = useState(DEFAULT_SPEED);
 
   const sim = useMemo(
     () => (preset ? simulate(preset.board, a, b) : null),
     [preset, a, b],
   );
   const lastTick = sim?.lastTick ?? 0;
-  const done = tick >= lastTick;
 
-  const stop = useCallback(() => {
-    if (timer.current !== null) {
-      window.clearInterval(timer.current);
-      timer.current = null;
-    }
-    setPlaying(false);
-  }, []);
-
-  // Advance the clock while playing; halt when the run has settled.
-  useEffect(() => {
-    if (!playing) return;
-    const ms = SPEEDS[speedIdx].ms;
-    timer.current = window.setInterval(() => {
-      setTick((t) => {
-        if (t >= lastTick) {
-          if (timer.current !== null) {
-            window.clearInterval(timer.current);
-            timer.current = null;
-          }
-          setPlaying(false);
-          return t;
-        }
-        return t + 1;
-      });
-    }, ms);
-    return () => {
-      if (timer.current !== null) {
-        window.clearInterval(timer.current);
-        timer.current = null;
-      }
-    };
-  }, [playing, speedIdx, lastTick]);
+  const clock = useClock(lastTick, SPEEDS[speedIdx].tps);
+  const { time, playing, play, stop, step, reset, restart, end } = clock;
+  const settled = time >= end;
 
   // Changing an input starts a fresh run.
   const setInput = useCallback(
     (which: "A" | "B", v: Bit) => {
-      stop();
-      setTick(0);
+      restart();
       if (which === "A") setA(v);
       else setB(v);
     },
-    [stop],
+    [restart],
   );
 
-  const reset = useCallback(() => {
-    stop();
-    setTick(0);
-  }, [stop]);
-
-  const stepOnce = useCallback(() => {
-    stop();
-    setTick((t) => Math.min(t + 1, lastTick));
-  }, [stop, lastTick]);
-
-  const playAll = useCallback(() => {
-    if (done) setTick(0);
-    setPlaying(true);
-  }, [done]);
+  useEffect(() => stop, [stop]);
 
   if (!preset) {
     return (
@@ -141,8 +100,6 @@ export default function DominoDemo({
       </div>
     );
   }
-
-  const outNow = sim && sim.out === 1 && tick >= (sim.lastTick ?? 0) ? 1 : null;
 
   return (
     <div style={{ margin: "28px 0" }}>
@@ -161,12 +118,11 @@ export default function DominoDemo({
       <DominoBoard
         board={preset.board}
         sim={sim}
-        tick={tick}
+        time={time}
         cellPx={cellPx}
         ariaLabel={preset.title}
       />
 
-      {/* input knobs */}
       <div
         style={{
           display: "flex",
@@ -203,7 +159,6 @@ export default function DominoDemo({
         )}
       </div>
 
-      {/* transport */}
       <div
         style={{
           display: "flex",
@@ -214,16 +169,13 @@ export default function DominoDemo({
           flexWrap: "wrap",
         }}
       >
-        <button
-          onClick={playing ? stop : playAll}
-          style={btnStyle(true)}
-        >
-          {playing ? "Pause" : done && tick > 0 ? "Play again" : "Play"}
+        <button onClick={playing ? stop : play} style={btnStyle(true)}>
+          {playing ? "Pause" : settled && time > 0 ? "Play again" : "Play"}
         </button>
-        <button onClick={stepOnce} style={btnStyle(!done)} disabled={done}>
+        <button onClick={step} style={btnStyle(!settled)} disabled={settled}>
           Step
         </button>
-        <button onClick={reset} style={btnStyle(tick > 0)} disabled={tick === 0}>
+        <button onClick={reset} style={btnStyle(time > 0)} disabled={time === 0}>
           Reset
         </button>
         <div style={{ display: "flex", gap: 4, marginLeft: 4 }}>
@@ -251,22 +203,21 @@ export default function DominoDemo({
             marginLeft: 4,
           }}
         >
-          tick {tick}/{lastTick}
+          tick {Math.min(Math.floor(time), lastTick)}/{lastTick}
         </span>
       </div>
 
-      {/* verdict */}
       <div
         style={{
           textAlign: "center",
           marginTop: 8,
           fontSize: 13,
           minHeight: 20,
-          color: outNow ? "var(--dom-front)" : "var(--muted)",
-          fontWeight: outNow ? 600 : 400,
+          color: sim?.out === 1 ? "var(--dom-front)" : "var(--muted)",
+          fontWeight: sim?.out === 1 ? 600 : 400,
         }}
       >
-        {done && tick > 0
+        {settled && time > 0
           ? sim?.out === 1
             ? "The output toppled — 1."
             : "The output is still standing — 0."
@@ -274,12 +225,16 @@ export default function DominoDemo({
       </div>
 
       {showTable && (
-        <DemoTable preset={preset} a={a} b={b} onPick={(na, nb) => {
-          stop();
-          setTick(0);
-          setA(na);
-          setB(nb);
-        }} />
+        <DemoTable
+          preset={preset}
+          a={a}
+          b={b}
+          onPick={(na, nb) => {
+            restart();
+            setA(na);
+            setB(nb);
+          }}
+        />
       )}
 
       {showCaption && (

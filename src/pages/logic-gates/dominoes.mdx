@@ -26,9 +26,22 @@ have been laid out by the ten thousand to add two numbers together, and
 the arrangement is the same arrangement an engineer would etch into
 silicon.
 
-This page is that claim, made playable. Every board below is a real
-simulation: a wave of toppling spreads one square per tick, and you can
-watch it go.
+This page is that claim, made playable.
+
+A word about what the pictures are and are not. The logic underneath
+every board below is simulated exactly: a wave of toppling spreads one
+square per tick, and which tiles fall, in what order, is computed rather
+than drawn by hand. The *wood* is not simulated. There is no gravity in
+here, no friction, no tile that bounces or lands short. Think of each
+board as an honest diagram of a real arrangement, drawn at an angle so
+that you can see the tiles lean, rather than as footage of one. If you
+would like to see the real thing, filmed builds of domino adders and
+domino logic gates are easy to find, and worth ten minutes.
+
+Here is a single run, close up, so that the drawing is legible before it
+has to carry any logic. Press Play.
+
+<DominoDemo client:visible demo="run" cellPx={44} showTable={false} />
 
 **Toppled means $\texttt{1}$. Still standing means $\texttt{0}$.**
 
@@ -109,7 +122,7 @@ So A gets through to the output only when B's flip *failed* — that is,
 only when B toppled. A and B both toppling is the only case that lights
 the output.
 
-<DominoDemo client:visible demo="and" cellPx={26} initialA={1} initialB={1} />
+<DominoDemo client:visible demo="and" cellPx={30} initialA={1} initialB={1} />
 
 Notice the long detour A's line takes around the left-hand side. It is
 not decoration. A has to arrive at the crossing *after* the block has

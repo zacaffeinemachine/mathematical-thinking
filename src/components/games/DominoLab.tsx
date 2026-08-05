@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DominoBoard from "./dominoes/DominoBoard";
+import { useClock } from "./dominoes/useClock";
 import {
   ROW_LABELS,
   cellAt,
@@ -99,25 +100,25 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
   const [knockDir, setKnockDir] = useState<Dir>("up");
   const [a, setA] = useState<Bit>(1);
   const [b, setB] = useState<Bit>(1);
-  const [tick, setTick] = useState(0);
-  const [playing, setPlaying] = useState(false);
   const [revealed, setRevealed] = useState(false);
-  const timer = useRef<number | null>(null);
 
   const locked = useMemo(() => lockedMask(task), [task]);
+
+  const sim = useMemo(() => simulate(board, a, b), [board, a, b]);
+  const lastTick = sim.lastTick;
+
+  // 2.5 ticks per second — the same unhurried default as the demos.
+  const clock = useClock(lastTick, 2.5);
+  const { time, playing, play, stop, step, reset, restart, end } = clock;
+  const settled = time >= end;
 
   // Switching task loads a fresh board.
   useEffect(() => {
     setBoard(task.start);
-    setTick(0);
-    setPlaying(false);
+    restart();
     setRevealed(false);
     setTool("tile");
-  }, [task]);
-
-  const sim = useMemo(() => simulate(board, a, b), [board, a, b]);
-  const lastTick = sim.lastTick;
-  const done = tick >= lastTick;
+  }, [task, restart]);
 
   const got = useMemo(() => truthTable(board), [board]);
   // A one-input task says nothing about the rows where B topples, and its
@@ -130,43 +131,11 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
     task.table.length === 4 &&
     checkedRows.every((i) => got[i] === task.table[i]);
 
-  const stop = useCallback(() => {
-    if (timer.current !== null) {
-      window.clearInterval(timer.current);
-      timer.current = null;
-    }
-    setPlaying(false);
-  }, []);
-
-  useEffect(() => {
-    if (!playing) return;
-    timer.current = window.setInterval(() => {
-      setTick((t) => {
-        if (t >= lastTick) {
-          if (timer.current !== null) {
-            window.clearInterval(timer.current);
-            timer.current = null;
-          }
-          setPlaying(false);
-          return t;
-        }
-        return t + 1;
-      });
-    }, 130);
-    return () => {
-      if (timer.current !== null) {
-        window.clearInterval(timer.current);
-        timer.current = null;
-      }
-    };
-  }, [playing, lastTick]);
-
   const paint = useCallback(
     (x: number, y: number) => {
       const i = y * board.width + x;
       if (locked[i]) return;
-      stop();
-      setTick(0);
+      restart();
       setBoard((bd) => {
         const cur = cellAt(bd, x, y);
         if (tool === "erase") {
@@ -186,7 +155,7 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
         return withCell(bd, x, y, { kind });
       });
     },
-    [board.width, locked, stop, tool, knockDir],
+    [board.width, locked, restart, tool, knockDir],
   );
 
   const dragPaint = useCallback(
@@ -199,27 +168,24 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
   );
 
   const clearBoard = useCallback(() => {
-    stop();
-    setTick(0);
+    restart();
     setRevealed(false);
     setBoard(task.start);
-  }, [stop, task]);
+  }, [restart, task]);
 
   const showSolution = useCallback(() => {
-    stop();
-    setTick(0);
+    restart();
     setRevealed(true);
     setBoard(task.solution);
-  }, [stop, task]);
+  }, [restart, task]);
 
   const setInput = useCallback(
     (which: "A" | "B", v: Bit) => {
-      stop();
-      setTick(0);
+      restart();
       if (which === "A") setA(v);
       else setB(v);
     },
-    [stop],
+    [restart],
   );
 
   const palette: Tool[] = [...(task.palette as Tool[]), "erase"];
@@ -292,7 +258,7 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
           <DominoBoard
             board={board}
             sim={sim}
-            tick={tick}
+            time={time}
             cellPx={cellPx}
             locked={locked}
             onCellClick={paint}
@@ -390,30 +356,15 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
               <button
-                onClick={() => {
-                  if (done) setTick(0);
-                  setPlaying(!playing);
-                }}
+                onClick={playing ? stop : play}
                 style={btnStyle(false)}
               >
-                {playing ? "Pause" : "Play"}
+                {playing ? "Pause" : settled && time > 0 ? "Play again" : "Play"}
               </button>
-              <button
-                onClick={() => {
-                  stop();
-                  setTick((t) => Math.min(t + 1, lastTick));
-                }}
-                style={btnStyle(false)}
-              >
+              <button onClick={step} style={btnStyle(false)}>
                 Step
               </button>
-              <button
-                onClick={() => {
-                  stop();
-                  setTick(0);
-                }}
-                style={btnStyle(false)}
-              >
+              <button onClick={reset} style={btnStyle(false)}>
                 Reset
               </button>
             </div>
@@ -425,7 +376,8 @@ export default function DominoLab({ cellPx = 28 }: { cellPx?: number }) {
                 marginTop: 6,
               }}
             >
-              tick {tick}/{lastTick} · out {done ? sim.out : "…"}
+              tick {Math.min(Math.floor(time), lastTick)}/{lastTick} · out{" "}
+              {settled ? sim.out : "…"}
             </div>
           </Panel>
 

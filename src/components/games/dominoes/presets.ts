@@ -28,6 +28,18 @@ export interface Demo {
   caption: string;
 }
 
+// --- 0. A plain run, close up ------------------------------------------
+
+export const runDemo: Demo = {
+  id: "run",
+  title: "One run of dominoes",
+  board: parseBoard(["A##############O"]),
+  table: [0, 0, 1, 1],
+  inputs: ["A"],
+  caption:
+    "Nothing logical here yet — just a line of tiles and a push at one end. Toppled means 1, still standing means 0, and everything on this page is built out of runs like this one.",
+};
+
 // --- 1. OR: two runs merging into one continuation ---------------------
 
 export const orDemo: Demo = {
@@ -107,7 +119,7 @@ export const andDemo: Demo = {
     "The free run across the middle is a NOT gate for B, exactly as above. Its output travels down and ends in a knock that ejects a tile from A's path. So A gets through to the output only when B failed to be flipped — that is, only when B toppled. A's line takes the long way round the left for a reason: the block has to be in place before A's wave arrives.",
 };
 
-export const DEMOS: Demo[] = [orDemo, pushOnlyDemo, notDemo, andDemo];
+export const DEMOS: Demo[] = [runDemo, orDemo, pushOnlyDemo, notDemo, andDemo];
 
 // --- lab tasks ---------------------------------------------------------
 
