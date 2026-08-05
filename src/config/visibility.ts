@@ -23,12 +23,12 @@
 
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
-  "logical-thinking",
-  "machines",
-  "logic-gates",
-  "boolean-algebra",
-  "infinity",
-  "permutations",
+  // "logical-thinking",
+  // "machines",
+  // "logic-gates",
+  // "boolean-algebra",
+  // "infinity",
+  // "permutations",
 ];
 
 export const VISIBLE_PAGES: readonly string[] = [
