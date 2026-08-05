@@ -1,0 +1,135 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Gates made of dominoes
+order: 3
+chapter: logic-gates
+chapterTitle: Logic Gates
+blurb: No current, no copper, no electricity — just wood falling over. Watch four gates topple, then build your own.
+description: Logic gates built from lines of standing dominoes — an animated OR, the push-only wall, a NOT that needs a free run, and an AND. Plus a lab for building your own.
+---
+import DominoDemo from "../../components/games/DominoDemo.tsx";
+import DominoLab from "../../components/games/DominoLab.tsx";
+
+Read the last page again and notice what its argument never used. It
+never used current, or copper, or voltage. It used only this: each wire
+is in one of two states, each gate obeys a fixed rule, and AND and OR
+happen to send all-$\texttt{0}$s to $\texttt{0}$. Any material at all
+with two states and a fixed rule will do just as well.
+
+People have taken this literally. Working gates have been built out of
+lines of standing dominoes, out of marbles rolling down a pegboard and
+being steered left or right, out of water running through pipes and
+valves, out of blocks inside the game *Minecraft*, and — in one
+published experiment — out of a swarm of soldier crabs, which merge and
+split as they flow down a corridor. None of these is a joke. Dominoes
+have been laid out by the ten thousand to add two numbers together, and
+the arrangement is the same arrangement an engineer would etch into
+silicon.
+
+This page is that claim, made playable. Every board below is a real
+simulation: a wave of toppling spreads one square per tick, and you can
+watch it go.
+
+**Toppled means $\texttt{1}$. Still standing means $\texttt{0}$.**
+
+## OR — two runs, one continuation
+
+The domino OR takes about ten seconds to understand. Run two lines of
+dominoes into a single continuation line. If the left line topples, the
+continuation topples. If the right line topples, the continuation
+topples. If neither does, nothing happens.
+
+Click a knob to set an input, then press Play. Clicking a row of the
+table sets the inputs to that row.
+
+<DominoDemo client:visible demo="or" />
+
+That is the generous committee, in wood, with no current anywhere.
+
+## The wall
+
+Now the sting. Here is a much more elaborate arrangement — loops,
+branches, the long way round — and it is worth being suspicious of it,
+because it is going to lose an argument in a moment.
+
+<DominoDemo client:visible demo="push-only" />
+
+Set both inputs to $\texttt{0}$ and press Play. Nothing happens. Not
+"almost nothing" — nothing at all, because a standing domino has no
+reason to fall unless something knocks it.
+
+That is not a fact about *this* board. Call a medium **push-only** if
+nothing at all happens in it when nothing arrives: standing dominoes
+stay standing, still water stays still, a marble in the tray stays in
+the tray. In a push-only medium, feed every input $\texttt{0}$, and
+every part of the gadget stays $\texttt{0}$, so the output is
+$\texttt{0}$.
+
+So no arrangement of dominoes, however large and however clever, is a
+NOT gate. A NOT gate has to answer $\texttt{1}$ when its input is
+$\texttt{0}$, and a board of standing dominoes with nothing arriving
+cannot answer $\texttt{1}$ to anything. This is exactly the politeness
+of AND and OR from the previous page, wearing a different coat.
+
+## NOT — and what it costs
+
+Domino builders know this and pay the price the argument asked for. To
+get a flipper, they run one extra line that topples *on its own*,
+whatever the inputs are doing — it is marked $1$ on the board below.
+Then they let the input line knock a single domino sideways out of that
+running line's path.
+
+A sideways tile is the second piece of equipment on this page. It does
+not pass the fall on to its neighbours. Instead it ejects the tile it
+points at, and the gap it leaves stops any run that was coming through.
+
+<DominoDemo client:visible demo="not" initialA={1} />
+
+The output reads "the free run got through", which is $\texttt{1}$
+unless the input arrived. Look at what had to be brought in from outside
+to make this work: a signal that is $\texttt{1}$ for free. The previous
+page said precisely that, in algebra — *the $\texttt{1}$ has to come in
+from somewhere.*
+
+There is one more thing to notice, and it is the part that makes domino
+computers hard to build in a school hall. Press Step and watch the two
+waves race. The knock only saves the day if it arrives *before* the free
+run reaches that square. Move the input line two squares further away
+and the gate stops working, with nothing visibly wrong with it. In this
+medium a gate has to be timed as well as wired.
+
+## AND
+
+Once there is a flipper, everything else follows. The board below is the
+"flip the inputs, OR them, flip the result" idea from the previous page,
+trimmed down: the free run across the middle is a NOT gate for B, and
+its output ends in a knock that ejects a tile from A's path.
+
+So A gets through to the output only when B's flip *failed* — that is,
+only when B toppled. A and B both toppling is the only case that lights
+the output.
+
+<DominoDemo client:visible demo="and" cellPx={26} initialA={1} initialB={1} />
+
+Notice the long detour A's line takes around the left-hand side. It is
+not decoration. A has to arrive at the crossing *after* the block has
+had a chance to land, so the extra distance is buying time.
+
+## Build your own
+
+Four tasks, in order of difficulty, and then a blank board. Choose a
+piece from the palette and click a square to place it; drag to lay a run
+of plain dominoes. The grey squares are fixed — the inputs and the
+output stay where they are.
+
+The panel on the right shows what your board actually does on all four
+input rows, updated as you build. You do not have to press anything to
+be told you are right.
+
+<DominoLab client:visible />
+
+Task 3 is the one worth sitting with. Try it first with plain dominoes
+and sideways tiles only, before you reach for the free run, and watch
+what happens on the row where A is $\texttt{0}$: nothing moves, so the
+output cannot possibly be $\texttt{1}$. That is the wall again, and this
+time you are walking into it yourself.

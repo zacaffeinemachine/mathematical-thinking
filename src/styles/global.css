@@ -29,6 +29,15 @@
   --gate-ink:  #1A1008;
   --gate-wire-on:  #b91c1c;
   --gate-wire-off: #71717a;
+
+  /* Dominoes — wood tones. Standing tiles must read darker than fallen
+     ones so a toppled run is legible as a lighter trail across the board. */
+  --dom-standing: #6b4a2f;
+  --dom-fallen:   #c8a67d;
+  --dom-front:    #b91c1c;  /* the tile toppling on this very tick */
+  --dom-gap:      #d4d4d8;  /* outline of a tile that has been ejected */
+  --dom-grid:     #ececef;
+  --dom-board:    #fbfaf8;
 }
 
 :root[data-theme="dark"] {
@@ -47,16 +56,37 @@
   --sq-border: #3f3f46;
   --piece: #f4f4f5;
 
-  /* Logic gates — saturated for dark backgrounds */
+  /* Logic gates — saturated for dark backgrounds.
+     MATCH ON LUMINANCE, NOT ON PALETTE LEVEL. not/and/xor are Tailwind
+     500s and cluster at relative luminance 0.215–0.235. OR used to be
+     #4ade80 (green-400) at 0.553 — more than twice as bright as any of
+     them — and read as pale and minty beside three solid shapes.
+     Reaching for green-500 (#22c55e) did not fix it: still 0.411, because
+     green carries a 0.7152 luminance coefficient and a "same-level" green
+     is simply much brighter than a same-level red or blue.
+     #2f8f5b is the fix, at luminance 0.210 and saturation 0.67 — inside
+     the cluster on both axes, matching xor's 0.66 saturation almost
+     exactly. Note it is NOT a Tailwind swatch: getting there needs
+     value 0.56 against the siblings' 0.94–0.97, which no stock green
+     provides. Judge a replacement by its luminance, not its number. */
   --gate-not:  #ef4444;  /* vivid red */
   --gate-and:  #3b82f6;  /* bright blue */
-  --gate-or:   #4ade80;  /* vivid lime green */
+  --gate-or:   #2f8f5b;  /* muted forest green */
   --gate-xor:  #a855f7;  /* vivid purple */
   --gate-nand: #f59e0b;  /* amber */
   --gate-nor:  #94a3b8;  /* slate */
   --gate-ink:  #f4f4f5;
   --gate-wire-on:  #fb923c;  /* warm orange — pops against dark surface */
   --gate-wire-off: #6b7280;
+
+  /* Dominoes. The light/dark relationship inverts here: on a dark board a
+     standing tile is the dim one and a fallen tile catches the light. */
+  --dom-standing: #8a6a4a;
+  --dom-fallen:   #e8c9a0;
+  --dom-front:    #fb923c;
+  --dom-gap:      #52525b;
+  --dom-grid:     #232327;
+  --dom-board:    #141416;
 }
 
 html {
