@@ -69,6 +69,12 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
     setVerdict(sameSet(selected, key) ? "correct" : "wrong");
   };
 
+  // Back to a blank question: nothing highlighted, no verdict showing.
+  const clear = () => {
+    setSelected([]);
+    setVerdict(null);
+  };
+
   return (
     <div
       style={{
@@ -177,6 +183,14 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
           className="px-4 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Submit
+        </button>
+        <button
+          type="button"
+          onClick={clear}
+          disabled={selected.length === 0}
+          className="px-3 py-1.5 rounded-md border border-[var(--rule)] hover:border-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Clear
         </button>
         {verdict === "correct" && (
           <span role="status" style={{ color: "var(--mcq-right)", fontWeight: 500 }}>
