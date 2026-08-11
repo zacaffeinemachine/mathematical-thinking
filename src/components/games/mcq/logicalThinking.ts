@@ -37,8 +37,13 @@ export const andOrNot: Question[] = [
   {
     // Point 189 — deny "at least one holds" ⇒ "both fail". The tempting reading
     // is the weaker one.
+    // The prompt spells out the inclusive reading on purpose. Do NOT reword
+    // this as "Either the lift is working or the ramp is open": denying an
+    // EXCLUSIVE or leaves "both working" open as well as "neither", so the
+    // keyed answer would stop being forced and a student reading "either …
+    // or" the everyday way would be marked wrong for sound reasoning.
     prompt:
-      "A notice claims: *Either the lift is working or the ramp is open.* The notice is false. A visitor arrives pushing a heavy trolley. What can they count on?",
+      "A notice claims: *The lift is working or the ramp is open* — where *or* carries its usual meaning of at least one, possibly both. The notice turns out to be false. A visitor arrives pushing a heavy trolley. What can they count on?",
     options: [
       "At least one of the two is unavailable, but possibly not both",
       "Neither the lift nor the ramp is available",
