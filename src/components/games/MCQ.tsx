@@ -13,6 +13,12 @@ import { useState, type ReactNode } from "react";
 //  from WasonCards.tsx, which freezes on a correct answer.)
 // ---------------------------------------------------------------------------
 
+// The two verdict messages, kept together so the tone can be changed in one
+// place. They are jokes; see SITE_OVERVIEW.md, "The MCQ pattern", for the note
+// on why the wording is worth a second look before a class actually uses it.
+const SAY_RIGHT = "You got lucky.";
+const SAY_WRONG = "Better luck next time.";
+
 export interface Question {
   prompt: string;
   options: string[];
@@ -99,6 +105,15 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
       >
         {question.options.map((opt, i) => {
           const isSel = selected.includes(i);
+          // A selected option is neutral until it is submitted; then it takes
+          // the verdict's colour. Only the options the student actually chose
+          // are coloured — never the correct one, which would give the answer
+          // away on a wrong submission.
+          const tone =
+            !isSel ? null
+            : verdict === "correct" ? "right"
+            : verdict === "wrong" ? "wrong"
+            : "pick";
           return (
             <button
               key={i}
@@ -114,9 +129,12 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
                 textAlign: "left",
                 padding: "8px 12px",
                 borderRadius: 6,
-                border: `1px solid ${isSel ? "var(--accent)" : "var(--rule)"}`,
-                background: isSel ? "var(--accent-soft)" : "transparent",
-                color: "var(--ink)",
+                border: `1px solid ${tone ? `var(--mcq-${tone})` : "var(--rule)"}`,
+                background: tone ? `var(--mcq-${tone}-soft)` : "transparent",
+                color:
+                  tone === "right" || tone === "wrong"
+                    ? `var(--mcq-${tone})`
+                    : "var(--ink)",
                 font: "inherit",
                 lineHeight: 1.55,
                 cursor: "pointer",
@@ -131,9 +149,9 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
                   width: 13,
                   height: 13,
                   borderRadius: multi ? 3 : "50%",
-                  border: `1px solid ${isSel ? "var(--accent)" : "var(--muted)"}`,
-                  background: isSel ? "var(--accent)" : "transparent",
-                  boxShadow: isSel ? "inset 0 0 0 2px var(--surface)" : "none",
+                  border: `1px solid ${tone ? `var(--mcq-${tone})` : "var(--muted)"}`,
+                  background: tone ? `var(--mcq-${tone})` : "transparent",
+                  boxShadow: tone ? "inset 0 0 0 2px var(--surface)" : "none",
                 }}
               />
               <span>{inline(opt)}</span>
@@ -161,13 +179,13 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
           Submit
         </button>
         {verdict === "correct" && (
-          <span role="status" style={{ color: "var(--accent)", fontWeight: 500 }}>
-            Correct.
+          <span role="status" style={{ color: "var(--mcq-right)", fontWeight: 500 }}>
+            {SAY_RIGHT}
           </span>
         )}
         {verdict === "wrong" && (
-          <span role="status" style={{ color: "var(--muted)", fontWeight: 500 }}>
-            Try again.
+          <span role="status" style={{ color: "var(--mcq-wrong)", fontWeight: 500 }}>
+            {SAY_WRONG}
           </span>
         )}
       </div>

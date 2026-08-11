@@ -22,145 +22,157 @@ import type { Question } from "../MCQ.tsx";
 
 export const andOrNot: Question[] = [
   {
-    // Point 72 (Two claims at once) — one true row of four.
+    // Point 189 — deny "both hold" ⇒ "at least one fails", then combine with a
+    // known half. Two steps; the book never runs this scenario.
     prompt:
-      "A classmate boasts: *I revised the whole syllabus and I slept at least eight hours.* There are four situations to consider. In how many of them is the boast true?",
+      "A librarian's record says: *Anand returned the book and paid the fine.* The record turns out to be false. Anand did return the book. What follows?",
     options: [
-      "In exactly one",
-      "In all four",
-      "In exactly two",
-      "In exactly three",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 72 — "none of them is more false than another".
-    prompt:
-      "One classmate revised everything but slept four hours. Another slept soundly having revised nothing. Both made the boast above. Which is right?",
-    options: [
-      "Neither boast is false, since each classmate managed one half",
-      "The second boast is closer to true, since sleep is the harder half",
-      "The first boast is closer to true, since one of its halves holds",
-      "Both boasts are false, and neither is more false than the other",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 72 — "swapping the two halves changes nothing".
-    prompt:
-      "Under our convention, is *The power went out and we finished the class in the corridor* the same claim as *We finished the class in the corridor and the power went out*?",
-    options: [
-      "Only when both halves happen to be true",
-      "No — the first says the power cut came first",
-      "No — the first also claims the power cut is what drove the class outside",
-      "Yes — since nothing beyond the two halves is claimed, swapping them changes nothing",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 109 (One or the other) — the notice, inclusive convention.
-    prompt:
-      "A notice reads: *The scholarship goes to a student who plays a sport or edits the magazine.* A student who does both walks up to the desk. Under our convention, does she qualify?",
-    options: [
-      "Yes — *or* asks for at least one of the two, possibly both",
-      "The notice cannot be applied to her at all",
-      "No — *or* asks for exactly one of the two",
-      "Only if she does one of the two better than the other",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 109 — "the two readings differ in exactly one row, the top one".
-    prompt:
-      "The *at least one* reading of *or* and the *exactly one* reading are set side by side in a four-row table. In how many rows do the two readings disagree, and which?",
-    options: [
-      "One row — the row where both halves are false",
-      "Two rows — the two where exactly one half is true",
-      "Three rows — every row but the last",
-      "One row — the row where both halves are true",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 146 (Saying no) — denial is not the opposite.
-    prompt: "Which sentence is the denial of *The tea is hot*?",
-    options: [
-      "The tea is cold",
-      "The tea is not hot",
-      "The tea is either cold or lukewarm",
-      "The tea is lukewarm",
+      "He neither returned the book nor paid the fine",
+      "He did not pay the fine",
+      "He paid the fine",
+      "Nothing follows about the fine",
     ],
     answer: 1,
   },
   {
-    // Point 146 — "a reader who concludes it is less than five has lost five itself".
+    // Point 189 — deny "at least one holds" ⇒ "both fail". The tempting reading
+    // is the weaker one.
     prompt:
-      "A number is *not greater than five*. Which of the following values does that leave possible?",
+      "A notice claims: *Either the lift is working or the ramp is open.* The notice is false. A visitor arrives pushing a heavy trolley. What can they count on?",
     options: [
-      "4",
-      "5",
-      "6",
-      "7",
+      "At least one of the two is unavailable, but possibly not both",
+      "Neither the lift nor the ramp is available",
+      "The lift is unavailable, but the ramp may still be open",
+      "Exactly one of the two is unavailable",
     ],
-    answer: [0, 1],
+    answer: 1,
   },
   {
-    // Point 146 — the jury.
-    prompt: "A jury returns a verdict of *not guilty*. What has it done?",
+    // Point 146 — denial is not the opposite; a fresh claim with a wide middle.
+    prompt:
+      "A report states only that *the water in the tank is not cold.* Which descriptions of the water are consistent with that report?",
     options: [
-      "Said nothing at all about the case",
-      "Declared the accused innocent",
-      "Declared that the accused is probably innocent",
-      "Denied that guilt was proved",
+      "It is cold",
+      "It is lukewarm",
+      "It is warm",
+      "It is scalding",
+    ],
+    answer: [1, 2, 3],
+  },
+  {
+    // Point 146 — the boundary the everyday reading quietly loses. Fresh
+    // instance of the "not greater than five" trap.
+    prompt:
+      "A competition rule reads: *Entries that are not longer than 500 words will be accepted.* Meera submits an entry of exactly 500 words. What happens?",
+    options: [
+      "It is rejected",
+      "It is accepted only if no shorter entry is submitted",
+      "The rule does not settle it",
+      "It is accepted",
     ],
     answer: 3,
   },
   {
-    // Point 189 (Denying a joint claim) — deny "both" ⇒ "at least one fails".
+    // Point 109 — the convention against the everyday instinct, which here says
+    // "exactly one" because the sentence is an offer.
     prompt:
-      "A second classmate hears the boast *I revised the whole syllabus and I slept at least eight hours* and says *that is not true*. What exactly has the second classmate claimed?",
+      "A canteen sign reads: *With any meal you may take a fruit or a juice.* A student takes both. Under our convention, has the student gone against the sign?",
     options: [
-      "That both halves failed",
-      "That at least one of the two halves failed",
-      "That the sleep half failed",
-      "That the revision half failed",
-    ],
-    answer: 1,
-  },
-  {
-    // Point 189 — deny "at least one" ⇒ "both fail".
-    prompt:
-      "We are told that it is *not true* that the library is open or the reading room is free. What follows?",
-    options: [
-      "Both are shut",
-      "Exactly one of the two is shut",
-      "At least one of the two is shut",
-      "The library is shut, but the reading room may be free",
+      "No — *or* asks for at least one, and taking both meets that",
+      "Yes, unless the meal was paid for separately",
+      "The sign does not say either way",
+      "Yes — an offer of this kind means exactly one",
     ],
     answer: 0,
   },
   {
-    // §2.1 exercise, .tex:258 — the swimming-pool notice, inclusive convention.
+    // Point 189 + Point 227 — recognise De Morgan in an unfamiliar pair.
     prompt:
-      "A notice at a swimming pool reads: *Children under twelve or non-members must be accompanied by an adult.* Under our convention, which visitors must be accompanied?",
+      "Are these two sentences the same claim? (i) *It is not true that the printer and the scanner are both working.* (ii) *The printer is not working, or the scanner is not working.*",
     options: [
-      "A thirty-year-old non-member",
-      "A ten-year-old non-member",
-      "A ten-year-old member",
-      "A thirty-year-old member",
+      "Only when exactly one of the two machines has failed",
+      "No — the first is about the pair and the second is about each machine",
+      "No — the second allows both to have failed and the first does not",
+      "Yes — each is true in exactly the situations where at least one machine has failed",
     ],
-    answer: [0, 1, 2],
+    answer: 3,
   },
   {
-    // Point 227 (The same claim in different clothes) — the criterion.
-    prompt: "When are two sentences the same claim?",
+    // Point 189 — the same setup, but now the tempting misreading. Sits next to
+    // the previous question deliberately.
+    prompt:
+      "Same two machines. Is *It is not true that the printer and the scanner are both working* the same claim as *Neither the printer nor the scanner is working*?",
     options: [
-      "When they are the same length and stress the same half",
-      "When they are true in exactly the same situations and false in exactly the same situations",
-      "When they use the same words in a different order",
-      "When each of them can be derived from the other by adding *not* twice",
+      "Yes — both say the pair has failed",
+      "Yes, provided at least one machine has failed",
+      "No — the second is stronger, and a working printer beside a broken scanner separates them",
+      "No — the second is weaker, and a working printer beside a broken scanner separates them",
+    ],
+    answer: 2,
+  },
+  {
+    // Point 146 — double denial, buried in officialese so it has to be unwound.
+    prompt:
+      "Minutes of a meeting record: *It is not the case that the proposal was not rejected.* What became of the proposal?",
+    options: [
+      "It was neither accepted nor rejected",
+      "It was rejected",
+      "The minutes do not settle it",
+      "It was accepted",
     ],
     answer: 1,
+  },
+  {
+    // Point 72 — the convention drops order and cause. Fresh witnesses, and the
+    // question is whether two statements conflict.
+    prompt:
+      "Two witnesses are asked what happened. The first says *the alarm rang and the door opened.* The second says *the door opened and the alarm rang.* Under our convention, have the two witnesses said different things?",
+    options: [
+      "It cannot be decided without knowing the times",
+      "Yes — the first suggests the alarm opened the door",
+      "Yes — they disagree about which happened first",
+      "No — they have made the same claim",
+    ],
+    answer: 3,
+  },
+  {
+    // Points 146 + 189 chained. Genuinely multi-step: no single line of the
+    // chapter answers it.
+    prompt:
+      "Two switches sit on a panel. It is false that switches A and B are both up. It is also false that switch B is down. What is the position of switch A?",
+    options: [
+      "Up",
+      "Down",
+      "The two claims cannot both hold",
+      "Either — it is not settled",
+    ],
+    answer: 1,
+  },
+  {
+    // Point 189 — what it takes to make good on a denial. The weaker accusation
+    // needs less evidence than students expect.
+    prompt:
+      "A student claims: *I attended the seminar and I submitted the report.* The tutor replies that this is not true. Which findings, on their own, would be enough to justify the tutor?",
+    options: [
+      "The student attended the seminar",
+      "The report was never submitted",
+      "The student missed the seminar and never submitted the report",
+      "The student missed the seminar",
+    ],
+    answer: [1, 2, 3],
+  },
+  {
+    // Point 146 — "a claim and its denial can never both be true, nor both
+    // false". Applied to a dispute rather than stated.
+    prompt:
+      "A tribunal must decide whether a notice was displayed. One member reports that it was displayed; another reports that it was not. Which is right?",
+    options: [
+      "They cannot both be right, but they could both be wrong",
+      "They could both be right and they could both be wrong",
+      "They could both be right, but they cannot both be wrong",
+      "They cannot both be right, and they cannot both be wrong",
+    ],
+    answer: 3,
   },
 ];
 
@@ -170,143 +182,147 @@ export const andOrNot: Question[] = [
 
 export const quantifiers: Question[] = [
   {
-    // Point 321 (What every asks for) — one true row of eight.
+    // Point 417 — refuting an *every* claim takes one case, not a survey.
     prompt:
-      "Three passengers sit in a compartment, and the inspector announces *Every passenger in this compartment has a ticket.* Of the eight situations, in how many is the announcement true?",
+      "A warden claims: *Every locker in this corridor is locked.* You are convinced the warden is wrong. What is the least you must do to show it?",
     options: [
-      "In all eight",
-      "In exactly one",
-      "In exactly three",
-      "In exactly seven",
+      "Show that no locker in the corridor is locked",
+      "Find one unlocked locker",
+      "Find that most of the lockers are unlocked",
+      "Check every locker in the corridor",
     ],
     answer: 1,
   },
   {
-    // Point 374 (What some asks for) — seven true rows of eight.
+    // Point 417 — refuting a *some* claim is the expensive direction.
     prompt:
-      "Same compartment, same eight situations, but now the claim is *Some passenger in this compartment has a ticket.* In how many of the eight is it true?",
+      "A student claims: *Some jar on this shelf contains salt.* What would it take to show the student is wrong?",
     options: [
-      "In exactly one",
-      "In all eight",
-      "In exactly seven",
-      "In exactly three",
+      "Show that most of the jars hold something other than salt",
+      "Open one jar and find no salt in it",
+      "Open one jar and find salt in it",
+      "Open every jar on the shelf and find salt in none of them",
     ],
-    answer: 2,
+    answer: 3,
   },
   {
-    // Point 417 (Swapping one word) — the refute/establish table.
-    prompt: "What is needed to refute *Every passenger in this compartment has a ticket*?",
+    // Point 374 — *some* carries no hint of *not all*.
+    prompt:
+      "A club secretary reports: *Some members have paid the fee.* It later emerges that every single member had in fact paid. Was the secretary's report false?",
     options: [
-      "One passenger without a ticket",
-      "Checking all three passengers",
-      "Every passenger without a ticket",
-      "A majority of the passengers without tickets",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 417 — the same table, the other row.
-    prompt: "What is needed to refute *Some passenger in this compartment has a ticket*?",
-    options: [
-      "One passenger with a ticket",
-      "Checking all three passengers and finding none with a ticket",
-      "One passenger without a ticket",
-      "Two passengers without tickets",
+      "Yes — reporting *some* when all had paid is a false report",
+      "No — *some* asks for at least one, and that leaves *all* open",
+      "The report was neither true nor false",
+      "Yes, unless the secretary did not know that all had paid",
     ],
     answer: 1,
   },
   {
-    // Point 374 — some means at least one, possibly all.
+    // Point 467 — the denial of *every* is *some … not*.
     prompt:
-      "Under our convention, does *Some Scottish sheep are black* contradict *Every Scottish sheep is black*?",
+      "A coach announces: *Every player turned up to practice.* The captain says that is not true. What has the captain claimed?",
     options: [
-      "No — *some* means at least one, and that leaves *all* open",
-      "Yes, but only if there is more than one sheep in Scotland",
-      "Yes — *some* carries the hint *not all*",
-      "It cannot be decided without counting the sheep",
+      "That at least one player did not turn up",
+      "That most of the players did not turn up",
+      "That exactly one player did not turn up",
+      "That no player turned up",
     ],
     answer: 0,
   },
   {
-    // Point 437 (Which one comes first) — key chosen after the pigeonhole.
+    // Point 467 — a wrong denial can itself be false.
     prompt:
-      "A staff room has six locked pigeonholes. The bunch by the door holds exactly six keys, and each key opens exactly one of the pigeonholes, a different one each time. Which of these claims are true of that staff room?",
+      "In a squad of twenty, nineteen players turned up and one did not. The captain replies to the coach: *So nobody turned up!* What is wrong with that reply?",
     options: [
-      "Every pigeonhole has some key that opens it",
-      "There is some key that opens every pigeonhole",
-      "There is some pigeonhole that every key opens",
-      "Every key opens some pigeonhole",
-    ],
-    answer: [0, 3],
-  },
-  {
-    // Point 437 — the second sentence asks for the key first.
-    prompt: "What does *There is some key that opens every pigeonhole* demand?",
-    options: [
-      "That every key on the hook open at least one pigeonhole",
-      "One single key, fixed in advance, that opens all six pigeonholes",
-      "That the number of keys be at least the number of pigeonholes",
-      "That each pigeonhole be answered by a key, possibly a different one each time",
+      "It is false only because the captain did not count the squad",
+      "It is itself false — the denial claims only that at least one player was missing",
+      "Nothing — it is the correct denial of the coach's announcement",
+      "It is true but says less than the denial allows",
     ],
     answer: 1,
   },
   {
-    // Point 467 (Denying all and some) — denial of every is some…not.
-    prompt: "Which sentence is the denial of *Every student here has read the book*?",
+    // Point 437 — quantifier order, verified by exhaustion on a 5x5 matching.
+    prompt:
+      "A photography club owns five cameras and five lenses. Each lens fits exactly one camera, and each camera is fitted by exactly one lens. Which of these are true of the club?",
     options: [
-      "Some student here has not read the book",
-      "Every student here has failed to read the book",
-      "No student here has read the book",
-      "Some student here has read the book",
+      "There is some lens that fits every camera",
+      "Every camera has some lens that fits it",
+      "There is some camera that every lens fits",
+      "Every lens fits some camera",
     ],
-    answer: 0,
+    answer: [1, 3],
   },
   {
-    // Point 467 — the class of thirty, twenty-nine readers.
+    // Point 437 — which order the planner actually needs.
     prompt:
-      "In a class of thirty, twenty-nine students have read the book and one has not. Which of these are true of that room?",
+      "A planner wants to hold one meeting that the whole class can attend. Which claim does the planner need to be true?",
     options: [
-      "*Some student here has read the book* is true",
-      "*Every student here has read the book* is false",
-      "*Some student here has not read the book* is true",
-      "*No student here has read the book* is true",
+      "Every student has some afternoon free",
+      "There is some afternoon that every student has free",
+      "Every afternoon is free for some student",
+      "Some student has every afternoon free",
     ],
-    answer: [0, 1, 2],
+    answer: 1,
   },
   {
     // Point 467 — denying a two-quantifier sentence, one word at a time.
-    prompt: "Which sentence is the denial of *There is a key that opens every pigeonhole*?",
+    prompt:
+      "What would have to be the case for *There is some afternoon that every student has free* to be false?",
     options: [
-      "Every key opens some pigeonhole",
-      "No key opens any pigeonhole",
-      "Every key leaves some pigeonhole shut",
-      "Some pigeonhole has no key that opens it",
+      "Some afternoon has at least one student who is busy",
+      "Every afternoon has at least one student who is busy",
+      "Every student is busy every afternoon",
+      "Some student is busy every afternoon",
     ],
-    answer: 2,
+    answer: 1,
   },
   {
-    // Point 510 (On counterexamples) — 33 = 3 × 11.
+    // Point 510 — a fresh run of agreeing cases before the claim collapses.
+    // 11, 31, 41, 61, 71 and 101 are prime; 21 = 3 x 7 is not.
     prompt:
-      "Someone claims that every whole number ending in 3 is prime, and points out that 3, 13 and 23 all are. Which number finishes the claim off?",
-    // Distractors must be prime: 43, 53, 73 are. (63 = 7 × 9 would be a second
-    // correct answer.)
+      "Someone checks 11, 31 and 41, finds all three prime, and claims that every whole number ending in 1 is prime. Which number below finishes the claim off?",
     options: [
-      "33",
-      "43",
-      "53",
-      "73",
+      "21",
+      "61",
+      "71",
+      "101",
     ],
     answer: 0,
   },
   {
-    // Point 467 — the minister and the headline.
+    // Point 510 — agreeing cases establish nothing about the whole group.
     prompt:
-      "A minister says *It is not true that all our schools are underfunded*, and the paper reports *Minister: no school is underfunded.* What went wrong?",
+      "A shopkeeper claims *every bulb in this box works.* You test three bulbs and all three work. What have you established about the claim?",
     options: [
-      "The paper reported a weaker claim than the minister made",
-      "The two sentences say the same thing, so nothing went wrong",
-      "The minister claimed only that at least one school is adequately funded; the paper reported the far stronger claim that none is underfunded",
-      "The minister claimed that no school is underfunded, and the paper reported it accurately",
+      "That the claim is false",
+      "That the claim is true of the box as a whole",
+      "That the claim is true",
+      "Nothing — testing part of the box cannot settle a claim about all of it",
+    ],
+    answer: 3,
+  },
+  {
+    // Point 467 — the strength ordering of every / some / no.
+    prompt:
+      "Three notices are posted about one shelf of jars: (a) *every jar is sealed*; (b) *some jar is sealed*; (c) *no jar is sealed*. You find a single unsealed jar. Which notices does it make false?",
+    options: [
+      "Only (a)",
+      "(a) and (c)",
+      "(a) and (b)",
+      "Only (c)",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 467 — the denial of a *no* claim.
+    prompt:
+      "A notice reads: *No bicycle may be parked here.* A warden reports that the notice is not being obeyed. What has the warden claimed?",
+    options: [
+      "That every bicycle in the college is parked there",
+      "That most of the bicycles parked there should not be",
+      "That at least one bicycle is parked there",
+      "That no bicycle is parked there",
     ],
     answer: 2,
   },
@@ -318,251 +334,289 @@ export const quantifiers: Question[] = [
 
 export const conditionals: Question[] = [
   {
-    // Point 648 (What if…then asks for) — the one false row of four.
+    // Point 648 — the single falsifying situation, on a fresh notice.
     prompt:
-      "A car park notice reads: *If a car is left in this lane after eight, it is towed away.* Which single situation makes the notice false?",
+      "A nursery's sign reads: *If a plant is kept in this shade house, it is watered daily.* Which single observation would show the sign to be false?",
     options: [
-      "A car left before eight and towed away",
-      "A car left before eight and not towed away",
-      "A car left after eight and not towed away",
-      "A car left after eight and towed away",
+      "A plant kept outside the shade house that was not watered daily",
+      "A plant kept in the shade house that was not watered daily",
+      "A plant kept outside the shade house that was watered daily",
+      "A plant kept in the shade house that was watered daily",
     ],
-    answer: 2,
+    answer: 1,
   },
   {
-    // Point 648 — the third row, defended at length.
+    // Point 648 — the rows readers object to.
     prompt:
-      "A car left the lane at seven and was towed anyway, for blocking a gate. What does that do to the notice above?",
+      "A plant that has never been inside the shade house turns out to have been watered daily anyway. What does that do to the sign?",
     options: [
-      "It makes the notice true only if some other car was also towed after eight",
-      "It makes the notice false, since the car was towed without meeting the condition",
-      "Nothing — the notice is still true, since it says nothing about cars that leave before eight",
-      "It makes the notice neither true nor false",
-    ],
-    answer: 2,
-  },
-  {
-    // Point 698 (An astrological claim) — if-part that never occurs.
-    prompt:
-      "A colleague declares every year *If I win the lottery, I will take the whole office to Goa*, and has never bought a ticket. What can we say about his claim?",
-    options: [
-      "It is neither true nor false until he buys a ticket",
-      "It is false, because the if-part never happens",
-      "It is a lie, since he has no intention of buying a ticket",
-      "No event can make it false, and it carries no information",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 698 — the vacuously true rule, and the sheep in the carriage.
-    prompt:
-      "A notice reads *Every red card in this pack has an even number on the back*, and the pack contains no red cards at all. Is the notice true?",
-    options: [
-      "Yes — no red card can be produced against it, so it cannot fail",
-      "No — a claim about nothing cannot be true",
-      "No — with no red cards the claim has nothing to be true of",
-      "It depends on the numbers on the backs of the other cards",
+      "Nothing — the sign says nothing about plants kept outside the shade house",
+      "It makes the sign false, since the plant was watered without meeting the condition",
+      "It makes the sign neither true nor false",
+      "It makes the sign true only if some shade-house plant was also watered",
     ],
     answer: 0,
   },
   {
-    // Point 698 — the then-part that always occurs.
+    // Point 698 — an if-part that never occurs.
     prompt:
-      "*If you marry a Manglik, then you die.* Why is this sentence true, and what does it tell us about Mangliks?",
+      "A club rule reads: *If a member arrives after midnight, they must sign the late book.* No member has ever arrived after midnight. What can we say about the rule?",
     options: [
-      "It is false, since some people who marry Mangliks live long lives",
-      "It is true only for those who believe it",
-      "It is true because everybody dies, and it tells us nothing at all about Mangliks",
-      "It is true because astrology has been confirmed, and it warns against such a marriage",
+      "Nothing can make it false, and it tells us nothing about who has signed the book",
+      "It is neither true nor false until somebody arrives after midnight",
+      "It is true, and it tells us that nobody has signed the late book",
+      "It is false, because its condition has never been met",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 698 — the empty collection, settled by reading it as a conditional.
+    prompt:
+      "A shelf holds no glass jars at all. Someone claims: *Every glass jar on this shelf is cracked.* Is the claim true?",
+    options: [
+      "No — there are no glass jars for it to be true of",
+      "No — a claim about nothing is false",
+      "Yes — no glass jar can be produced against it, so it cannot fail",
+      "It is neither true nor false",
     ],
     answer: 2,
   },
   {
-    // Point 781 — reading the claim backwards.
+    // Point 698 — a then-part that always occurs.
     prompt:
-      "A groundsman announces *If it rains, the match is cancelled.* The match is cancelled. What follows about the weather?",
+      "*If you water this cactus with rainwater, it will eventually die.* Every cactus eventually dies. What is wrong with offering this as advice about rainwater?",
     options: [
-      "It rained, unless the match was cancelled for some other reason",
-      "It did not rain",
-      "Nothing at all",
-      "It rained",
+      "It is true, so the advice is sound",
+      "It is false, since some cacti watered with rainwater are still alive",
+      "It confuses the if-part with the then-part",
+      "Nothing could make it false, so it tells us nothing about rainwater",
+    ],
+    answer: 3,
+  },
+  {
+    // Point 781 — affirming the consequent.
+    prompt:
+      "A bakery's rule: *If the bread is burnt, it is sold at half price.* You see a loaf being sold at half price. What follows?",
+    options: [
+      "Nothing — the rule does not say that half-price loaves are burnt",
+      "The loaf is burnt",
+      "The loaf is not burnt",
+      "The loaf is burnt, unless it was discounted for some other reason",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 781 — denying the antecedent.
+    prompt:
+      "Same bakery, same rule. A loaf is not burnt. What follows about its price?",
+    options: [
+      "It is sold at half price only if the baker chooses",
+      "It is not sold at half price",
+      "Nothing — the rule says nothing about loaves that are not burnt",
+      "It is sold at half price",
     ],
     answer: 2,
   },
   {
-    // Point 781 — a converse must be checked separately; 15 is the witness.
+    // Point 841 — the contrapositive, set against the converse and the
+    // converse-in-disguise. The fourth option is "P only if Q", which is the
+    // converse of the rule (Point 867).
     prompt:
-      "*If a number ends in 0, then it is divisible by 5* is true. Its converse is *If a number is divisible by 5, then it ends in 0.* Which number shows the converse to be false?",
+      "Which sentence makes the same claim as *If the bread is burnt, it is sold at half price*?",
     options: [
-      "25 and no other",
-      "20",
-      "None — the converse is also true",
-      "15",
+      "If a loaf is sold at half price, it is burnt",
+      "If a loaf is not sold at half price, it is not burnt",
+      "If a loaf is not burnt, it is not sold at half price",
+      "A loaf is sold at half price only if it is burnt",
     ],
-    answer: 3,
+    answer: 1,
   },
   {
-    // Point 841 (Contrapositive) — swap and deny.
-    prompt: "What is the contrapositive of *If it rains, the match is cancelled*?",
-    options: [
-      "If it did not rain, the match was not cancelled",
-      "If the match is cancelled, then it rained",
-      "If it rains, the match is not cancelled",
-      "If the match was not cancelled, then it did not rain",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 841 — the three reversals; plus Point 867 for the "only if" option.
+    // Point 867 — *only if* runs against the word order.
     prompt:
-      "Which of these sentences are *different* claims from *If it rains, the match is cancelled*?",
+      "A gym notice reads: *You may use the pool only if you have a swimming cap.* What does the notice forbid?",
     options: [
-      "If it did not rain, the match was not cancelled",
-      "It rains only if the match is cancelled",
-      "If the match was not cancelled, then it did not rain",
-      "If the match is cancelled, then it rained",
-    ],
-    answer: [0, 3],
-  },
-  {
-    // Point 867 (What only if asks for) — the umbrella grumble.
-    prompt:
-      "*It rains only if I have left my umbrella at home.* Which single afternoon refutes this complaint?",
-    options: [
-      "Rain falling, umbrella left at home",
-      "A dry afternoon with the umbrella forgotten at home",
-      "A dry afternoon with the umbrella in hand",
-      "Rain falling, umbrella in hand",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 867 — the museum sign.
-    prompt:
-      "A sign reads *A visitor may enter only if the visitor holds a ticket.* What does it claim?",
-    options: [
-      "That anybody without a ticket will be turned away at the door, and nothing about ticket-holders either way",
-      "Both that a ticket is required and that a ticket is enough",
-      "That anybody holding a ticket will be let in",
-      "That nobody is inside without a ticket — it does not promise that a ticket gets you in",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 958 (What if and only if asks for) — two forbidden rows, not one.
-    prompt:
-      "Of the four situations for two facts, how many does *P if and only if Q* rule out, and how many does the one-way *if P then Q* rule out?",
-    options: [
-      "Three and one",
-      "One and two",
-      "Two and one",
-      "Two and two",
+      "Owning a cap without using the pool",
+      "Being refused the pool while holding a cap",
+      "Being in the pool without a cap",
+      "Nothing — it only promises that a cap will get you in",
     ],
     answer: 2,
+  },
+  {
+    // Point 867 — dropping *only* replaces the claim with its converse.
+    prompt:
+      "The notice is reworded to *You may use the pool if you have a swimming cap.* What has changed?",
+    options: [
+      "It now promises that a cap is enough, and no longer forbids swimming without one",
+      "It now demands both that you hold a cap and that you use the pool",
+      "Nothing — the two wordings make the same claim",
+      "It now forbids swimming without a cap more strictly",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 958 — the extra situation an *exactly when* rules out.
+    prompt:
+      "A hostel replaces *If a resident is out after ten, they must sign the register* with *A resident signs the register exactly when they are out after ten.* What does the new rule forbid that the old one allowed?",
+    options: [
+      "A resident being out after ten without signing the register",
+      "A resident being out after ten at all",
+      "Nothing — the two rules forbid the same nights",
+      "A resident signing the register on a night they were not out after ten",
+    ],
+    answer: 3,
+  },
+  {
+    // Point 867 — reading *only if* forwards to a conclusion.
+    prompt:
+      "A scholarship rule reads: *An application is considered only if it carries two references.* Meera's application was considered. What follows?",
+    options: [
+      "It carried two references only if it was successful",
+      "It carried two references",
+      "Nothing follows about its references",
+      "It did not carry two references",
+    ],
+    answer: 1,
   },
 ];
 
 // ===========================================================================
-//  §2.4 — Testing a Claim (the Wason selection task)
+//  §2.4 — Testing a Claim
+//  A fresh layout: four delivery slips, DESTINATION on one side and SERVICE on
+//  the other, visible faces Shimla / Jaipur / express / standard. Every
+//  must-flip set below was computed by exhaustive search over the hidden sides.
 // ===========================================================================
 
 export const testingAClaim: Question[] = [
   {
-    // Point 1310 (The answer) — red and 7.
+    // Rule "if Shimla then express" -> flip Shimla and standard.
     prompt:
-      "Four cards lie on the table showing red, blue, 4 and 7. The claim is *If a card is red on one side, then it has an even number on the other side.* Which cards must you turn over?",
+      "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Shimla* and *Jaipur*; two lie service-up, showing *express* and *standard*. The office rule is: *If a parcel goes to Shimla, it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?",
     options: [
-      "The red card",
-      "The blue card",
-      "The 4 card",
-      "The 7 card",
+      "The express slip",
+      "The standard slip",
+      "The Jaipur slip",
+      "The Shimla slip",
     ],
-    answer: [0, 3],
+    answer: [1, 3],
   },
   {
-    // Point 1294 (What the claim really says) — the converse and its disguise.
-    prompt:
-      "The claim is *If a card is red on one side, then it has an even number on the other side.* Which of these does it leave open — that is, which does it *not* assert?",
+    prompt: "Why need you not turn the Jaipur slip?",
     options: [
-      "That whenever a card is red on one side, an even number is hiding behind it",
-      "That no red face has an odd number behind it",
-      "That every blue card sits opposite an odd number",
-      "That every even number sits opposite a red face",
+      "Turning it could only confirm the rule, and confirmation is not needed",
+      "The Jaipur slip is settled once the Shimla slip has been turned",
+      "A Jaipur parcel is never sent by express",
+      "The rule says nothing about parcels going anywhere other than Shimla",
     ],
-    answer: [2, 3],
+    answer: 3,
   },
   {
-    // Point 1297 — the question to put to each card.
-    prompt: "What is the right question to put to each card before deciding whether to flip it?",
+    prompt: "Why need you not turn the express slip?",
     options: [
-      "Could this card, by itself, prove the claim is true?",
-      "Is this card more likely than the others to break the rule?",
-      "Could this card, by itself, prove the claim is a lie?",
-      "Does this card mention something the claim mentions?",
+      "Because it shows express, the rule is already satisfied by that slip",
+      "The rule is only about parcels sent by standard service",
+      "An express parcel must be going to Shimla, so there is nothing to check",
+      "The rule never requires an express parcel to be going to Shimla, so neither destination would trouble it",
+    ],
+    answer: 3,
+  },
+  {
+    prompt: "Why must you turn the standard slip?",
+    options: [
+      "If its other side reads Jaipur, the rule is broken",
+      "Because every slip showing a service must be checked",
+      "If its other side reads Shimla, we have a Shimla parcel not sent by express — exactly what the rule forbids",
+      "Because a standard parcel is cheaper and more likely to be misrouted",
     ],
     answer: 2,
   },
   {
-    // Point 1300 — the blue card.
-    prompt: "Why need we not turn the blue card?",
+    prompt:
+      "A clerk turns a slip over and finds Shimla on one side and standard on the other. What does that settle?",
     options: [
-      "The blue card has already been settled by the red card",
-      "A blue card cannot have a digit on its other side",
-      "Whatever is behind it, the claim comes out false anyway",
-      "The claim says nothing at all about what lies behind a blue face",
+      "Nothing, until the other three slips are turned",
+      "That the rule should be reworded",
+      "The rule was not followed",
+      "The rule was followed",
+    ],
+    answer: 2,
+  },
+  {
+    prompt:
+      "All four slips are turned over and not one of them shows Shimla together with standard. What follows?",
+    options: [
+      "Nothing — four slips are too few to settle anything",
+      "The rule holds for every parcel the office has ever sent",
+      "The rule holds for these four parcels, and every Shimla parcel is therefore express",
+      "The rule held for these four parcels, and nothing follows about any other parcel",
     ],
     answer: 3,
-  },
-  {
-    // Point 1300 — the 4 card, "the tempting trap".
-    prompt: "Why need we not turn the 4 card?",
-    options: [
-      "The claim is only about odd numbers",
-      "The claim never requires an even number to sit opposite a red face, so neither a red nor a blue back would trouble it",
-      "Because 4 is even, the claim is automatically satisfied by that card",
-      "A red back would confirm the claim, and confirmation is not needed",
-    ],
-    answer: 1,
-  },
-  {
-    // Point 1300 — the 7 card.
-    prompt: "Why must we turn the 7 card?",
-    options: [
-      "If its other side is red, we would have a red face opposite an odd number — exactly what the claim forbids",
-      "Because 7 is odd, the claim demands that its other side be blue",
-      "Because every card showing a digit must be checked",
-      "If its other side is blue, the claim is refuted",
-    ],
-    answer: 0,
   },
   {
     // Point 1313 — the general rule.
     prompt:
-      "To test a claim of the form *if P, then Q*, which two cards must be flipped?",
+      "In general, to test a claim of the form *if P, then Q*, which two faces must you turn over?",
     options: [
-      "The card showing P and the card showing Q",
-      "The card showing *not P* and the card showing Q",
-      "The card showing *not P* and the card showing *not Q*",
-      "The card showing P and the card showing *not Q*",
+      "The face showing *not P* and the face showing Q",
+      "The face showing P and the face showing Q",
+      "The face showing P and the face showing *not Q*",
+      "The face showing *not P* and the face showing *not Q*",
     ],
-    answer: 3,
+    answer: 2,
+  },
+  {
+    // Converse rule on the same four slips -> flip Jaipur and express.
+    prompt:
+      "The office replaces its rule with: *If a parcel is sent by express, it goes to Shimla.* The same four slips lie on the desk. Which must you turn over now?",
+    options: [
+      "The Jaipur slip",
+      "The express slip",
+      "The standard slip",
+      "The Shimla slip",
+    ],
+    answer: [0, 1],
+  },
+  {
+    // Biconditional on the same four slips -> flip all four.
+    prompt:
+      "The office strengthens the rule once more, to: *A parcel goes to Shimla exactly when it is sent by express.* Which slips must you turn over?",
+    options: [
+      "The Shimla slip and the standard slip, as before",
+      "The Jaipur slip and the express slip",
+      "All four of them",
+      "The Shimla slip and the express slip",
+    ],
+    answer: 2,
+  },
+  {
+    // Point 1294 — the converse and the converse in disguise.
+    prompt:
+      "Return to the original rule, *If a parcel goes to Shimla, it is sent by express.* Which of these does the rule leave open?",
+    options: [
+      "That some parcel sent by express is going somewhere other than Shimla",
+      "That some parcel going to Jaipur is sent by standard service",
+      "That some parcel going to Shimla is sent by standard service",
+      "That some parcel going to Jaipur is sent by express",
+    ],
+    answer: [0, 1, 3],
   },
   {
     // Point 1315 — the shape of the common error.
     prompt:
-      "Most people first reach for the red card and the 4 card. What has gone wrong in that instinct?",
+      "Most clerks reach first for the Shimla slip and the express slip — the two that match the words of the rule. What has gone wrong in that instinct?",
     options: [
+      "They are hunting for cases that fit the rule rather than for the case that would break it",
+      "They have forgotten that a slip has two sides",
+      "They have taken the rule to be about every parcel rather than these four",
       "They have read *if* as *only if*",
-      "They are hunting for cases that confirm the rule rather than for cases that could destroy it",
-      "They have taken the claim to be about all packs of cards rather than these four",
-      "They have forgotten that the 4 card has a colour on its other side",
     ],
-    answer: 1,
+    answer: 0,
   },
   {
-    // Point 1315 — Wason's 1960s experiment.
+    // Point 1315 — the empirical fact.
     prompt:
-      "In Wason's original experiment in the 1960s, how many university students answered correctly?",
+      "The card version of this task was run by the psychologist Peter Wason in the 1960s. How many university students answered it correctly?",
     options: [
       "Fewer than one in ten",
       "About half",
@@ -571,220 +625,184 @@ export const testingAClaim: Question[] = [
     ],
     answer: 0,
   },
-  {
-    // §2.4 exercise, .tex:1325 — the discount and the membership card.
-    // Writing P = shows a card, Q = gets the discount, the group of "if P then Q"
-    // is {a, c, f}; the group of "if Q then P" is {b, d, e}; the iff stands alone.
-    prompt:
-      "A shop has a rule about a discount and a membership card. Which of these say the same thing as *If a customer shows a card, the customer gets the discount*?",
-    options: [
-      "Either the customer shows no card, or the customer gets the discount",
-      "If a customer shows no card, then the customer gets no discount",
-      "A customer gets the discount only if the customer shows a card",
-      "If a customer gets no discount, then the customer showed no card",
-    ],
-    answer: [0, 3],
-  },
-  {
-    // §2.4 exercise, .tex:1325 — which sentence stands alone.
-    prompt:
-      "Among those same seven sentences about the discount, one belongs to a group of its own. Which?",
-    options: [
-      "A customer gets the discount if and only if the customer shows a card",
-      "There is no discount without a card",
-      "If a customer gets no discount, then the customer showed no card",
-      "Either the customer shows no card, or the customer gets the discount",
-    ],
-    answer: 0,
-  },
-  {
-    // §2.4 exercise, .tex:1378 part (3) — strengthening to "exactly when".
-    prompt:
-      "A friend strengthens *If a card has a vowel on one side, then the digit on the other side is a multiple of 3* to *A card has a vowel on one side exactly when the digit on the other side is a multiple of 3.* Which cards must now be turned over?",
-    options: [
-      "The same cards as before, and no others",
-      "Only the consonant cards and the cards showing a digit that is not a multiple of 3",
-      "Every card on the table",
-      "Only the vowel cards and the cards showing a multiple of 3",
-    ],
-    answer: 2,
-  },
 ];
 
 // ===========================================================================
 //  §2.5 — Knowing What Others Know
+//  Two fresh configurations, both solved by an epistemic solver over the full
+//  world set rather than by hand:
+//    LINE  — front (sees nobody), middle (sees front), back (sees both);
+//            hats drawn from three red and two blue, three worn.
+//    CIRCLE— three logicians, each seeing the other two; hats drawn from two
+//            red and two blue, the fourth left in the box and seen by nobody.
 // ===========================================================================
 
 export const knowingWhatOthersKnow: Question[] = [
   {
-    // Point 1478 — Logicians 4 and 3 add no information.
     prompt:
-      "In the Hat Hurdle, why do the answers of Logician 4 and Logician 3 add no information at all?",
+      "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of three red and two blue, and each knows this. The back logician is asked first and says *I do not know.* What does that rule out?",
     options: [
-      "Nobody else could hear them answer",
-      "Neither of them is a perfect logician",
-      "They were asked before the hats were placed",
-      "Everyone in the room could have predicted both answers before the warden asked",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 1478 — the rule Logician 1 is working under.
-    prompt:
-      "Logician 1 can see the hats of Logicians 2 and 3. Under what circumstance would Logician 1 have been able to announce their own colour?",
-    options: [
-      "If Logician 4 had answered first",
-      "If Logicians 2 and 3 were wearing hats of the same colour",
-      "If Logician 3's hat were red",
-      "If Logicians 2 and 3 were wearing hats of different colours",
+      "That the middle and front hats are of different colours",
+      "That the middle and front hats are both blue",
+      "That the back logician's own hat is red",
+      "That the middle and front hats are both red",
     ],
     answer: 1,
   },
   {
-    // Point 1478 — what the silence broadcasts.
-    prompt: "Logician 1 says *I do not know.* What does that tell everyone listening?",
+    prompt:
+      "Why would the back logician have known, in the case that was just ruled out?",
     options: [
-      "That Logician 4's hat and Logician 1's hat match",
-      "That Logician 1's hat is red",
-      "That Logicians 2 and 3 are wearing hats of the same colour",
-      "That Logicians 2 and 3 are wearing hats of different colours",
+      "Seeing two hats of any kind is enough to fix the third",
+      "Both blue hats would have been accounted for, so the back hat would have to be red",
+      "Both red hats would have been accounted for, so the back hat would have to be blue",
+      "The pool contains an odd number of hats, so the back hat is determined",
+    ],
+    answer: 1,
+  },
+  {
+    prompt:
+      "The middle logician is asked next and also says *I do not know.* What does that establish?",
+    options: [
+      "The front hat is red",
+      "The middle hat is blue",
+      "The front hat is blue",
+      "The middle hat is red",
+    ],
+    answer: 0,
+  },
+  {
+    prompt:
+      "Who can now name their own hat colour with certainty?",
+    options: [
+      "The logician in front, who can see nobody at all",
+      "Nobody — the two answers are not enough",
+      "The logician in the middle",
+      "The logician at the back",
+    ],
+    answer: 0,
+  },
+  {
+    prompt:
+      "Suppose the pool had been two red and three blue instead, and the back logician again said *I do not know.* What would that rule out?",
+    options: [
+      "That the middle and front hats are both blue",
+      "That the middle and front hats are both red",
+      "That the two hats are of different colours",
+      "Nothing — with that pool the back logician can never know",
+    ],
+    answer: 1,
+  },
+  {
+    prompt:
+      "Now a different arrangement. Three logicians stand in a circle, each able to see the other two. Their hats were drawn from two red and two blue; the fourth hat stays in the box and nobody sees it. Before anyone speaks, how many of the three can name their own hat colour?",
+    options: [
+      "Exactly two, whatever the arrangement",
+      "Exactly one, whatever the arrangement",
+      "None, whatever the arrangement",
+      "It depends on the arrangement",
+    ],
+    answer: 1,
+  },
+  {
+    prompt:
+      "In that circle, what must a logician see in order to know their own hat colour?",
+    options: [
+      "Two hats of different colours",
+      "At least one red hat",
+      "At least one blue hat",
+      "Two hats of the same colour",
     ],
     answer: 3,
   },
   {
-    // Point 1478 — the step is explicitly the contrapositive, §2.3.
     prompt:
-      "Which tool from the chapter on conditionals carries us from *Logician 1 would have known if 2 and 3 matched* to *2 and 3 do not match*?",
+      "A logician in that circle sees one red hat and one blue hat. What can they conclude about their own?",
     options: [
-      "Vacuous truth",
-      "The denial of an *or*",
-      "The contrapositive",
+      "Nothing — both colours are still possible",
+      "That it is red",
+      "That it is the same colour as the hat left in the box",
+      "That it is blue",
+    ],
+    answer: 0,
+  },
+  {
+    // The governing idea of the section, .tex:1412-1419.
+    prompt:
+      "Why does an announcement of ignorance carry information at all?",
+    options: [
+      "It rules out every arrangement in which the speaker would have known, and it rules them out for everybody listening",
+      "It tells the others that the speaker's own hat is the rarer colour",
+      "It carries information only for the person who spoke",
+      "It shows that the speaker is not a perfect logician",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 1478 — the step is explicitly the contrapositive.
+    prompt:
+      "Which tool from the chapter on conditionals carries you from *she would have known if the two hats matched* and *she does not know* to *the two hats do not match*?",
+    options: [
       "The converse",
+      "Vacuous truth",
+      "The contrapositive",
+      "The denial of an *and*",
     ],
     answer: 2,
   },
   {
-    // Point 1478 — how Logician 2 finishes.
-    prompt: "How does Logician 2 finish the deduction?",
-    options: [
-      "Logician 2 waits for Logician 4 to speak a second time",
-      "Logician 2 counts the red hats already announced",
-      "Logician 2 looks at Logician 3's hat and announces the same colour",
-      "Logician 2 looks at Logician 3's hat and announces the opposite colour",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 1478 — the earlier "I do not know" is consistent.
+    // Point 1478 — predictable answers carry nothing.
     prompt:
-      "Logician 2 had already said *I do not know* earlier in the round. Why is that consistent with knowing the answer a moment later?",
+      "In the line of three, suppose the front logician had been asked first, before anyone else spoke. Would that answer have told the others anything?",
     options: [
-      "Logician 2 was asked before Logician 1 spoke, and it was Logician 1's answer that supplied the missing information",
-      "Logician 2 had not yet looked at Logician 3's hat",
-      "Logician 2 lied the first time to mislead the warden",
-      "Logician 2 was allowed one guess and used it",
+      "No — everyone could have predicted it in advance, since the front logician sees nobody",
+      "Yes — it would have fixed the middle logician's colour",
+      "Only if the front logician had said *I know*",
+      "Yes — it would have ruled out one arrangement",
     ],
     answer: 0,
   },
   {
-    // Point 1589 — Round 1 of the Judicious Jinx rules out r = 0 and r = 1.
     prompt:
-      "In the Judicious Jinx, all three logicians say *I see at least one red hat.* Writing r for the number of red hats among the three, what does this rule out?",
+      "In the line of three, the front logician ends up naming a colour without ever seeing a single hat. How is that possible?",
     options: [
-      "r = 0 only",
-      "r = 0 and r = 1",
-      "r = 3 only",
-      "r = 1 and r = 2",
+      "The front logician guessed, and happened to be right",
+      "The two answers given before carried all the information needed",
+      "The pool of hats alone fixes the front colour, whatever anyone says",
+      "The front logician could see a reflection in the wall",
     ],
     answer: 1,
-  },
-  {
-    // Point 1589 — Round 2, the person seeing exactly one red.
-    prompt:
-      "After Round 1, what would a logician who sees exactly one red hat among the other two be forced to conclude?",
-    options: [
-      "That their own hat is blue — so they would have said so rather than *I don't know*",
-      "That the other two must swap hats",
-      "Nothing at all, which is why they say *I don't know*",
-      "That their own hat is red — so they would have said so rather than *I don't know*",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 1589 — Round 2's conclusion.
-    prompt:
-      "All three then say *I don't know what colour my hat is.* How many red hats does each of them therefore see among the other two?",
-    options: [
-      "Exactly two",
-      "Exactly one",
-      "It cannot be determined",
-      "None",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 1589 — the colours.
-    prompt: "What colour is each of the three hats in the Judicious Jinx?",
-    options: [
-      "Two red and one blue",
-      "All three are red",
-      "One red and two blue",
-      "All three are blue",
-    ],
-    answer: 1,
-  },
-  {
-    // §2.5 exercise, .tex:1638 (Four Hats in a Chest). Two red and two blue, three
-    // worn, one left unseen. A sage knows their own colour exactly when the two
-    // hats they can see match. Elara sees one of each, so she does not know.
-    // If Elara wears red, Phoebe sees two reds and knows; if Elara wears blue,
-    // Orion sees two blues and knows. Either way exactly one sage knows.
-    prompt:
-      "Four hats — two red, two blue — sit in a chest. Elara, Phoebe and Orion each blindly take one and wear it; the fourth stays in the chest, unseen by all. Each sage sees the other two hats but not their own. Elara observes that Phoebe is wearing blue and Orion is wearing red. How many of the three sages know their own hat colour with certainty?",
-    options: [
-      "Exactly two",
-      "All three",
-      "None",
-      "Exactly one",
-    ],
-    answer: 3,
-  },
-  {
-    // §2.5 exercise, .tex:1668 (Three Sages, Five Hats). Ariadne's "I do not know"
-    // rules out Selene and Thalia both being blue. Were Thalia blue, Selene could
-    // then infer her own hat is red; Selene's "I do not know" therefore rules out
-    // Thalia being blue.
-    prompt:
-      "Ariadne, Selene and Thalia each wear a hat drawn from three red and two blue, and each sees the other two hats but not her own. Ariadne says *I do not know*; Selene then says *I do not know*; Thalia then answers correctly. What colour is Thalia's hat?",
-    options: [
-      "Red if Ariadne's hat is blue, otherwise blue",
-      "Blue",
-      "Red",
-      "It cannot be determined from what was said",
-    ],
-    answer: 2,
   },
 ];
 
 // ===========================================================================
 //  §2.6 — Asking About Answers
+//  A fresh three-speaker puzzle, found by exhaustive search over all boxes and
+//  all oracle/chimera assignments and confirmed to have exactly one solution:
+//    Elara : "If Orion were asked whether the ruby is in the Jade box,
+//             he would answer yes."
+//    Orion : "The ruby is in the Jade box."
+//    Selene: "The ruby is not in the Onyx box."
+//    Exactly one of the three is a chimera.
+//    -> ruby in the Coral box; Orion is the chimera; Elara and Selene oracles.
+//  Under the naive reading of Elara's sentence the puzzle has NO solution.
 // ===========================================================================
 
 export const askingAboutAnswers: Question[] = [
   {
-    // Point 1728 (What somebody else would say) — the four-row table.
+    // Point 1728 — the reported-answer rule.
     prompt:
-      "Somebody reports: *If Selene were asked whether the ruby is in the Coral box, she would answer yes.* Exactly when does that hold?",
+      "On the Isles of Paradox, Elara says: *If Orion were asked whether the ruby is in the Jade box, he would answer yes.* Exactly when is that sentence true?",
     options: [
-      "When exactly one of *the ruby is in the Coral box* and *Selene is an oracle* is true",
-      "When the ruby is in the Coral box",
-      "When *the ruby is in the Coral box* and *Selene is an oracle* are both true or both false",
-      "When Selene is an oracle",
+      "When exactly one of *the ruby is in the Jade box* and *Orion is an oracle* is true",
+      "When *the ruby is in the Jade box* and *Orion is an oracle* are both true or both false",
+      "When Orion is an oracle",
+      "When the ruby is in the Jade box",
     ],
-    answer: 2,
+    answer: 1,
   },
   {
-    // Point 1728 — the section's key idea, stated flat.
+    // Point 1728 — the idea in one line.
     prompt: "What is a reported answer?",
     options: [
       "A link between two unknowns, and never a statement about either one",
@@ -795,68 +813,64 @@ export const askingAboutAnswers: Question[] = [
     answer: 0,
   },
   {
-    // Point 1761 (Solving the puzzle) — Phoebe and Helios said the same thing.
     prompt:
-      "In the opening puzzle, Phoebe reports what Selene would answer about the Coral box, and Helios says *The ruby is in the Coral box precisely when Selene is an oracle.* What follows?",
+      "The ruby is hidden in the Jade, Onyx or Coral box. Elara says the sentence above. Orion says *The ruby is in the Jade box.* Selene says *The ruby is not in the Onyx box.* Exactly one of the three is a chimera. Where is the ruby?",
     options: [
-      "Phoebe and Helios have said the same thing in different words, so they are of the same kind",
-      "Helios has told us where the ruby is, and Phoebe has not",
-      "Phoebe and Helios have contradicted each other, so exactly one of them is a chimera",
-      "Nothing, until we know what Selene said",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 1761 — the answer.
-    prompt:
-      "Exactly two of Phoebe, Selene and Helios are oracles. Who is the chimera, and where is the ruby?",
-    options: [
-      "Helios is the chimera, and the ruby is in the Coral box",
-      "Selene is the chimera, and the ruby is in the Coral box",
-      "Selene is the chimera, and the ruby is in the Amber box",
-      "Phoebe is the chimera, and the ruby is in the Amber box",
-    ],
-    answer: 2,
-  },
-  {
-    // Point 1792 (A question that works on either kind) — the plain question.
-    prompt:
-      "One islander of unknown kind stands before two boxes. Why is the plain question *Is the ruby in the Coral box?* worthless?",
-    options: [
-      "A yes means the Coral box from an oracle and the Amber box from a chimera, and we cannot tell the two apart",
-      "It asks about only one of the two boxes",
-      "A chimera would refuse to answer it at all",
-      "An islander is not obliged to answer a plain question",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 1792 — the embedded question, and its table.
-    prompt:
-      "We instead ask *If I asked you whether the ruby is in the Coral box, would you say yes?* What does the four-row table for this question show?",
-    options: [
-      "The two kinds answer identically only when the ruby is in the Coral box",
-      "An oracle answers yes in every row and a chimera answers no in every row",
-      "The two kinds still disagree, but we can now tell which kind we are facing",
-      "The two kinds answer identically in every row, and we hear yes exactly when the ruby is in the Coral box",
+      "In the Jade box",
+      "It cannot be determined",
+      "In the Onyx box",
+      "In the Coral box",
     ],
     answer: 3,
   },
   {
-    // Point 1824 (Why the two falsehoods cancel) — the double denial.
-    prompt: "Why does the embedded question work on a chimera?",
+    prompt: "In that same puzzle, which of the three is the chimera?",
     options: [
-      "A chimera cannot answer a question about himself at all",
-      "It is phrased so cunningly that he does not notice it",
-      "A chimera may answer a hypothetical question truthfully",
-      "It forces him to lie twice about one fact, and denying a claim twice returns the claim we started with",
+      "It cannot be determined",
+      "Selene",
+      "Elara",
+      "Orion",
     ],
     answer: 3,
   },
   {
-    // Point 1824 — nothing depends on the phrasing.
+    // Verified: under the naive reading the solution set is empty.
     prompt:
-      "Does the method depend on the particular phrase *would you say yes*?",
+      "Suppose a reader takes Elara's sentence to mean simply *the ruby is in the Jade box.* What happens to the puzzle?",
+    options: [
+      "Nothing — the two readings come to the same thing",
+      "It has two solutions instead of one",
+      "It still has one solution, but the ruby ends up in the wrong box",
+      "No arrangement of the three speakers fits at all, and the puzzle stays shut",
+    ],
+    answer: 3,
+  },
+  {
+    // Point 1792 — the self-report is the embedded question.
+    prompt:
+      "You meet one islander and have no idea what kind they are. They volunteer: *If I were asked whether the ruby is in the Jade box, I would answer yes.* What follows?",
+    options: [
+      "The ruby is in the Jade box, whichever kind the islander is",
+      "Nothing — the sentence is about the islander, not about the ruby",
+      "The islander is an oracle",
+      "The ruby is in the Jade box if the islander is an oracle, and elsewhere if not",
+    ],
+    answer: 0,
+  },
+  {
+    // Point 1824 — why the chimera's answer flips to match.
+    prompt: "Why does that work even on a chimera?",
+    options: [
+      "The question is phrased so cunningly that he does not notice it",
+      "A chimera cannot answer a hypothetical question at all",
+      "A chimera may answer a question about himself truthfully",
+      "He is forced to lie twice about one fact, and denying a claim twice returns the claim we started with",
+    ],
+    answer: 3,
+  },
+  {
+    // Point 1824 — phrasing is not what does the work.
+    prompt: "Does the method depend on the particular words *would you say yes*?",
     options: [
       "No — any question at all works, however it is put",
       "Yes — that exact wording is what traps a chimera",
@@ -866,52 +880,51 @@ export const askingAboutAnswers: Question[] = [
     answer: 2,
   },
   {
-    // Point 1840 (Two answers cannot separate three boxes) — counting answers.
+    // Point 1792 — the plain question is worthless.
     prompt:
-      "A third box is added, and we still have one question to put to one islander. Why can no question at all settle which of the three boxes holds the ruby?",
+      "Why is the plain question *Is the ruby in the Jade box?* no use when you do not know the islander's kind?",
     options: [
-      "One question yields one of two answers, so at most two boxes could ever be named, and the ruby may be in the third",
-      "Because no question can mention three boxes at once",
-      "Because we would also need to learn the islander's kind first",
-      "Because a chimera would lie about a third box in a way he does not lie about two",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 1856 (Two questions are enough) — the missing pair.
-    prompt:
-      "We ask the embedded question about the Coral box and then about the Amber box. Two questions allow four possible pairs of answers, but only three appear. Which pair never occurs?",
-    options: [
-      "Yes, no",
-      "No, yes",
-      "Yes, yes",
-      "No, no",
+      "A chimera would refuse to answer it",
+      "It mentions only one of the boxes",
+      "A yes means the Jade box from an oracle and some other box from a chimera, and you cannot tell which you are facing",
+      "An islander is not obliged to answer a plain question",
     ],
     answer: 2,
   },
   {
-    // Point 1856 — one is sometimes enough, two are always enough, one is not
-    // always enough. Plus §2.6 exercise .tex:1926 on five boxes: 2^3 = 8 ≥ 5.
+    // Point 1840 — counting answers, not things.
     prompt:
-      "The ruby is hidden in one of five boxes, and one islander of unknown kind knows which. How many questions are always enough, and how many boxes could four questions handle?",
+      "The ruby is in one of three boxes and you may ask one islander a single yes-or-no question. Why can no question at all be guaranteed to find it?",
     options: [
-      "Four questions, and four questions could handle up to five boxes",
-      "Three questions, and four questions could handle up to sixteen boxes",
-      "Two questions, and four questions could handle up to eight boxes",
-      "Five questions, and four questions could handle up to four boxes",
+      "Because a chimera lies differently about three boxes than about two",
+      "Because no question can mention three boxes at once",
+      "One question yields one of two answers, so at most two boxes could ever be named, and the ruby may be in the third",
+      "Because you would first need to learn the islander's kind",
     ],
-    answer: 1,
+    answer: 2,
   },
   {
-    // Point 1878 (What we never found out) — what would ruin the method.
+    // Point 1856 + exercise .tex:1926, both recomputed.
     prompt:
-      "We found the ruby without ever learning whether the islander was an oracle or a chimera. What kind of islander would defeat the method entirely?",
+      "The ruby is hidden in one of nine boxes and the islander knows which. How many yes-or-no questions are always enough?",
     options: [
-      "One who always lies, since two lies are harder to undo than one",
-      "One who refuses to answer questions about boxes",
+      "Five",
+      "Three",
+      "Four",
+      "Nine",
+    ],
+    answer: 2,
+  },
+  {
+    // Point 1878 — what would defeat the method.
+    prompt:
+      "You can find the ruby without ever learning whether the islander is an oracle or a chimera. What kind of islander would defeat the method entirely?",
+    options: [
       "One who tells the truth sometimes and lies at other times, so there is no rule to cancel",
+      "One who knows the box but refuses to speak",
+      "One who always lies, since two lies are harder to undo than one",
       "One who does not know which box holds the ruby",
     ],
-    answer: 2,
+    answer: 0,
   },
 ];

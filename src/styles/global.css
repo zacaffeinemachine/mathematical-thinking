@@ -30,6 +30,17 @@
   --gate-wire-on:  #b91c1c;
   --gate-wire-off: #71717a;
 
+  /* MCQ verdict states. --mcq-pick is the deliberately NEUTRAL colour of an
+     option you have selected but not yet submitted. It must not be --accent:
+     the accent is red in this theme, and a selection that already looks red
+     would make the "wrong" state say nothing. */
+  --mcq-pick: #3f3f46;
+  --mcq-pick-soft: rgba(63, 63, 70, 0.08);
+  --mcq-right: #1b7a3d;
+  --mcq-right-soft: rgba(27, 122, 61, 0.13);
+  --mcq-wrong: #9b1c1c;
+  --mcq-wrong-soft: rgba(155, 28, 28, 0.12);
+
   /* Dominoes — wood tones. Standing tiles must read darker than fallen
      ones so a toppled run is legible as a lighter trail across the board. */
   --dom-standing: #6b4a2f;
@@ -78,6 +89,16 @@
   --gate-ink:  #f4f4f5;
   --gate-wire-on:  #fb923c;  /* warm orange — pops against dark surface */
   --gate-wire-off: #6b7280;
+
+  /* MCQ verdict states. Lightened for a dark surface, and matched on
+     luminance to each other so neither verdict shouts louder than the other
+     (same lesson as the --gate-or note above). */
+  --mcq-pick: #d4d4d8;
+  --mcq-pick-soft: rgba(212, 212, 216, 0.10);
+  --mcq-right: #56b37f;
+  --mcq-right-soft: rgba(86, 179, 127, 0.20);
+  --mcq-wrong: #dc7070;
+  --mcq-wrong-soft: rgba(220, 112, 112, 0.18);
 
   /* Dominoes. The light/dark relationship inverts here: on a dark board a
      standing tile is the dim one and a fallen tile catches the light. */
