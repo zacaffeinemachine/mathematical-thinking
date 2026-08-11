@@ -614,16 +614,19 @@ export const testingAClaim: Question[] = [
     answer: 0,
   },
   {
-    // Point 1315 — the empirical fact.
+    // Point 867 chained into §2.4: the reworded rule is "P only if Q", which is
+    // the ORIGINAL rule again, so the must-flip set is unchanged. Sits opposite
+    // the converse question above, where the rewording does change the answer.
+    // Verified by the same exhaustive search: ['Shimla', 'standard'].
     prompt:
-      "The card version of this task was run by the psychologist Peter Wason in the 1960s. How many university students answered it correctly?",
+      "The office rewords its original rule to read: *A parcel goes to Shimla only if it is sent by express.* The same four slips lie on the desk. Which must you turn over now?",
     options: [
-      "Fewer than one in ten",
-      "About half",
-      "Nearly all of them",
-      "About one in three",
+      "The Jaipur slip and the express slip",
+      "All four of them",
+      "The Shimla slip and the standard slip",
+      "The Shimla slip and the express slip",
     ],
-    answer: 0,
+    answer: 2,
   },
 ];
 
