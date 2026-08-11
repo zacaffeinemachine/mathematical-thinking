@@ -1,13 +1,15 @@
 ---
 layout: ../../layouts/Chapter.astro
-title: The Wason Selection Test
-order: 1
+title: Testing a Claim
+order: 4
 chapter: logical-thinking
 chapterTitle: Logical Thinking
-blurb: Four cards, one claim, and one famous trap for the over-confident reasoner.
-description: The classic Wason selection test — which cards must you turn over to verify the claim?
+blurb: The four cards, and twelve questions on which of them can catch the claim out.
+description: The Wason selection test, followed by questions on which cards must be turned over and why the others say nothing.
 ---
 import WasonCards from "../../components/games/WasonCards.tsx";
+import QuizSet from "../../components/games/MCQ.tsx";
+import { testingAClaim } from "../../components/games/mcq/logicalThinking.ts";
 
 Four cards lie on a table. Every card has a **colour** on one side —
 red or blue — and a **digit** on the other. Of the four cards, two
@@ -29,3 +31,11 @@ the claim is true or false?**
 Click the cards you believe need to be flipped, then press **Check**.
 
 <WasonCards client:visible />
+
+## Check your understanding
+
+Twelve questions on the card task and on the general rule behind it.
+Pick your answer and press **Submit**. You will be told only whether it was
+right, and you may change it and submit again as often as you like.
+
+<QuizSet questions={testingAClaim} client:visible />

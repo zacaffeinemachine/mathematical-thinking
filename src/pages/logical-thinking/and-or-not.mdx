@@ -1,0 +1,20 @@
+---
+layout: ../../layouts/Chapter.astro
+title: And, Or, and Not
+order: 1
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Twelve questions on the three small words, and on the difference between a denial and an opposite.
+description: Check your understanding of and, or and not — the conventions fixed in the first section of the chapter.
+---
+import QuizSet from "../../components/games/MCQ.tsx";
+import { andOrNot } from "../../components/games/mcq/logicalThinking.ts";
+
+Twelve questions on the first section: the two conventions fixed for *and*
+and *or*, what a denial is and what it is not, and the rule for denying a
+joint claim.
+
+Pick your answer and press **Submit**. You will be told only whether it was
+right, and you may change it and submit again as often as you like.
+
+<QuizSet questions={andOrNot} client:visible />

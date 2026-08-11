@@ -1,13 +1,21 @@
 ---
 layout: ../../layouts/Chapter.astro
-title: Hat Hurdle
-order: 2
+title: Knowing What Others Know
+order: 5
 chapter: logical-thinking
 chapterTitle: Logical Thinking
-blurb: Four logicians, four hats, and a chorus of "I don't know" that says everything.
-description: The hat hurdle puzzle — four logicians in a line, two red and two blue hats, and a deduction built entirely from silence.
+blurb: Two hat puzzles restated, then twelve questions on what each "I don't know" rules out.
+description: The Hat Hurdle and the Judicious Jinx, followed by questions on the deductions that an admission of ignorance makes possible.
 ---
 export const base = import.meta.env.BASE_URL;
+import QuizSet from "../../components/games/MCQ.tsx";
+import { knowingWhatOthersKnow } from "../../components/games/mcq/logicalThinking.ts";
+
+Both puzzles below are solved by the same move, and it sounds like no move
+at all: somebody says that they do not know something, and that remark is
+the crucial information.
+
+## The Hat Hurdle
 
 Four perfectly rational logicians (named **1**, **2**, **3**, and **4**)
 have been captured by a warden. To win their freedom, they must solve a
@@ -62,8 +70,41 @@ logician hears every question and every answer.
 And then, out of the silence, **Logician 2** suddenly speaks up and
 correctly announces their hat colour.
 
-**The question.** What is the step-by-step reasoning that lets
-Logician 2 be absolutely certain of their hat colour?
+## The Judicious Jinx
 
-Sit with this for a few minutes. The whole puzzle
-turns on what one of the four "I don't know"s really means.
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/judicious-jinx.png`}
+    alt="Three watercolour-style hats on a wooden surface: one blue and two red."
+    style={{ maxWidth: "min(460px, 100%)", height: "auto", borderRadius: 8 }}
+  />
+</figure>
+
+Three perfect logicians &mdash; **Elara**, **Phoebe**, and **Orion** &mdash;
+were given a puzzle. A hat, coloured either red or blue, was placed on
+each of their heads. They could each see the hats of the other two, but
+not their own.
+
+After a moment of looking at one another, they all spoke at the same
+time:
+
+> *"I see at least one red hat!"*
+
+A silence then fell as they thought about this statement. Then, all at
+once, they spoke again:
+
+> *"I don't know what colour my hat is."*
+
+After a little more time passed, a realisation struck all three.
+Together, they exclaimed:
+
+> *"Now I know my hat colour!"*
+
+## Check your understanding
+
+Twelve questions on the two puzzles above and on the two hat exercises
+from the section. Pick your answer and press **Submit**. You will be told
+only whether it was right, and you may change it and submit again as often
+as you like.
+
+<QuizSet questions={knowingWhatOthersKnow} client:visible />

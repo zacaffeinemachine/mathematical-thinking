@@ -1,0 +1,20 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Quantifiers
+order: 2
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Twelve questions on every and some — what each asks for, which order they come in, and how each is denied.
+description: Check your understanding of quantifiers — every, some, no, counterexamples, and the order of two quantity words in one sentence.
+---
+import QuizSet from "../../components/games/MCQ.tsx";
+import { quantifiers } from "../../components/games/mcq/logicalThinking.ts";
+
+Twelve questions on the words that say how many: what it takes to establish
+*every* and what it takes to refute it, why the order of two quantity words
+changes the claim, and what a counterexample settles.
+
+Pick your answer and press **Submit**. You will be told only whether it was
+right, and you may change it and submit again as often as you like.
+
+<QuizSet questions={quantifiers} client:visible />

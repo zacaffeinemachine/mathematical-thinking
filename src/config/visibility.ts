@@ -23,7 +23,7 @@
 
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
-  // "logical-thinking",
+  "logical-thinking",
   // "machines",
   "logic-gates",
   // "boolean-algebra",
@@ -40,10 +40,15 @@ export const VISIBLE_PAGES: readonly string[] = [
   "guarini/forbidden-fruit",
   "guarini/exercises",
 
-  "logical-thinking/wason",
-  "logical-thinking/hat-hurdle",
-  "logical-thinking/judicious-jinx",
-  "logical-thinking/exercises",
+  // Chapter 2 is a set of self-tests, one page per section of the book.
+  // Release a page once its section has been taught — the questions do not
+  // withhold the answers the way the old puzzle pages did.
+  "logical-thinking/and-or-not",
+  "logical-thinking/quantifiers",
+  "logical-thinking/conditionals",
+  "logical-thinking/testing-a-claim",
+  "logical-thinking/knowing-what-others-know",
+  "logical-thinking/asking-about-answers",
 
   "machines/fsm-intro",
   "machines/reading-the-language",

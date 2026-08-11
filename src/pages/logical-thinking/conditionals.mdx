@@ -1,0 +1,21 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Conditionals
+order: 3
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Twelve questions on if… then, only if, and if and only if — including the three reversals that look alike.
+description: Check your understanding of conditionals — the one falsifying situation, vacuous truth, the converse, the contrapositive, and only if.
+---
+import QuizSet from "../../components/games/MCQ.tsx";
+import { conditionals } from "../../components/games/mcq/logicalThinking.ts";
+
+Twelve questions on the connective that gives everybody trouble: the single
+situation that makes an *if … then* claim false, the two ways such a claim
+can be incapable of failing, and the three reversals — converse,
+contrapositive, and the converse in disguise.
+
+Pick your answer and press **Submit**. You will be told only whether it was
+right, and you may change it and submit again as often as you like.
+
+<QuizSet questions={conditionals} client:visible />
