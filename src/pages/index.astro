@@ -1,7 +1,16 @@
 ---
 import Base from "../layouts/Base.astro";
 import ChapterCard from "../components/ChapterCard.astro";
+import Knight from "../components/Knight.astro";
 import { isChapterVisible } from "../config/visibility.ts";
+import {
+  COURSE_SUBTITLE,
+  INSTRUCTOR,
+  TEACHING_FELLOWS,
+  TEACHING_ASSISTANTS,
+  OFFICE,
+  BOOKING_URL,
+} from "../config/course.ts";
 
 const base = import.meta.env.BASE_URL;
 
@@ -29,14 +38,14 @@ const allChapters = [
     blurb: "Two values, two operations, a half-dozen identities. Every equation is a logical claim in disguise — and the algebra does the case analysis for us.",
   },
   {
-    slug: "logic-gates",
-    title: "Logic Gates",
-    blurb: "Rods, sleeves, and levers — can you build a machine that thinks? A computer, piece by mechanical piece.",
-  },
-  {
     slug: "infinity",
     title: "Infinity",
     blurb: "A frog the shooter cannot miss, a hotel that always has room, and a book whose every page lists pages of itself. Some infinities are bigger than others.",
+  },
+  {
+    slug: "logic-gates",
+    title: "Logic Gates",
+    blurb: "Rods, sleeves, and levers — can you build a machine that thinks? A computer, piece by mechanical piece.",
   },
   {
     slug: "permutations",
@@ -47,14 +56,32 @@ const allChapters = [
 ];
 
 const chapters = allChapters.filter((c) => isChapterVisible(c.slug));
+
+// The three columns of the teaching-team block. Same order, and the same
+// names, as the title footer the decks print — see src/config/course.ts.
+const team = [
+  { role: "Instructor", people: [INSTRUCTOR] },
+  { role: "Teaching Fellows", people: TEACHING_FELLOWS },
+  { role: "Teaching Assistants", people: TEACHING_ASSISTANTS },
+];
 ---
 <Base title="Mathematical Thinking" description="A puzzle-driven course in how mathematicians think.">
-  <section class="mb-16">
-    <h1 class="text-4xl font-semibold tracking-tight mb-4">Mathematical Thinking</h1>
-    <p class="prose text-lg text-[var(--muted)]">
-      A course taught through puzzles. Each chapter presents a question that looks simple,
-      resists solution, and rewards you with a new way of thinking.
-    </p>
+  <!-- The knight is the course's emblem, exactly as on the title page of
+       the first lecture: one piece, no board, nothing else competing with
+       it. It is drawn in ink rather than accent so it reads as a mark
+       rather than as a link. -->
+  <section class="mb-16 flex flex-wrap items-center gap-x-10 gap-y-6">
+    <Knight width="112" class="shrink-0 text-[var(--ink)] opacity-90" />
+    <div class="min-w-[18rem] flex-1">
+      <h1 class="text-4xl font-semibold tracking-tight mb-2">Mathematical Thinking</h1>
+      <p class="text-sm uppercase tracking-widest text-[var(--muted)] mb-4">
+        {COURSE_SUBTITLE}
+      </p>
+      <p class="text-lg text-[var(--muted)] max-w-[52ch] leading-relaxed">
+        Each chapter presents a question that looks simple, resists solution,
+        and rewards you with a new way of thinking.
+      </p>
+    </div>
   </section>
 
   <section class="grid gap-4 md:grid-cols-2">
@@ -66,5 +93,57 @@ const chapters = allChapters.filter((c) => isChapterVisible(c.slug));
         number={i + 1}
       />
     ))}
+  </section>
+
+  <section class="mt-20">
+    <h2 class="text-2xl font-semibold tracking-tight mb-2">The teaching team</h2>
+    <p class="text-[var(--muted)] mb-8 max-w-[52ch]">
+      Any of us will happily talk mathematics with you. Ask in class, catch us
+      afterwards, or come to the office.
+    </p>
+
+    <div class="grid gap-8 sm:grid-cols-3">
+      {team.map((group) => (
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[var(--muted)] mb-3 pb-2 border-b border-[var(--rule)]">
+            {group.role}
+          </div>
+          <ul class="space-y-1.5">
+            {group.people.map((name) => (
+              <li class="text-[0.98rem] leading-snug">{name}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Office hours. The deck's version of this frame draws a door standing
+       open and lists the weakest things a student may turn up with; the
+       point of both is that no question is too small to bring. Keep the
+       room number and the booking link together — they are the two facts a
+       student actually needs off this page. -->
+  <section class="mt-14 rounded-lg border border-[var(--rule)] bg-[var(--surface)] p-6 sm:p-8">
+    <h2 class="text-xl font-semibold tracking-tight mb-2">Office hours</h2>
+    <p class="text-[var(--muted)] mb-6 max-w-[56ch] leading-relaxed">
+      You are always welcome in {INSTRUCTOR}'s office. Bring a question, half a
+      question, a page you could not follow, or a mathematics ghost story — all
+      of it is welcome.
+    </p>
+
+    <div class="flex flex-wrap items-end gap-x-10 gap-y-5">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-[var(--muted)] mb-1">Office</div>
+        <div class="text-lg font-medium tracking-tight">{OFFICE}</div>
+      </div>
+      <a
+        href={BOOKING_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-block px-4 py-2 rounded border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-colors text-sm font-medium"
+      >
+        Book a slot →
+      </a>
+    </div>
   </section>
 </Base>
