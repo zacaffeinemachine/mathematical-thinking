@@ -124,6 +124,13 @@ const team = [
        room number and the booking link together — they are the two facts a
        student actually needs off this page.
 
+       WALKING IN IS THE ORDINARY WAY TO COME, and the copy has to say so
+       before it says anything about the calendar. Booking is a convenience
+       that guarantees the instructor is in the room at the chosen hour; it
+       is not a condition of being let in. An earlier version put the button
+       alone under the invitation, which read as "make an appointment" — do
+       not go back to that.
+
        THIS BLOCK SPEAKS IN THE FIRST PERSON, and it is the only one on the
        site that does. "my office" is the instructor's own invitation; the
        name is right above it in the team block, so nothing is lost by not
@@ -132,8 +139,9 @@ const team = [
   <section class="mt-14 rounded-lg border border-[var(--rule)] bg-[var(--surface)] p-6 sm:p-8">
     <h2 class="text-xl font-semibold tracking-tight mb-2">Office hours</h2>
     <p class="text-[var(--muted)] mb-6 max-w-[56ch] leading-relaxed">
-      You are always welcome in my office. Bring a question, half a question, a
-      page you could not follow, or ghost stories — all of it is welcome.
+      You are always welcome in my office — just walk in. Bring a question,
+      half a question, a page you could not follow, or ghost stories — all of
+      it is welcome.
     </p>
 
     <div class="flex flex-wrap items-end gap-x-10 gap-y-5">
@@ -141,14 +149,19 @@ const team = [
         <div class="text-xs uppercase tracking-wider text-[var(--muted)] mb-1">Office</div>
         <div class="text-lg font-medium tracking-tight">{OFFICE}</div>
       </div>
-      <a
-        href={BOOKING_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-block px-4 py-2 rounded border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-colors text-sm font-medium"
-      >
-        Book a slot →
-      </a>
+      <div>
+        <a
+          href={BOOKING_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block px-4 py-2 rounded border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-colors text-sm font-medium"
+        >
+          Book a slot →
+        </a>
+        <div class="text-xs text-[var(--muted)] mt-2 max-w-[34ch] leading-relaxed">
+          Optional. Booking only makes sure I am in the room at the time you pick.
+        </div>
+      </div>
     </div>
   </section>
 </Base>

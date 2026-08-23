@@ -29,5 +29,10 @@ export const TEACHING_ASSISTANTS: readonly string[] = [
 /** Room number of the instructor's office. */
 export const OFFICE = "AC04-703";
 
-/** Google Calendar appointment page — students book their own office-hour slot. */
+/**
+ * Google Calendar appointment page — students book their own office-hour slot.
+ * Booking is optional. Walking in is the ordinary way to come; a slot only
+ * guarantees the instructor is in the room at the chosen time. Any copy that
+ * uses this link has to say so.
+ */
 export const BOOKING_URL = "https://calendar.app.google/w3NFv5FVg4SC2GaXA";
