@@ -4,25 +4,107 @@ title: The Knight's Move
 order: 1
 chapter: guarini
 chapterTitle: Guarini's Puzzle
-blurb: Get comfortable with how knights jump. Warm up on small, odd boards.
-description: Practice making knight moves on boards of different sizes and shapes.
+blurb: Learn the jump properly. Drill it, then fly fifteen boards, three of which cannot be done at all.
+description: Practise the knight's move until you can see it, then navigate boards of every shape. Some of them are impossible.
 ---
 import KnightPuzzle from "../../components/games/KnightPuzzle.tsx";
+import KnightTargetDrill from "../../components/games/KnightTargetDrill.tsx";
+
+export const wallWithGap = [
+  [2, 0], [2, 1], [2, 2], [2, 3], [2, 5], [2, 6],
+  [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6],
+];
+
+export const wallSealed = [
+  [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6],
+  [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6],
+];
+
+export const twoWalls = [
+  [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [6, 2], [7, 2],
+  [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3],
+  [0, 5], [1, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5],
+  [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6],
+];
+
+export const crossIsland = [
+  [0, 0], [0, 1], [0, 3], [0, 4],
+  [1, 0], [1, 4],
+  [3, 0], [3, 4],
+  [4, 0], [4, 1], [4, 3], [4, 4],
+];
 
 Before we meet Guarini's puzzle itself, we need to get comfortable
 with the piece that stars in it: the **knight**.
 
-A knight jumps in an **L-shape** — two squares in one direction,
-then one square at a right angle. It is the only chess piece that
-can hop over others, but here we will only care about where it
-lands, not what it jumps over.
+A knight jumps in an **L-shape**. Two squares in one direction, then
+one square at a right angle to that. It is the only chess piece that
+can hop over others, and here we care only about where it lands, never
+about what it jumped over.
 
-Below is a series of small boards. Your job is to guide the knight
-to the apple. Click the knight to toggle its highlighted legal
-moves; click any highlighted square to jump there. Some boards have
-**missing squares** (literal holes in the board), and some have
-**forbidden squares** marked with a skull — the knight cannot land
-on those either.
+That is the whole rule and it takes ten seconds to read. Being able to
+*see* it on a board is a different thing, and it is what the rest of
+this page is for.
+
+## Where can it land?
+
+In each board below, a knight has been dropped on a square. **Mark
+every square it can reach in one jump**, then press Check. Nothing is
+marked for you, and nothing is revealed until you commit.
+
+Two kinds of square are not landing squares. A **hole** is a place
+where the board simply is not there. A **skull** sits on a square that
+does exist, and the knight is welcome to fly over it, but it must not
+come down on it.
+
+Press *Next square* for a fresh position. The supply never runs out, so
+stay here until you have several in a row exactly right.
+
+<KnightTargetDrill
+  client:visible
+  rows={5}
+  cols={5}
+  first={[2, 2]}
+  title="A small empty board"
+  hint="Mark every square this knight can jump to, then press Check."
+/>
+
+You will have noticed how uneven the knight is. From the middle of a
+board it has eight squares to choose from. From a corner it has two.
+That lopsidedness is worth remembering, because it is the reason some
+of the boards further down are hard.
+
+<KnightTargetDrill
+  client:visible
+  rows={6}
+  cols={6}
+  first={[1, 1]}
+  missing={[[0, 0], [0, 5], [5, 0], [5, 5]]}
+  forbidden={[[2, 2], [3, 3]]}
+  title="A board with holes and skulls"
+  hint="The four corners are missing and two squares are guarded. Neither kind counts as a landing square."
+/>
+
+<KnightTargetDrill
+  client:visible
+  rows={8}
+  cols={8}
+  first={[0, 0]}
+  title="A full chessboard"
+  hint="Sixty-four squares. Edges and corners are where people slip."
+/>
+
+## Getting somewhere
+
+Now put the move to work. Click the square you want the knight to jump
+to. If it is a legal landing square the knight goes there. If it is
+not, the square flashes and your *wrong tries* counter goes up by one.
+**You are never shown the legal moves.** That is the whole point of the
+page.
+
+Undo takes back a jump and Reset starts the board over. When you reach
+the apple you are told the smallest number of jumps the board can be
+done in, so there is usually something left to beat.
 
 <KnightPuzzle
   client:visible
@@ -31,7 +113,7 @@ on those either.
   start={[0, 0]}
   target={[2, 1]}
   title="One hop"
-  hint="The apple is exactly one knight move away."
+  hint="The apple is exactly one jump away."
 />
 
 <KnightPuzzle
@@ -41,8 +123,43 @@ on those either.
   start={[0, 0]}
   target={[3, 3]}
   title="Two hops"
-  hint="You will need to land somewhere in between."
+  hint="You will have to land somewhere in between."
 />
+
+<KnightPuzzle
+  client:visible
+  rows={5}
+  cols={5}
+  start={[2, 2]}
+  target={[2, 3]}
+  title="Next door"
+  hint="The apple is on the square right beside the knight, which turns out to be an awkward place for it to be."
+/>
+
+## An answer of a different kind
+
+A warning before you go on. **Not every board on this page can be
+done.** On some of them the apple cannot be reached at all, however
+long you fly around, and no amount of patience will change that.
+
+So there is a second way to finish a board. After a few attempts a
+button appears offering to let you **say it is impossible**. Calling an
+impossible board impossible counts as solving it. Calling a possible
+one impossible does not, and the board will tell you so.
+
+Here is a board to try that on. It may be possible. It may not.
+
+<KnightPuzzle
+  client:visible
+  rows={3}
+  cols={3}
+  start={[0, 0]}
+  target={[1, 1]}
+  title="The smallest board"
+  hint="Three squares by three, and the apple is sitting in the middle."
+/>
+
+## Bites out of the board
 
 <KnightPuzzle
   client:visible
@@ -52,7 +169,7 @@ on those either.
   target={[4, 4]}
   forbidden={[[1, 1], [1, 3], [3, 1], [3, 3]]}
   title="Around the skulls"
-  hint="The skulls cannot be landed on. Find a way around them."
+  hint="Four guarded squares. Fly over them as much as you like, just do not come down on one."
 />
 
 <KnightPuzzle
@@ -60,10 +177,10 @@ on those either.
   rows={5}
   cols={5}
   start={[0, 2]}
-  target={[4, 2]}
-  missing={[[0, 0], [0, 4], [4, 0], [4, 4]]}
+  target={[2, 0]}
+  missing={crossIsland}
   title="The plus-shaped island"
-  hint="The four corners of the board are missing — there is nothing to land on there."
+  hint="The board is a cross. Get from the top tip to the left tip."
 />
 
 <KnightPuzzle
@@ -74,16 +191,113 @@ on those either.
   target={[0, 5]}
   missing={[[0, 0], [0, 1], [1, 0]]}
   forbidden={[[2, 2], [3, 3]]}
-  title="An irregular board"
-  hint="The top-left corner has been chewed off. Two skulls block the diagonal."
+  title="The chewed corner"
+  hint="The top left corner has been bitten off and two skulls sit on the long diagonal."
 />
 
-Take a moment to notice a few things as you play. The knight is
-fussy: from some squares it has up to eight choices, from others
-only two. Corners starve it. The same destination might be one
-move away on a large board and impossible on a small one. The
-*shape* of the board — not just the rules of the knight — is part
-of the puzzle.
+## Longer journeys
 
-Keep that observation in mind. It is the first hint of an idea we
-will develop carefully in the pages to come.
+<KnightPuzzle
+  client:visible
+  rows={8}
+  cols={8}
+  start={[7, 0]}
+  target={[0, 7]}
+  title="The long haul"
+  hint="A full chessboard, one corner to the opposite one. Fewer jumps than you would guess."
+/>
+
+<KnightPuzzle
+  client:visible
+  rows={3}
+  cols={11}
+  start={[1, 0]}
+  target={[1, 10]}
+  title="The narrow corridor"
+  hint="Three rows and eleven columns. There is very little room to turn around."
+/>
+
+## More than one apple
+
+<KnightPuzzle
+  client:visible
+  rows={6}
+  cols={6}
+  start={[0, 0]}
+  targets={[[5, 5], [0, 5], [5, 0]]}
+  title="Three apples"
+  hint="Collect all three, in whatever order you like. The order you pick changes how long it takes."
+/>
+
+<KnightPuzzle
+  client:visible
+  rows={5}
+  cols={5}
+  start={[2, 2]}
+  targets={[[0, 0], [0, 4], [4, 0], [4, 4]]}
+  title="Every corner"
+  hint="Start in the middle and visit all four corners. Corners are the squares the knight likes least."
+/>
+
+## Walls
+
+<KnightPuzzle
+  client:visible
+  rows={7}
+  cols={7}
+  start={[6, 0]}
+  target={[0, 4]}
+  forbidden={wallWithGap}
+  title="The keyhole"
+  hint="A wall of skulls two rows thick, with a single gap in it. A wall one row thick would be no wall at all to a knight."
+/>
+
+<KnightPuzzle
+  client:visible
+  rows={7}
+  cols={7}
+  start={[6, 0]}
+  target={[0, 4]}
+  forbidden={wallSealed}
+  title="The wall again"
+  hint="The same wall, arranged a little differently. Take nothing for granted."
+/>
+
+<KnightPuzzle
+  client:visible
+  rows={8}
+  cols={8}
+  start={[0, 0]}
+  target={[3, 7]}
+  forbidden={twoWalls}
+  title="Two walls"
+  hint="Two thick walls, standing up rather than lying down, and one gap in each."
+/>
+
+## The island again
+
+<KnightPuzzle
+  client:visible
+  rows={5}
+  cols={5}
+  start={[0, 2]}
+  target={[2, 2]}
+  missing={crossIsland}
+  title="The middle of the island"
+  hint="The cross-shaped board you have already flown across, with the apple parked in the very middle of it."
+/>
+
+## What to take away
+
+The knight is fussy. From some squares it has eight choices and from
+others it has two, corners starve it, and a square right next door can
+cost three jumps while a square across the board costs two. The same
+apple can be easy on one board and out of reach on another with the
+same rules, because the **shape of the board** is as much a part of the
+puzzle as the move is.
+
+And notice what happened on the boards you called impossible. You did
+not check every route, because there are endlessly many routes to
+check. You saw a reason. Turning that private certainty into a reason
+another person is forced to accept is what the next few pages are
+about.
