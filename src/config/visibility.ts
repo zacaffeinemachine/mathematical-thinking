@@ -23,7 +23,7 @@
 
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
-  // "logical-thinking",
+  "logical-thinking",
   // "machines",
   // "logic-gates",
   // "boolean-algebra",
