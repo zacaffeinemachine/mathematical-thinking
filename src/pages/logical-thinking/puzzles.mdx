@@ -12,7 +12,7 @@ import PuzzleAnswer from "../../components/games/PuzzleAnswer.tsx";
 import {
   hatHurdle,
   judiciousJinx,
-  oneAnswerThreeWays,
+  oneAnswerTwoWays,
   twoSpeakersThreeBoxes,
   twoOraclesAndAChimera,
   howManyBoxes,
@@ -171,7 +171,7 @@ they exclaimed:
   <p class="setting-body">Every inhabitant there is an <strong>oracle</strong> or a <strong>chimera</strong> and nothing else: an oracle's every sentence is true, and a chimera's every sentence is false. This holds in all ten, and is not repeated in each one.</p>
 </div>
 
-## 3. One Answer, Three Ways
+## 3. One Answer, Two Ways
 
 A ruby lies in the **Coral** box or the **Amber** box, and Thalia knows which.
 
@@ -179,13 +179,11 @@ A ruby lies in the **Coral** box or the **Amber** box, and Thalia knows which.
   yes.
 - **b)** You ask Thalia, *"Is the answer to 'Is the ruby in the Coral box?'
   yes?"*, and she answers yes.
-- **c)** Ariadne, of whom you know nothing at all, says: *"If Thalia were
-  asked whether the ruby is in the Coral box, she would answer yes."*
 
-The three are separate situations, not three things that happen one after
+The two are separate situations, not two things that happen one after
 another. In each, **where is the ruby?**
 
-<PuzzleAnswer puzzle={oneAnswerThreeWays} client:visible />
+<PuzzleAnswer puzzle={oneAnswerTwoWays} client:visible />
 
 ## 4. Two Speakers, Three Boxes
 

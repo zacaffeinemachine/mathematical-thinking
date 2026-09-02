@@ -64,11 +64,15 @@ export const judiciousJinx: Puzzle = {
 //  §2.6 — Asking About Answers
 // ===========================================================================
 
-// §2.6, Exercise 1. A reported answer is a link between two unknowns
-// (Point "What somebody else would say"), so a) and c) pin nothing down; the
+// §2.6, Exercise 1. A plain question is answered yes by an oracle over the
+// Coral box and by a chimera over the Amber one, so a) pins nothing down; the
 // embedded question of Point "A question that works on either kind" makes both
 // kinds answer alike, so b) pins the box down and the kind stays open.
-export const oneAnswerThreeWays: Puzzle = {
+//
+// A THIRD PART WAS CUT on the author's instruction: Ariadne, of unknown kind,
+// reporting what Thalia would answer. It was removed here, from puzzles.mdx
+// and from the book's §2.6 exercise together, so the three stay in step.
+export const oneAnswerTwoWays: Puzzle = {
   fields: [
     {
       kind: "choice",
@@ -84,14 +88,8 @@ export const oneAnswerThreeWays: Puzzle = {
     },
     {
       kind: "choice",
-      label: "In c) the ruby is in the",
-      options: ["Coral box", "Amber box", "Cannot be determined"],
-      answer: 2,
-    },
-    {
-      kind: "choice",
       label: "You learn what kind Thalia is in",
-      options: ["None of the three", "a) only", "b) only", "a) and b)"],
+      options: ["Neither of the two", "a) only", "b) only", "a) and b)"],
       answer: 0,
     },
   ],
