@@ -489,56 +489,64 @@ export const conditionals: Question[] = [
 // ===========================================================================
 //  §2.4 — Testing a Claim
 //  A fresh layout: four delivery slips, DESTINATION on one side and SERVICE on
-//  the other, visible faces Shimla / Jaipur / express / standard. Every
+//  the other, visible faces Dover / Kendal / express / standard. Every
 //  must-flip set below was computed by exhaustive search over the hidden sides.
 // ===========================================================================
 
 export const testingAClaim: Question[] = [
   {
-    // Rule "if Shimla then express" -> flip Shimla and standard.
+    // Rule "if Dover then express" -> flip Dover and standard.
     prompt:
-      "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Shimla* and *Jaipur*; two lie service-up, showing *express* and *standard*. The office rule is: *If a parcel goes to Shimla, it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?",
+      "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Dover* and *Kendal*; two lie service-up, showing *express* and *standard*. The office rule is: *If a parcel goes to Dover, it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?",
     options: [
       "The express slip",
       "The standard slip",
-      "The Jaipur slip",
-      "The Shimla slip",
+      "The Kendal slip",
+      "The Dover slip",
     ],
     answer: [1, 3],
   },
   {
-    prompt: "Why need you not turn the Jaipur slip?",
+    prompt:
+      "The rule is *If a parcel goes to Dover, it is sent by express.* The Kendal slip lies destination-up, so its hidden side names a service, either express or standard. Why is there no need to turn it over?",
     options: [
-      "Turning it could only confirm the rule, and confirmation is not needed",
-      "The Jaipur slip is settled once the Shimla slip has been turned",
-      "A Jaipur parcel is never sent by express",
-      "The rule says nothing about parcels going anywhere other than Shimla",
+      "Turning it could only confirm the rule, and a rule that has been confirmed once needs no further test",
+      "The Kendal slip is settled once the Dover slip has been turned",
+      "A Kendal parcel is never sent by express",
+      "The rule says nothing about parcels going anywhere other than Dover",
     ],
     answer: 3,
   },
   {
-    prompt: "Why need you not turn the express slip?",
+    // Rewritten Sep 2026: the old option A ("the rule is already satisfied by
+    // that slip") was true as well as the keyed answer, so a student reasoning
+    // correctly could be marked wrong. Every option below is now decided by the
+    // rule alone, and the prompt restates the rule so the question stands on
+    // its own.
+    prompt:
+      "The same four slips lie on the desk, and the rule is still: *If a parcel goes to Dover, it is sent by express.* The express slip lies service-up, so its hidden side names a destination, either Dover or Kendal. Why is there no need to turn it over?",
     options: [
-      "Because it shows express, the rule is already satisfied by that slip",
-      "The rule is only about parcels sent by standard service",
-      "An express parcel must be going to Shimla, so there is nothing to check",
-      "The rule never requires an express parcel to be going to Shimla, so neither destination would trouble it",
+      "The rule is about parcels sent by standard service, not about express ones",
+      "An express parcel must be going to Dover, so the hidden side is already settled",
+      "Neither hidden destination can break the rule: Dover on the back obeys it, and the rule asks nothing of a parcel going to Kendal",
+      "A slip lying service-up can never break a rule that begins with a destination",
     ],
-    answer: 3,
+    answer: 2,
   },
   {
-    prompt: "Why must you turn the standard slip?",
+    prompt:
+      "The rule is still *If a parcel goes to Dover, it is sent by express.* The standard slip lies service-up, so its hidden side names a destination, either Dover or Kendal. Why must it be turned over?",
     options: [
-      "If its other side reads Jaipur, the rule is broken",
+      "If its other side reads Kendal, the rule is broken",
       "Because every slip showing a service must be checked",
-      "If its other side reads Shimla, we have a Shimla parcel not sent by express — exactly what the rule forbids",
+      "If its other side reads Dover, we have a Dover parcel not sent by express, which is exactly what the rule forbids",
       "Because a standard parcel is cheaper and more likely to be misrouted",
     ],
     answer: 2,
   },
   {
     prompt:
-      "A clerk turns a slip over and finds Shimla on one side and standard on the other. What does that settle?",
+      "The rule is *If a parcel goes to Dover, it is sent by express.* A clerk turns a slip over and finds Dover on one side and standard on the other. What does that settle?",
     options: [
       "Nothing, until the other three slips are turned",
       "That the rule should be reworded",
@@ -549,11 +557,11 @@ export const testingAClaim: Question[] = [
   },
   {
     prompt:
-      "All four slips are turned over and not one of them shows Shimla together with standard. What follows?",
+      "The rule is *If a parcel goes to Dover, it is sent by express.* All four slips are turned over, and not one of them shows Dover together with standard. What follows?",
     options: [
-      "Nothing — four slips are too few to settle anything",
-      "The rule holds for every parcel the office has ever sent",
-      "The rule holds for these four parcels, and every Shimla parcel is therefore express",
+      "Nothing, since four slips are too few to settle anything",
+      "The rule held for every parcel the office has ever sent",
+      "The rule held for these four parcels, and every Dover parcel the office sends is therefore express",
       "The rule held for these four parcels, and nothing follows about any other parcel",
     ],
     answer: 3,
@@ -561,7 +569,7 @@ export const testingAClaim: Question[] = [
   {
     // Point 1313 — the general rule.
     prompt:
-      "In general, to test a claim of the form *if P, then Q*, which two faces must you turn over?",
+      "Forget the slips. Four cards lie on a table, and the four visible faces are *P*, *not P*, *Q* and *not Q*. Each card carries the matching kind of fact on its hidden side. To test a claim of the form *if P, then Q*, which two faces must you turn over?",
     options: [
       "The face showing *not P* and the face showing Q",
       "The face showing P and the face showing Q",
@@ -571,45 +579,45 @@ export const testingAClaim: Question[] = [
     answer: 2,
   },
   {
-    // Converse rule on the same four slips -> flip Jaipur and express.
+    // Converse rule on the same four slips -> flip Kendal and express.
     prompt:
-      "The office replaces its rule with: *If a parcel is sent by express, it goes to Shimla.* The same four slips lie on the desk. Which must you turn over now?",
+      "The office replaces its rule with: *If a parcel is sent by express, it goes to Dover.* The same four slips lie on the desk. Which must you turn over now?",
     options: [
-      "The Jaipur slip",
+      "The Kendal slip",
       "The express slip",
       "The standard slip",
-      "The Shimla slip",
+      "The Dover slip",
     ],
     answer: [0, 1],
   },
   {
     // Biconditional on the same four slips -> flip all four.
     prompt:
-      "The office strengthens the rule once more, to: *A parcel goes to Shimla exactly when it is sent by express.* Which slips must you turn over?",
+      "The office strengthens the rule once more, to: *A parcel goes to Dover exactly when it is sent by express.* Which slips must you turn over?",
     options: [
-      "The Shimla slip and the standard slip, as before",
-      "The Jaipur slip and the express slip",
+      "The Dover slip and the standard slip, as before",
+      "The Kendal slip and the express slip",
       "All four of them",
-      "The Shimla slip and the express slip",
+      "The Dover slip and the express slip",
     ],
     answer: 2,
   },
   {
     // Point 1294 — the converse and the converse in disguise.
     prompt:
-      "Return to the original rule, *If a parcel goes to Shimla, it is sent by express.* Which of these does the rule leave open?",
+      "Return to the original rule, *If a parcel goes to Dover, it is sent by express.* Which of these does the rule leave open?",
     options: [
-      "That some parcel sent by express is going somewhere other than Shimla",
-      "That some parcel going to Jaipur is sent by standard service",
-      "That some parcel going to Shimla is sent by standard service",
-      "That some parcel going to Jaipur is sent by express",
+      "That some parcel sent by express is going somewhere other than Dover",
+      "That some parcel going to Kendal is sent by standard service",
+      "That some parcel going to Dover is sent by standard service",
+      "That some parcel going to Kendal is sent by express",
     ],
     answer: [0, 1, 3],
   },
   {
     // Point 1315 — the shape of the common error.
     prompt:
-      "Most clerks reach first for the Shimla slip and the express slip — the two that match the words of the rule. What has gone wrong in that instinct?",
+      "Most clerks reach first for the Dover slip and the express slip, the two that match the words of the rule. What has gone wrong in that instinct?",
     options: [
       "They are hunting for cases that fit the rule rather than for the case that would break it",
       "They have forgotten that a slip has two sides",
@@ -622,14 +630,14 @@ export const testingAClaim: Question[] = [
     // Point 867 chained into §2.4: the reworded rule is "P only if Q", which is
     // the ORIGINAL rule again, so the must-flip set is unchanged. Sits opposite
     // the converse question above, where the rewording does change the answer.
-    // Verified by the same exhaustive search: ['Shimla', 'standard'].
+    // Verified by the same exhaustive search: ['Dover', 'standard'].
     prompt:
-      "The office rewords its original rule to read: *A parcel goes to Shimla only if it is sent by express.* The same four slips lie on the desk. Which must you turn over now?",
+      "The office rewords its original rule to read: *A parcel goes to Dover only if it is sent by express.* The same four slips lie on the desk. Which must you turn over now?",
     options: [
-      "The Jaipur slip and the express slip",
+      "The Kendal slip and the express slip",
       "All four of them",
-      "The Shimla slip and the standard slip",
-      "The Shimla slip and the express slip",
+      "The Dover slip and the standard slip",
+      "The Dover slip and the express slip",
     ],
     answer: 2,
   },
