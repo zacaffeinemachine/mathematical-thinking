@@ -1,0 +1,284 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Puzzles
+order: 7
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Twelve puzzles from the chapter with a sheet to write your answer on. You are told whether it is right, and nothing more.
+description: The Hat Hurdle, the Judicious Jinx, the reported-answer exercises and the miscellaneous problems of Chapter 2, each with an answer sheet that marks right or wrong.
+---
+export const base = import.meta.env.BASE_URL;
+import PuzzleAnswer from "../../components/games/PuzzleAnswer.tsx";
+import {
+  hatHurdle,
+  judiciousJinx,
+  oneAnswerThreeWays,
+  twoSpeakersThreeBoxes,
+  twoOraclesAndAChimera,
+  howManyBoxes,
+  fiveOnTheShore,
+  oraclesAndChimeras,
+  treacherousTrio,
+  countingChimeras,
+  countingChimerasAgain,
+  endlessQueue,
+} from "../../components/games/puzzles/logicalThinking.ts";
+
+Twelve puzzles, drawn from the last three sections of the chapter. Each one
+comes with a sheet to write your answer on.
+
+Fill in every line of a sheet and press **Submit**. You will be told whether
+the answer is right, and that is all you will be told. There is no partial
+credit and no hint about which line went wrong, so a wrong verdict sends you
+back to the puzzle rather than to the sheet. Nothing locks, and you may
+change an answer and submit again as often as you like.
+
+Where a puzzle does not settle something, the sheet says so. **Cannot be
+determined** is a real answer on the lines that offer it, and on some of them
+it is the right one.
+
+## The Hat Hurdle
+
+Four perfect logicians (named **1**, **2**, **3**, and **4**) have been
+captured by a warden. To win their freedom, they must solve a puzzle. The
+warden places them in a line as shown in the diagram.
+
+- **Logician 1** is at the highest position and can see the hats of Logician
+  2 and Logician 3.
+- **Logician 2** is in the middle and can see the hat of Logician 3.
+- **Logician 3** is in front of Logician 2 and can see only a brick wall.
+- **Logician 4** is on the other side of the brick wall, unable to see
+  anyone, and no one can see them.
+
+The warden places a hat on each logician's head from a set of **two red
+hats** and **two blue hats**. No logician can see the colour of their own
+hat.
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/wl.png`}
+    alt="Four logicians in a line: Logician 4 stands behind a brick wall on the left; Logicians 3, 2, and 1 stand on the right in increasing height, each able to see only those in front of them."
+    style={{ maxWidth: "min(420px, 100%)", height: "auto" }}
+  />
+</figure>
+
+Here is the important fine print.
+
+1. **Perfect logic.** All four are perfect logicians. They will make any
+   deduction that is logically possible, and each knows that the other three
+   are equally perfect.
+2. **Shared knowledge.** Every logician knows the entire setup, meaning the
+   positions, the lines of sight, and that there are exactly two red and two
+   blue hats in total.
+3. **No communication.** No speaking, no gestures. The logicians answer the
+   warden's questions and nothing more.
+4. **Certainty required.** A logician will state their hat colour only when
+   they are 100% certain. They will never guess.
+
+The warden then conducts the following round of questioning, and every
+logician hears every question and every answer.
+
+1. The warden asks **Logician 4**: *Do you know the colour of your hat?*
+   &nbsp; Logician 4 replies, *"I do not know."*
+2. The warden asks **Logician 3**: *Do you know the colour of your hat?*
+   &nbsp; Logician 3 replies, *"I do not know."*
+3. The warden asks **Logician 2**: *Do you know the colour of your hat?*
+   &nbsp; Logician 2 replies, *"I do not know."*
+4. The warden asks **Logician 1**, the one with the best view: *Do you know
+   the colour of your hat?* &nbsp; Logician 1 also replies, *"I do not
+   know."*
+
+And then, out of the silence, **Logician 2** speaks up and correctly
+announces their hat colour.
+
+**Suppose that Logician 3 is wearing a red hat.** Fill in what is now
+settled, and mark as undetermined whatever is not.
+
+<PuzzleAnswer puzzle={hatHurdle} client:visible />
+
+## The Judicious Jinx
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/judicious-jinx.png`}
+    alt="Three watercolour-style hats on a wooden surface: one blue and two red."
+    style={{ maxWidth: "min(460px, 100%)", height: "auto", borderRadius: 8 }}
+  />
+</figure>
+
+Three perfect logicians, **Elara**, **Phoebe**, and **Orion**, were given a
+puzzle. A hat, coloured either red or blue, was placed on each of their
+heads. They could each see the hats of the other two, but not their own.
+
+After a moment of looking at one another, they all spoke at the same time:
+
+> *"I see at least one red hat!"*
+
+A silence then fell as they thought about this statement. Then, all at once,
+they spoke again:
+
+> *"I don't know what colour my hat is."*
+
+After a little more time passed, a realisation struck all three. Together,
+they exclaimed:
+
+> *"Now I know my hat colour!"*
+
+**What colour is each hat?**
+
+<PuzzleAnswer puzzle={judiciousJinx} client:visible />
+
+## The Isles of Paradox
+
+The remaining puzzles are all set on the Isles of Paradox. Every inhabitant
+there is an **oracle** or a **chimera** and nothing else: an oracle's every
+sentence is true, and a chimera's every sentence is false. This holds in all
+of them and is not repeated in each one.
+
+### One Answer, Three Ways
+
+A ruby lies in the **Coral** box or the **Amber** box, and Thalia knows which.
+
+- **a)** You ask Thalia, *"Is the ruby in the Coral box?"*, and she answers
+  yes.
+- **b)** You ask Thalia, *"If I asked you whether the ruby is in the Coral
+  box, would you say yes?"*, and she answers yes.
+- **c)** Ariadne, of whom you know nothing at all, says: *"If Thalia were
+  asked whether the ruby is in the Coral box, she would answer yes."*
+
+The three are separate situations, not three things that happen one after
+another. In each, **where is the ruby?**
+
+<PuzzleAnswer puzzle={oneAnswerThreeWays} client:visible />
+
+### Two Speakers, Three Boxes
+
+Ariadne and Thalia stand before three boxes, **Coral**, **Amber** and
+**Topaz**, one of which holds the ruby. Both of them know which, and each
+knows what kind the other is. Nothing at all is known about their kinds.
+
+- **Ariadne says:** *"If Thalia were asked, 'Is the ruby in the Coral box?',
+  she would answer yes."*
+- **Thalia says:** *"If Ariadne were asked, 'Is the ruby in the Amber box?',
+  she would answer yes."*
+
+**Where is the ruby, and what can be said about the two speakers?**
+
+<PuzzleAnswer puzzle={twoSpeakersThreeBoxes} client:visible />
+
+### Two Oracles and a Chimera
+
+Ariadne, Selene and Thalia stand before the **Coral** box and the **Amber**
+box, one of which holds the ruby. All three know where the ruby is, each
+knows what kind the other two are, and **exactly two of the three are
+oracles**.
+
+- **Ariadne says:** *"If Selene were asked, 'Is the ruby in the Coral box?',
+  she would answer yes."*
+- **Selene says:** *"If Thalia were asked, 'Is the ruby in the Coral box?',
+  she would answer yes."*
+- **Thalia says:** *"Ariadne is an oracle."*
+
+**Who is the chimera, and where is the ruby?**
+
+<PuzzleAnswer puzzle={twoOraclesAndAChimera} client:visible />
+
+### How Many Boxes
+
+The ruby is hidden in one of a row of boxes, and a single islander of unknown
+kind stands before them and knows which box holds it. You may ask that
+islander four questions, one after another, each answerable only by yes or
+no, and you may choose each question after hearing the answer to the one
+before.
+
+**What is the largest number of boxes you could deal with this way**, always
+finding the ruby whatever the answers turn out to be?
+
+<PuzzleAnswer puzzle={howManyBoxes} client:visible />
+
+### Five on the Shore
+
+Five figures stand on the shore: Elara, Orion, Phoebe, Selene, and Helios.
+Each makes a single statement.
+
+- **Elara:** *"Orion is a chimera."*
+- **Orion:** *"Exactly two of us are oracles."*
+- **Phoebe:** *"Orion and Elara are either both oracles or both chimeras."*
+- **Selene:** *"Phoebe and Elara are either both oracles or both chimeras."*
+- **Helios:** *"Selene and Phoebe are either both oracles or both chimeras."*
+
+**Identify who is an oracle and who is a chimera.**
+
+<PuzzleAnswer puzzle={fiveOnTheShore} client:visible />
+
+### Oracles and Chimeras
+
+Three figures stand before us: Ariadne, Selene, and Thalia. Each makes a
+single statement.
+
+- **Ariadne says:** *"Selene is an oracle."*
+- **Selene says:** *"All three of us are oracles."*
+- **Thalia says:** *"Ariadne is a chimera."*
+
+**Who is an oracle, and who is a chimera?**
+
+<PuzzleAnswer puzzle={oraclesAndChimeras} client:visible />
+
+### Treacherous Trio
+
+Again three figures stand before us: Ariadne, Selene, and Thalia. Each makes
+a single statement.
+
+- **Ariadne says:** *"There is exactly one chimera amongst the three of us,
+  and it is not me."*
+- **Selene says:** *"Ariadne is an oracle."*
+- **Thalia says:** *"Ariadne and Selene are both oracles."*
+
+**Who is an oracle, and who is a chimera?**
+
+<PuzzleAnswer puzzle={treacherousTrio} client:visible />
+
+### Counting Chimeras
+
+Ten beings are lined up in a row, each one either a chimera or an oracle.
+
+- The first being says, *"Exactly **one** of us ten is a chimera."*
+- The second being says, *"Exactly **two** of us ten are chimeras."*
+- The third being says, *"Exactly **three** of us ten are chimeras."*
+- and so on, down to
+- The tenth being says, *"Exactly **ten** of us ten are chimeras."*
+
+**How many chimeras are there?**
+
+<PuzzleAnswer puzzle={countingChimeras} client:visible />
+
+### Counting Chimeras Again
+
+Ten beings are lined up in a row, each one either a chimera or an oracle. One
+word has changed.
+
+- The first being says, *"**At least one** of us ten is a chimera."*
+- The second being says, *"**At least two** of us ten are chimeras."*
+- The third being says, *"**At least three** of us ten are chimeras."*
+- and so on, down to
+- The tenth being says, *"**At least ten** of us ten are chimeras."*
+
+**How many chimeras are there?**
+
+<PuzzleAnswer puzzle={countingChimerasAgain} client:visible />
+
+### An Endless Queue
+
+Endlessly many beings are lined up in a queue, each one either a chimera or
+an oracle.
+
+- The first being says, *"The being behind me is an oracle."*
+- The second being says, *"The being behind me is a chimera."*
+- The third being says, *"The being behind me is an oracle."*
+- The fourth being says, *"The being behind me is a chimera."*
+- and so on for ever, the two sentences alternating.
+
+It is known that **the first being is an oracle**. What is each of the
+following?
+
+<PuzzleAnswer puzzle={endlessQueue} client:visible />

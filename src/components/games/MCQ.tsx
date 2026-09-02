@@ -16,8 +16,10 @@ import { useState, type ReactNode } from "react";
 // The two verdict messages, kept together so the tone can be changed in one
 // place. They are jokes; see SITE_OVERVIEW.md, "The MCQ pattern", for the note
 // on why the wording is worth a second look before a class actually uses it.
-const SAY_RIGHT = "You got lucky.";
-const SAY_WRONG = "Better luck next time.";
+// Exported so PuzzleAnswer.tsx says the same two things; change them here and
+// both the quiz cards and the puzzle answer sheets follow.
+export const SAY_RIGHT = "You got lucky.";
+export const SAY_WRONG = "Better luck next time.";
 
 export interface Question {
   prompt: string;

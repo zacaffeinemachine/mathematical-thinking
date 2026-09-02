@@ -50,6 +50,10 @@ export const VISIBLE_PAGES: readonly string[] = [
   // "logical-thinking/knowing-what-others-know",
   // "logical-thinking/asking-about-answers",
 
+  // The puzzle page draws on §2.5, §2.6 and §2.7, so release it only once
+  // those three sections have been taught.
+  // "logical-thinking/puzzles",
+
   "machines/fsm-intro",
   "machines/reading-the-language",
   "machines/not",
