@@ -4,7 +4,7 @@ title: Puzzles
 order: 7
 chapter: logical-thinking
 chapterTitle: Logical Thinking
-blurb: Twelve puzzles from the chapter with a sheet to write your answer on. You are told whether it is right, and nothing more.
+blurb: Twelve puzzles, each with a sheet to write your answer on.
 description: The Hat Hurdle, the Judicious Jinx, the reported-answer exercises and the miscellaneous problems of Chapter 2, each with an answer sheet that marks right or wrong.
 ---
 export const base = import.meta.env.BASE_URL;
@@ -24,20 +24,16 @@ import {
   endlessQueue,
 } from "../../components/games/puzzles/logicalThinking.ts";
 
-Twelve puzzles, drawn from the last three sections of the chapter. Each one
-comes with a sheet to write your answer on.
+<style>{`
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+`}</style>
 
-Fill in every line of a sheet and press **Submit**. You will be told whether
-the answer is right, and that is all you will be told. There is no partial
-credit and no hint about which line went wrong, so a wrong verdict sends you
-back to the puzzle rather than to the sheet. Nothing locks, and you may
-change an answer and submit again as often as you like.
-
-Where a puzzle does not settle something, the sheet says so. **Cannot be
-determined** is a real answer on the lines that offer it, and on some of them
-it is the right one.
-
-## The Hat Hurdle
+## 1. The Hat Hurdle
 
 Four perfect logicians (named **1**, **2**, **3**, and **4**) have been
 captured by a warden. To win their freedom, they must solve a puzzle. The
@@ -96,7 +92,7 @@ settled, and mark as undetermined whatever is not.
 
 <PuzzleAnswer puzzle={hatHurdle} client:visible />
 
-## The Judicious Jinx
+## 2. The Judicious Jinx
 
 <figure className="not-prose my-8 flex flex-col items-center">
   <img
@@ -128,14 +124,12 @@ they exclaimed:
 
 <PuzzleAnswer puzzle={judiciousJinx} client:visible />
 
-## The Isles of Paradox
-
-The remaining puzzles are all set on the Isles of Paradox. Every inhabitant
+**The remaining ten puzzles are all set on the Isles of Paradox.** Every inhabitant
 there is an **oracle** or a **chimera** and nothing else: an oracle's every
 sentence is true, and a chimera's every sentence is false. This holds in all
 of them and is not repeated in each one.
 
-### One Answer, Three Ways
+## 3. One Answer, Three Ways
 
 A ruby lies in the **Coral** box or the **Amber** box, and Thalia knows which.
 
@@ -151,7 +145,7 @@ another. In each, **where is the ruby?**
 
 <PuzzleAnswer puzzle={oneAnswerThreeWays} client:visible />
 
-### Two Speakers, Three Boxes
+## 4. Two Speakers, Three Boxes
 
 Ariadne and Thalia stand before three boxes, **Coral**, **Amber** and
 **Topaz**, one of which holds the ruby. Both of them know which, and each
@@ -166,7 +160,7 @@ knows what kind the other is. Nothing at all is known about their kinds.
 
 <PuzzleAnswer puzzle={twoSpeakersThreeBoxes} client:visible />
 
-### Two Oracles and a Chimera
+## 5. Two Oracles and a Chimera
 
 Ariadne, Selene and Thalia stand before the **Coral** box and the **Amber**
 box, one of which holds the ruby. All three know where the ruby is, each
@@ -183,7 +177,7 @@ oracles**.
 
 <PuzzleAnswer puzzle={twoOraclesAndAChimera} client:visible />
 
-### How Many Boxes
+## 6. How Many Boxes
 
 The ruby is hidden in one of a row of boxes, and a single islander of unknown
 kind stands before them and knows which box holds it. You may ask that
@@ -196,7 +190,7 @@ finding the ruby whatever the answers turn out to be?
 
 <PuzzleAnswer puzzle={howManyBoxes} client:visible />
 
-### Five on the Shore
+## 7. Five on the Shore
 
 Five figures stand on the shore: Elara, Orion, Phoebe, Selene, and Helios.
 Each makes a single statement.
@@ -211,7 +205,7 @@ Each makes a single statement.
 
 <PuzzleAnswer puzzle={fiveOnTheShore} client:visible />
 
-### Oracles and Chimeras
+## 8. Oracles and Chimeras
 
 Three figures stand before us: Ariadne, Selene, and Thalia. Each makes a
 single statement.
@@ -224,7 +218,7 @@ single statement.
 
 <PuzzleAnswer puzzle={oraclesAndChimeras} client:visible />
 
-### Treacherous Trio
+## 9. Treacherous Trio
 
 Again three figures stand before us: Ariadne, Selene, and Thalia. Each makes
 a single statement.
@@ -238,7 +232,7 @@ a single statement.
 
 <PuzzleAnswer puzzle={treacherousTrio} client:visible />
 
-### Counting Chimeras
+## 10. Counting Chimeras
 
 Ten beings are lined up in a row, each one either a chimera or an oracle.
 
@@ -252,7 +246,7 @@ Ten beings are lined up in a row, each one either a chimera or an oracle.
 
 <PuzzleAnswer puzzle={countingChimeras} client:visible />
 
-### Counting Chimeras Again
+## 11. Counting Chimeras Again
 
 Ten beings are lined up in a row, each one either a chimera or an oracle. One
 word has changed.
@@ -267,7 +261,7 @@ word has changed.
 
 <PuzzleAnswer puzzle={countingChimerasAgain} client:visible />
 
-### An Endless Queue
+## 12. An Endless Queue
 
 Endlessly many beings are lined up in a queue, each one either a chimera or
 an oracle.

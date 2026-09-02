@@ -19,7 +19,7 @@ import { useState, type ReactNode } from "react";
 // Exported so PuzzleAnswer.tsx says the same two things; change them here and
 // both the quiz cards and the puzzle answer sheets follow.
 export const SAY_RIGHT = "You got lucky.";
-export const SAY_WRONG = "Better luck next time.";
+export const SAY_WRONG = "Shame on you.";
 
 export interface Question {
   prompt: string;
