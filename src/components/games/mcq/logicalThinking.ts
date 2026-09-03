@@ -864,7 +864,7 @@ export const askingAboutAnswers: Question[] = [
   {
     // Point 1792 — the self-report is the embedded question.
     prompt:
-      "You meet one islander and have no idea what kind they are. They volunteer: *The answer to 'Is the ruby in the Jade box?' is yes.* What follows?",
+      "You meet one islander and have no idea what kind they are. They volunteer: *My answer to 'Is the ruby in the Jade box?' is yes.* What follows?",
     options: [
       "The ruby is in the Jade box, whichever kind the islander is",
       "Nothing, since the sentence is about the islander and not about the ruby",
@@ -886,7 +886,7 @@ export const askingAboutAnswers: Question[] = [
   },
   {
     // Point 1824 — phrasing is not what does the work.
-    prompt: "Does the method depend on the particular words *is the answer yes*?",
+    prompt: "Does the method depend on the particular words *is your answer yes*?",
     options: [
       "No, any question at all works, however it is put",
       "Yes, that exact wording is what traps a chimera",
