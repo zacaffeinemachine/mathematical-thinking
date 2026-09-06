@@ -795,8 +795,7 @@ export const knowingWhatOthersKnow: Question[] = [
 //  §2.6 — Asking About Answers
 //  A fresh three-speaker puzzle, found by exhaustive search over all boxes and
 //  all oracle/chimera assignments and confirmed to have exactly one solution:
-//    Elara : "If Orion were asked whether the ruby is in the Jade box,
-//             he would answer yes."
+//    Elara : "Orion's answer to 'Is the ruby in the Jade box?' is yes."
 //    Orion : "The ruby is in the Jade box."
 //    Selene: "The ruby is not in the Onyx box."
 //    Exactly one of the three is a chimera.
@@ -808,7 +807,7 @@ export const askingAboutAnswers: Question[] = [
   {
     // Point 1728 — the reported-answer rule.
     prompt:
-      "On the Isles of Paradox, Elara says: *If Orion were asked whether the ruby is in the Jade box, he would answer yes.* Exactly when is that sentence true?",
+      "On the Isles of Paradox, Elara says: *Orion's answer to 'Is the ruby in the Jade box?' is yes.* Exactly when is that sentence true?",
     options: [
       "When exactly one of *the ruby is in the Jade box* and *Orion is an oracle* is true",
       "When *the ruby is in the Jade box* and *Orion is an oracle* are both true or both false",
