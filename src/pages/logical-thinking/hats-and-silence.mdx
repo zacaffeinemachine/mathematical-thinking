@@ -1,0 +1,197 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Hats and Silence
+order: 7
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: Five puzzles in which somebody says "I do not know", and that is the clue.
+description: The Hat Hurdle, the Judicious Jinx, Four Hats in a Chest, Three Sages and Five Hats, and Olympian Cards, each with an answer sheet that marks right or wrong.
+---
+export const base = import.meta.env.BASE_URL;
+import PuzzleAnswer from "../../components/games/PuzzleAnswer.tsx";
+import {
+  hatHurdle,
+  judiciousJinx,
+  fourHatsInAChest,
+  threeSagesFiveHats,
+  olympianCards,
+} from "../../components/games/puzzles/logicalThinking.ts";
+
+<style>{`
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+`}</style>
+
+## 1. The Hat Hurdle
+
+Four perfect logicians (named **1**, **2**, **3**, and **4**) have been
+captured by a warden. To win their freedom, they must solve a puzzle. The
+warden places them in a line as shown in the diagram.
+
+- **Logician 1** is at the highest position and can see the hats of Logician
+  2 and Logician 3.
+- **Logician 2** is in the middle and can see the hat of Logician 3.
+- **Logician 3** is in front of Logician 2 and can see only a brick wall.
+- **Logician 4** is on the other side of the brick wall, unable to see
+  anyone, and no one can see them.
+
+The warden places a hat on each logician's head from a set of **two red
+hats** and **two blue hats**. No logician can see the colour of their own
+hat.
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/wl.png`}
+    alt="Four logicians in a line: Logician 4 stands behind a brick wall on the left; Logicians 3, 2, and 1 stand on the right in increasing height, each able to see only those in front of them."
+    style={{ maxWidth: "min(420px, 100%)", height: "auto" }}
+  />
+</figure>
+
+Here is the important fine print.
+
+1. **Perfect logic.** All four are perfect logicians. They will make any
+   deduction that is logically possible, and each knows that the other three
+   are equally perfect.
+2. **Shared knowledge.** Every logician knows the entire setup, meaning the
+   positions, the lines of sight, and that there are exactly two red and two
+   blue hats in total.
+3. **No communication.** No speaking, no gestures. The logicians answer the
+   warden's questions and nothing more.
+4. **Certainty required.** A logician will state their hat colour only when
+   they are 100% certain. They will never guess.
+
+The warden then conducts the following round of questioning, and every
+logician hears every question and every answer.
+
+1. The warden asks **Logician 4**: *Do you know the colour of your hat?*
+   &nbsp; Logician 4 replies, *"I do not know."*
+2. The warden asks **Logician 3**: *Do you know the colour of your hat?*
+   &nbsp; Logician 3 replies, *"I do not know."*
+3. The warden asks **Logician 2**: *Do you know the colour of your hat?*
+   &nbsp; Logician 2 replies, *"I do not know."*
+4. The warden asks **Logician 1**, the one with the best view: *Do you know
+   the colour of your hat?* &nbsp; Logician 1 also replies, *"I do not
+   know."*
+
+And then, out of the silence, **Logician 2** speaks up and correctly
+announces their hat colour.
+
+**Suppose that Logician 3 is wearing a red hat.** Fill in what is now
+settled, and mark as undetermined whatever is not.
+
+<PuzzleAnswer puzzle={hatHurdle} client:visible />
+
+## 2. The Judicious Jinx
+
+<figure className="not-prose my-8 flex flex-col items-center">
+  <img
+    src={`${base}/images/logical-thinking/judicious-jinx.png`}
+    alt="Three watercolour-style hats on a wooden surface: one blue and two red."
+    style={{ maxWidth: "min(460px, 100%)", height: "auto", borderRadius: 8 }}
+  />
+</figure>
+
+Three perfect logicians, **Elara**, **Phoebe**, and **Orion**, were given a
+puzzle. A hat, coloured either red or blue, was placed on each of their
+heads. They could each see the hats of the other two, but not their own.
+
+After a moment of looking at one another, they all spoke at the same time:
+
+> *"I see at least one red hat!"*
+
+A silence then fell as they thought about this statement. Then, all at once,
+they spoke again:
+
+> *"I don't know what colour my hat is."*
+
+After a little more time passed, a realisation struck all three. Together,
+they exclaimed:
+
+> *"Now I know my hat colour!"*
+
+**What colour is each hat?**
+
+<PuzzleAnswer puzzle={judiciousJinx} client:visible />
+
+## 3. Four Hats in a Chest
+
+In a chest there are four hats: two are **red** and two are **blue**.
+
+Three wise sages, **Elara**, **Phoebe** and **Orion**, are gathered for a
+test of logic. Each sage is blindfolded and places one of the four hats upon
+their head. They do not see the colour of the hat they have chosen. One hat
+remains in the chest, and its colour is unknown to them. The sages'
+blindfolds are then removed.
+
+The rules are as follows.
+
+- Each sage can see the hats worn by the other two sages.
+- No sage can see the hat on their own head.
+- No sage can see the leftover hat inside the chest.
+
+Each sage reasons perfectly, and each knows that the other two do.
+
+The sages look at one another. Elara makes the following silent observation:
+
+> *Phoebe is wearing a blue hat, and Orion is wearing a red hat.*
+
+That is what Elara sees, and it is all we are told. The colour of Elara's own
+hat is not given, to us or to her.
+
+**How many of the three sages can name the colour of their own hat with
+certainty, and who is it?**
+
+<PuzzleAnswer puzzle={fourHatsInAChest} client:visible />
+
+## 4. Three Sages, Five Hats
+
+Three logicians, **Ariadne**, **Selene** and **Thalia**, are each wearing a
+hat. They can see the colours of the others' hats but not their own. They
+know that their hats were drawn from a group of five hats: **three red** and
+**two blue**. The two hats left over are put away unseen.
+
+Each logician reasons perfectly, and each knows that the other two do. A
+question is posed to each logician in turn, and every logician hears the
+answers given before her own.
+
+1. Ariadne is asked what colour her hat is. She responds, *"I do not know."*
+2. Selene is asked what colour her hat is. She also says, *"I do not know."*
+3. When Thalia is asked what colour her hat is, she answers correctly.
+
+**What colour is Thalia's hat, and what told her?**
+
+<PuzzleAnswer puzzle={threeSagesFiveHats} client:visible />
+
+## 5. Olympian Cards
+
+High atop the peaks of Mount Olympus, a game of pure logic unfolds.
+
+**Zeus**, the King of Gods, has fashioned a deck of six celestial cards, each
+inscribed with a different one of the numbers 1 through 6. He summons
+**Athena**, the Goddess of Wisdom, and **Apollo**, the God of Truth. He deals
+one secret card to Athena and one secret card to Apollo, and keeps the other
+four. Each deity sees only their own card. Athena and Apollo each reason
+perfectly, and each knows that the other does.
+
+Zeus then proclaims to them both:
+
+> *"The numbers you hold sum up to either 5 or 7."*
+
+A silence falls, followed by this exchange.
+
+- **Athena speaks:** *"Father, despite my wisdom, I do not know whether our
+  sum is 5 or 7."*
+- **Apollo speaks:** *"Hearing this, sister, I too must confess: I do not
+  know whether our sum is 5 or 7."*
+
+**Hermes**, the Messenger God, has witnessed the whole exchange from the
+shadows. He is a perfect logician himself, and he begins to deduce the truth.
+
+**Which card numbers can Hermes be certain that Athena does not hold, and
+which can he be certain that Apollo does not hold?**
+
+<PuzzleAnswer puzzle={olympianCards} client:visible />

@@ -50,9 +50,13 @@ export const VISIBLE_PAGES: readonly string[] = [
   // "logical-thinking/knowing-what-others-know",
   // "logical-thinking/asking-about-answers",
 
-  // The puzzle page draws on §2.5, §2.6 and §2.7, so release it only once
-  // those three sections have been taught.
-  "logical-thinking/puzzles",
+  // Three puzzle pages, themed by section rather than lumped together. Each
+  // takes written answers on a sheet instead of multiple choice, and each
+  // draws on one section only, so release each once its section is taught.
+  // Reported Answers is deliberately last: it holds the hardest five.
+  "logical-thinking/hats-and-silence",
+  "logical-thinking/oracles-and-chimeras",
+  "logical-thinking/reported-answers",
 
   "machines/fsm-intro",
   "machines/reading-the-language",

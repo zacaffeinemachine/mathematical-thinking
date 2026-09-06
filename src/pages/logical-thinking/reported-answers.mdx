@@ -1,0 +1,107 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Reported Answers
+order: 9
+chapter: logical-thinking
+chapterTitle: Logical Thinking
+blurb: The hardest five. Nobody here says where the ruby is; each one reports what somebody else would answer.
+description: The reported-answer puzzles of Chapter 2, from the embedded question to the three chained claims, each with an answer sheet that marks right or wrong.
+---
+import PuzzleAnswer from "../../components/games/PuzzleAnswer.tsx";
+import {
+  oneAnswerTwoWays,
+  howManyBoxes,
+  twoSpeakersThreeBoxes,
+  twoOraclesAndAChimera,
+  threeAtTheBoxes,
+} from "../../components/games/puzzles/logicalThinking.ts";
+
+<style>{`
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+`}</style>
+
+**All five puzzles below are set on the Isles of Paradox.** Every inhabitant
+there is an **oracle** or a **chimera** and nothing else: an oracle's every
+sentence is true, and a chimera's every sentence is false. This holds in all
+five, and is not repeated in each one.
+
+## 1. One Answer, Two Ways
+
+A ruby lies in the **Coral** box or the **Amber** box, and Thalia knows which.
+
+- **a)** You ask Thalia, *"Is the ruby in the Coral box?"*, and she answers
+  yes.
+- **b)** You ask Thalia, *"Is your answer to 'Is the ruby in the Coral box?'
+  yes?"*, and she answers yes.
+
+The two are separate situations, not two things that happen one after
+another. In each, **where is the ruby?**
+
+<PuzzleAnswer puzzle={oneAnswerTwoWays} client:visible />
+
+## 2. Two Speakers, Three Boxes
+
+Ariadne and Thalia stand before three boxes, **Coral**, **Amber** and
+**Topaz**, one of which holds the ruby. Both of them know which, and each
+knows what kind the other is. Nothing at all is known about their kinds.
+
+- **Ariadne says:** *"Thalia's answer to 'Is the ruby in the Coral box?' is
+  yes."*
+- **Thalia says:** *"Ariadne's answer to 'Is the ruby in the Amber box?' is
+  yes."*
+
+**Where is the ruby, and what can be said about the two speakers?**
+
+<PuzzleAnswer puzzle={twoSpeakersThreeBoxes} client:visible />
+
+## 3. Two Oracles and a Chimera
+
+Ariadne, Selene and Thalia stand before the **Coral** box and the **Amber**
+box, one of which holds the ruby. All three know where the ruby is, each
+knows what kind the other two are, and **exactly two of the three are
+oracles**.
+
+- **Ariadne says:** *"Selene's answer to 'Is the ruby in the Coral box?' is
+  yes."*
+- **Selene says:** *"Thalia's answer to 'Is the ruby in the Coral box?' is
+  yes."*
+- **Thalia says:** *"Ariadne is an oracle."*
+
+**Who is the chimera, and where is the ruby?**
+
+<PuzzleAnswer puzzle={twoOraclesAndAChimera} client:visible />
+
+## 4. How Many Boxes
+
+The ruby is hidden in one of a row of boxes, and a single islander of unknown
+kind stands before them and knows which box holds it. You may ask that
+islander four questions, one after another, each answerable only by yes or
+no, and you may choose each question after hearing the answer to the one
+before.
+
+**What is the largest number of boxes you could deal with this way**, always
+finding the ruby whatever the answers turn out to be?
+
+<PuzzleAnswer puzzle={howManyBoxes} client:visible />
+
+## 5. Three at the Boxes
+
+Phoebe, Selene and Helios stand before the **Coral** box and the **Amber**
+box, one of which holds the ruby. All three know where the ruby is, each
+knows what kind the other two are, and **exactly two of the three are
+oracles**.
+
+- **Phoebe says:** *"Selene's answer to 'Is the ruby in the Coral box?' is
+  yes."*
+- **Selene says:** *"Helios's answer to 'Is Phoebe a chimera?' is yes."*
+- **Helios says:** *"The ruby is in the Coral box precisely when Selene is an
+  oracle."*
+
+**Who is the chimera, and where is the ruby?**
+
+<PuzzleAnswer puzzle={threeAtTheBoxes} client:visible />

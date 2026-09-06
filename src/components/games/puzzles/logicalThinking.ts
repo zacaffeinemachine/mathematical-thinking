@@ -1,9 +1,11 @@
 import type { Puzzle } from "../PuzzleAnswer.tsx";
 
 // ---------------------------------------------------------------------------
-//  Answer keys for the Chapter 2 puzzle page (src/pages/logical-thinking/
-//  puzzles.mdx). The puzzle statements live in the MDX; only the answer sheet
-//  and its key live here.
+//  Answer keys for the three Chapter 2 puzzle pages, which are themed by book
+//  section: hats-and-silence.mdx (§2.5), oracles-and-chimeras.mdx (§2.7) and
+//  reported-answers.mdx (§2.6, set last because it is the hardest). The puzzle
+//  statements live in the MDX; only the answer sheet and its key live here, and
+//  the exports below are grouped in the order the pages use them.
 //
 //  Every key was settled by exhaustive search, not by hand. The script is
 //  reproduced in SITE_OVERVIEW.md, "The puzzle answer-sheet pattern"; rerun it
@@ -60,9 +62,110 @@ export const judiciousJinx: Puzzle = {
   ],
 };
 
+// §2.5, Exercise "Four Hats in a Chest". Two red and two blue, three worn and
+// one left in the chest, and Elara sees Phoebe blue and Orion red. A sage is
+// certain exactly when the two hats they can see match, because the two hats
+// left over are then both of the other colour. Exactly one sage is certain
+// whichever colour Elara wears, which is what the book asks for, but WHICH one
+// does depend on it: Phoebe if Elara is red, Orion if Elara is blue. The second
+// row is the sheet's whole point, so "Depends on Elara's hat colour" is keyed
+// rather than offered as a way out.
+export const fourHatsInAChest: Puzzle = {
+  fields: [
+    {
+      kind: "number",
+      label: "The number of sages who can be certain is",
+      answer: 1,
+    },
+    {
+      kind: "choice",
+      label: "The one who can be certain is",
+      options: ["Elara", "Phoebe", "Orion", "Depends on Elara's hat colour"],
+      answer: 3,
+    },
+  ],
+};
+
+// §2.5, Exercise "Three Sages, Five Hats". Three red and two blue, three worn.
+// Ariadne's "I do not know" rules out Selene and Thalia both being blue.
+// Selene, who heard it, would then know her own colour if Thalia's were blue,
+// so her "I do not know" forces Thalia red. Ariadne's reply on its own leaves
+// Thalia either colour, which is why the second row keys Selene's.
+export const threeSagesFiveHats: Puzzle = {
+  fields: [
+    { kind: "choice", label: "Thalia's hat is", options: HAT, answer: 0 },
+    {
+      kind: "choice",
+      label: "What told Thalia the answer was",
+      options: [
+        "Ariadne's reply alone",
+        "Selene's reply",
+        "The two hats she can see",
+        "The count of five hats alone",
+      ],
+      answer: 1,
+    },
+  ],
+};
+
+// §2.5, Exercise "Olympian Cards". Ten ordered pairs sum to 5 or 7. Athena
+// would know on 5 or 6, so her silence leaves her 1, 2, 3 or 4. Apollo, who
+// heard that, would know on 1, 2, 5 or 6, so his silence leaves him 3 or 4.
+// The book asks for two lists of numbers and no field kind holds a list, so
+// each part is one choice over whole answers.
+export const olympianCards: Puzzle = {
+  fields: [
+    {
+      kind: "choice",
+      label: "Athena cannot hold",
+      options: ["5 and 6 only", "5 only", "6 only", "1, 2, 3 and 4"],
+      answer: 0,
+    },
+    {
+      kind: "choice",
+      label: "Apollo cannot hold",
+      options: [
+        "1, 2, 5 and 6",
+        "5 and 6 only",
+        "1 and 2 only",
+        "1, 2, 3 and 4",
+      ],
+      answer: 0,
+    },
+  ],
+};
+
 // ===========================================================================
 //  §2.6 — Asking About Answers
 // ===========================================================================
+
+// The puzzle that opens §2.6, and the hardest of the reported-answer set: two
+// chained reports and a "precisely when", with exactly two of the three an
+// oracle. Exhaustive search over two boxes and the three ways to place the one
+// chimera leaves a single case, Selene the chimera and the ruby in the Amber
+// box.
+//
+// NOTE: that is the same pair of answers as twoOraclesAndAChimera below, which
+// is a coincidence of the two puzzles and not a mistake in either. Both come
+// from §2.6 and both are set on the same page, so the page keeps them apart:
+// howManyBoxes sits between them. If either statement is ever reworded, check
+// the collision has not become an adjacency.
+export const threeAtTheBoxes: Puzzle = {
+  fields: [
+    {
+      kind: "choice",
+      label: "The chimera is",
+      options: ["Phoebe", "Selene", "Helios"],
+      answer: 1,
+    },
+    {
+      kind: "choice",
+      label: "The ruby is in the",
+      options: ["Coral box", "Amber box", "Cannot be determined"],
+      answer: 1,
+    },
+  ],
+};
 
 // §2.6, Exercise 1. A plain question is answered yes by an oracle over the
 // Coral box and by a chimera over the Amber one, so a) pins nothing down; the
