@@ -89,21 +89,24 @@ export const fourHatsInAChest: Puzzle = {
 // §2.5, Exercise "Three Sages, Five Hats". Three red and two blue, three worn.
 // Ariadne's "I do not know" rules out Selene and Thalia both being blue.
 // Selene, who heard it, would then know her own colour if Thalia's were blue,
-// so her "I do not know" forces Thalia red. Ariadne's reply on its own leaves
-// Thalia either colour, which is why the second row keys Selene's.
+// so her "I do not know" forces Thalia red. Neither reply settles it alone:
+// exhaustive search over the four worlds each reply leaves standing gives
+// Thalia both colours in both cases, and only the two together cut it to red.
+// So the second row keys the pair, and the two single-reply options are there
+// to be rejected rather than to be split hairs over.
 export const threeSagesFiveHats: Puzzle = {
   fields: [
     { kind: "choice", label: "Thalia's hat is", options: HAT, answer: 0 },
     {
       kind: "choice",
-      label: "What told Thalia the answer was",
+      label: "What told Thalia her hat's colour?",
       options: [
         "Ariadne's reply alone",
-        "Selene's reply",
+        "Selene's reply alone",
+        "Both replies together",
         "The two hats she can see",
-        "The count of five hats alone",
       ],
-      answer: 1,
+      answer: 2,
     },
   ],
 };
