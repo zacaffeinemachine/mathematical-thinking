@@ -33,18 +33,25 @@ const KIND = ["Oracle", "Chimera"];
 // hat and asks what follows. Logician 1's "I do not know" forces Logicians 2
 // and 3 to differ, so Logician 2 is blue; the two remaining hats are one of
 // each colour and nothing separates Logician 1 from Logician 4.
+//
+// The third row keys the pair, for the same reason as threeSagesFiveHats
+// below. Exhaustive search says Logician 1's reply on its own only forces
+// Logicians 2 and 3 apart, which leaves Logician 2 either colour, and the
+// sight of Logician 3's red hat is worth nothing without that reply. The last
+// option is the one to reject on sight: Logicians 4 and 3 see no hats at all,
+// so neither could ever have known, and their replies rule out nothing.
 export const hatHurdle: Puzzle = {
   fields: [
     { kind: "choice", label: "Logician 2's hat is", options: HAT, answer: 1 },
     { kind: "choice", label: "Logician 1's hat is", options: HAT, answer: 2 },
     {
       kind: "choice",
-      label: "What told Logician 2 the answer was",
+      label: "What told Logician 2 their hat's colour?",
       options: [
-        "Logician 4's reply",
-        "Logician 3's reply",
-        "Logician 1's reply",
-        "Logician 3's hat on its own",
+        "Logician 1's reply alone",
+        "Logician 3's hat alone",
+        "Logician 1's reply and Logician 3's hat together",
+        "Logician 4's and Logician 3's replies",
       ],
       answer: 2,
     },
