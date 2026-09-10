@@ -1,0 +1,99 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Exact Words
+order: 7
+chapter: machines
+chapterTitle: Machines
+blurb: Machines that accept a short list of words and nothing else, over an alphabet of twenty-six letters.
+description: "Design-a-machine problems on recognising exact words over a large alphabet."
+---
+import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
+
+<HowToAnswer alphabet="the 26 lowercase letters" />
+
+<ThemeNote>
+A password machine has an easy shape and one honest difficulty.
+
+The shape is a corridor. One circle per letter matched so far, one arrow
+along the corridor for the right letter, and every wrong letter falling out
+of the corridor into **dead**. The end of the corridor is the accepting
+circle, and even the correct word followed by one more letter has to leave
+it, because the machine accepts that word and nothing longer.
+
+The difficulty is the alphabet. Twenty-six letters means twenty-six arrows
+out of every circle, which nobody wants to draw. The convention used on the
+first page is the fix: draw the arrows you care about, then one arrow
+labelled `x` meaning **any other letter**. Say once, in words, that this is
+what `x` means, and the diagram stays honest.
+
+When two words are wanted, the corridors share whatever prefix the words
+share and split where the words split.
+</ThemeNote>
+
+<Problem n={1} title="One short word">
+Accept `hat` and nothing else.
+<Tests accept={["hat"]} reject={["", "ha", "hate", "hatt", "cat", "aht"]} />
+</Problem>
+
+<Problem n={2} title="One longer word">
+Accept `code` and nothing else.
+<Tests accept={["code"]} reject={["", "cod", "codes", "coda", "ccode", "node"]} />
+</Problem>
+
+<Problem n={3} title="Two words that share nothing">
+Accept `hate` and `qrmt`, and nothing else.
+
+The two words have no first letter in common, so the corridors part company
+at once. How many circles in total, and how many of them are accepting?
+<Tests accept={["hate", "qrmt"]} reject={["", "hat", "qrm", "hateqrmt", "haterqrmt", "hqartme"]} />
+</Problem>
+
+<Problem n={4} title="Three words, two of which start alike">
+Accept `start`, `stop` and `pause`, and nothing else.
+
+`start` and `stop` share their first two letters, so their corridors should
+share circles until they part. Do not draw two separate corridors and hope
+nobody notices.
+<Tests accept={["start", "stop", "pause"]} reject={["", "st", "sto", "starts", "stopp", "paus", "startstop"]} />
+</Problem>
+
+<Problem n={5} title="Words that are prefixes of each other">
+Accept `to`, `too` and `tool`, and nothing else.
+
+Here one word is the beginning of the next. The corridor does not branch at
+all, which means some circles along it are accepting and some are not.
+<Tests accept={["to", "too", "tool"]} reject={["", "t", "tools", "toll", "tooll", "ot"]} />
+</Problem>
+
+<Problem n={6} title="Every short word">
+Accept every string of length 2 or less, over the 26 letters, and nothing
+longer.
+
+This one is not a corridor. Notice how few circles it needs even though the
+number of accepted words is 1 + 26 + 676.
+<Tests accept={["", "a", "z", "hi", "qq"]} reject={["cat", "hate", "abcd", "aaa"]} />
+</Problem>
+
+<Problem n={7} title="A word at the start, anything after" hard>
+Accept exactly the strings that begin with `un`.
+
+Compare this with problem 2. There, the accepting circle had to be left
+again on the next letter. Here it must not be. Say what changed.
+<Tests accept={["un", "und", "undo", "unhappy", "unn"]} reject={["", "u", "n", "nu", "sun", "aun"]} />
+</Problem>
+
+<Problem n={8} title="A word repeated" hard>
+The alphabet here is just `{a, b}`. Accept exactly the strings made by
+writing `ab` some number of times over: the empty string, `ab`, `abab`,
+`ababab`, and so on.
+<Tests accept={["", "ab", "abab", "ababab"]} reject={["a", "b", "ba", "aab", "aba", "abb"]} />
+</Problem>
+
+<Problem n={9} title="No letter twice in a row" hard>
+The alphabet here is `{a, b}`. Accept exactly the non-empty strings in which
+no two neighbouring letters are the same.
+
+The empty string is **not** accepted, which costs a circle. Say which one
+and why.
+<Tests accept={["a", "b", "ab", "ba", "abab", "babab"]} reject={["", "aa", "bb", "ababb", "abba"]} />
+</Problem>

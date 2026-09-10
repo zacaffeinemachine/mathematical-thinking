@@ -1,0 +1,92 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Looking Back From the End
+order: 6
+chapter: machines
+chapterTitle: Machines
+blurb: Rules about the second-to-last symbol, and worse. The machine cannot know which symbol will turn out to be the last one.
+description: "Design-a-machine problems about symbols counted backwards from the end of the input."
+---
+import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
+
+<HowToAnswer />
+
+<ThemeNote>
+A rule about the *last* symbol is easy: hold the last symbol. A rule about
+the *second-to-last* symbol is a different animal, and it is worth being
+clear about why.
+
+While the machine is reading, it does not know which symbol will turn out
+to be the second-to-last one. Any symbol might be, and it only finds out
+when the input stops, at which point it is too late to go back and look.
+
+The way out is to stop trying to spot the right symbol and instead to
+**carry a window** of the most recent few symbols at all times. Reading a
+new symbol slides the window along and pushes the oldest one out, because
+once a symbol is far enough back it can never be asked about again.
+
+A window of the last two symbols costs four circles, one per pair. A window
+of three costs eight. Keep an eye on that number as the problems go on.
+</ThemeNote>
+
+<Problem n={1} title="The last two agree">
+Accept exactly the strings of length at least 2 whose last two symbols are
+the same.
+<Tests accept={["00", "11", "100", "0111", "1100"]} reject={["", "0", "1", "01", "10", "0101"]} />
+</Problem>
+
+<Problem n={2} title="The last two differ">
+Accept exactly the strings of length at least 2 whose last two symbols are
+different.
+
+There is a one-line way to get this from your answer to the problem above,
+and it is worth finding rather than starting again. Careful: strings of
+length 0 and 1 must still be rejected by both machines.
+<Tests accept={["01", "10", "001", "1110", "0101"]} reject={["", "0", "1", "00", "11", "0100"]} />
+</Problem>
+
+<Problem n={3} title="Third from the end">
+Accept exactly the strings of length at least 3 whose third-to-last symbol
+is a `1`.
+<Tests accept={["100", "101", "110", "111", "01101"]} reject={["", "1", "11", "000", "0011"]} />
+</Problem>
+
+<Problem n={4} title="Three of a kind at the end">
+Accept exactly the strings of length at least 3 whose last three symbols are
+all the same.
+<Tests accept={["000", "111", "0111", "1000", "010000"]} reject={["", "11", "011", "0110", "1101"]} />
+</Problem>
+
+<Problem n={5} title="The beginning meets the end" hard>
+Accept exactly the strings of length at least 2 whose **first** symbol is
+the same as the **second-to-last** symbol.
+
+So `0100101` is accepted and `0100011` is not. Check both by hand before you
+start drawing.
+
+Every string of exactly two symbols is accepted, because in a string of two
+symbols the first symbol *is* the second-to-last one. If that surprises you,
+it is worth pinning down before you draw anything.
+
+This one needs two quite different kinds of memory at once: something the
+machine learns at the very start and must never lose, and a window that keeps
+sliding. Say which circles are doing which job.
+<Tests accept={["00", "01", "10", "11", "1011", "0100101"]} reject={["", "0", "1", "0110", "1000", "0100011"]} />
+</Problem>
+
+<Problem n={6} title="Fourth from the end" hard>
+Accept exactly the strings of length at least 4 whose fourth-to-last symbol
+is a `1`.
+
+Then answer this, which is the real point of the problem. Going from
+*second*-to-last to *third*-to-last to *fourth*-to-last, the number of
+circles doubles each time. Say in one sentence why it doubles rather than
+going up by one.
+<Tests accept={["1000", "1111", "01001", "1100"]} reject={["", "1", "111", "0000", "0100"]} />
+</Problem>
+
+<Problem n={7} title="A vote among the last three" hard>
+Accept exactly the strings of length at least 3 in which at least two of the
+last three symbols are `1`s.
+<Tests accept={["110", "011", "101", "111", "00011"]} reject={["", "1", "11", "000", "1000", "0100"]} />
+</Problem>

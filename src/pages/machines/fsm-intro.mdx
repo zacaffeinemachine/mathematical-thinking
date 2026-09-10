@@ -83,11 +83,19 @@ A two-state recognizer. The machine remembers one fact about the
 input so far: *did the last symbol I read equal <code>0</code>?*
 That single bit of memory is enough to know whether to accept.
 
+This one, and several below it, carry a panel underneath listing
+**every** short input with its verdict, green for accepted. Click any
+one to watch it walk, or press *run them all*. One string at a time
+tells you what the machine does. The panel tells you what it is
+*for*, which is a different question and usually the interesting
+one.
+
 <FSMRunner
   client:visible
   machine={endsInZero}
   defaultInput="1010"
   examples={["", "0", "1", "10", "01", "100", "111", "1010"]}
+  sweep={{ maxLength: 4 }}
 />
 
 ## Ending in 101
@@ -101,6 +109,7 @@ nothing, <code>1</code>, <code>10</code>, or the whole thing.
   machine={endsIn101}
   defaultInput="10101"
   examples={["101", "0101", "1101", "10101", "10", "011", "1010", "1011"]}
+  sweep={{ maxLength: 4 }}
 />
 
 Watch the two arrows leaving <code>101</code>, because they are where
@@ -177,6 +186,7 @@ leaves it alone.
   machine={evenZeros}
   defaultInput="11011"
   examples={["", "0", "1", "00", "01", "11", "0011", "11011", "0010"]}
+  sweep={{ maxLength: 4 }}
 />
 
 ## Every block of 1s has even length
@@ -192,6 +202,7 @@ has even length.
   machine={evenBlocksOfOnes}
   defaultInput="0110011"
   examples={["", "0", "11", "0110011", "1", "010", "111", "0111011"]}
+  sweep={{ maxLength: 4 }}
 />
 
 This one is worth sitting with, because it separates two things
@@ -258,6 +269,7 @@ on division by 5, and there are only five of those. From remainder
   defaultInput="1010"
   examples={["0", "101", "1010", "1111", "", "1", "10", "1011"]}
   width={600}
+  sweep={{ maxLength: 5 }}
 />
 
 The extra <code>start</code> mood exists for one reason only: it
@@ -360,346 +372,13 @@ eight moods. Bigger, but not one bit cleverer.
 
 ---
 
-Every machine above answers one question about one string at a time.
-The [next page](../many-inputs/) hands a machine every short input
-there is, all at once, which is where the shape of what it accepts
-becomes visible.
+That is the whole idea, and every machine above is the same idea wearing a
+different hat. A fixed handful of moods, one arrow per mood per symbol, and
+a rule that looks only at where it is and what arrives next.
 
----
-
-<div style={{margin:'48px 0 8px', textAlign:'center'}}>
-  <div style={{
-    display:'inline-block',
-    padding:'4px 16px',
-    fontSize:12,
-    letterSpacing:'0.18em',
-    textTransform:'uppercase',
-    color:'var(--muted)',
-    border:'1px solid var(--rule)',
-    borderRadius:999,
-  }}>Exercises</div>
-</div>
-
-<p style={{textAlign:'center', color:'var(--muted)', fontSize:14, marginBottom:24}}>
-For each language below, design a finite state machine that accepts a
-string if and only if it belongs to the language. A clear diagram is
-enough, and no proof of correctness is required.
-</p>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 1 — A warm-up with binary strings</div>
-
-The alphabet is `{0, 1}`. For each collection *S* described below,
-design a machine that accepts a binary string if and only if it
-belongs to *S*.
-
-**(a)** *S* is the collection of strings that have length at least
-3 and whose third symbol is a `0`.
-
-**(b)** *S* is the collection of strings that contain an **even**
-number of `0`s **and** an **odd** number of `1`s.
-
-**(c)** *S* is the collection of strings that either start with a
-`1` and have an even total length, **or** start with a `0` and
-have an odd total length.
-
-**(d)** *S* is the collection of strings where every symbol at an
-odd-numbered position (the 1st, 3rd, 5th, …) is a `1`.
-
-**(e)** *S* is the collection of strings where all `0`s (if any)
-appear before all `1`s (if any). For example, `00111`, `111`,
-and `000` belong to *S*, and `010` does not.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 2 — HATE QRMT</div>
-
-Design a machine that reads the 26 lowercase letters of the
-English alphabet and accepts *only* the two specific strings
-`hate` and `qrmt`.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 3 — Exactly two `1`s</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts exactly
-those strings containing **exactly** two `1`s.
-
-Compare this with the machine for *at least two* `1`s above. There,
-once the machine had succeeded it stayed successful forever. Here it
-cannot: a third `1` must undo the success permanently. Alongside your
-diagram, write one plain-English sentence saying what each mood means.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 4 — Forgetting on command</div>
-
-The alphabet is `{0, 1, reset}`. Design a machine that accepts
-exactly those strings in which an **even** number of `1`s have
-appeared *since the most recent* `reset`. If no `reset` has appeared
-at all, count from the beginning of the string.
-
-For example, `1 1` is accepted, `1 reset 1` is not, and
-`1 reset 1 1` is. This is the first machine here with an input whose
-whole job is to make it forget.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 5 — Paying exactly five credits</div>
-
-A vending machine takes two kinds of coin: one worth 1 credit and
-one worth 2 credits. Design a machine that reads a sequence of coins
-and accepts exactly those sequences whose total value is exactly 5
-credits.
-
-Every counter so far has advanced one notch per symbol. Here two
-different inputs move the total by two different amounts, and a total
-that overshoots 5 can never come back.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 6 — More `1`s than `0`s, by a multiple of three</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts exactly
-those strings for which
-
-<div style={{textAlign:'center', margin:'8px 0', fontFamily:'ui-monospace, monospace'}}>
-(number of 1s) − (number of 0s)
-</div>
-
-is divisible by 3. Note that this difference may well be negative,
-and that three moods are enough.
-
-In the machine for *the number of `1`s is divisible by 3*, a `0`
-changed nothing. Here both symbols matter, and they push the
-remembered remainder in opposite directions.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 7 — Looking back from the end</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts a binary
-string *w* exactly when both of the following hold:
-
-- the length of *w* is at least 3,
-- the third-to-last symbol of *w* is a `1`.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 8 — Every `0` immediately followed by a `1`</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts exactly
-those strings in which every `0` is immediately followed by a
-`1`. For example, `1101` is accepted, and `1001` and `10` are not.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 9 — Length a multiple of 3, ending in `1`</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts exactly
-those strings whose length is a multiple of 3 *and* whose final
-symbol is `1`.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 10 — start, stop, pause</div>
-
-Design a machine that reads the 26 lowercase letters and accepts
-*only* the three strings `start`, `stop`, and `pause`.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 11 — First symbol equals second-to-last</div>
-
-The alphabet is `{0, 1}`. Design a machine that accepts exactly
-those binary strings *w* satisfying both of the following:
-
-- the length of *w* is at least 2,
-- the first symbol of *w* and the second-to-last symbol of *w*
-  are identical.
-
-For example, `0100101` should be accepted, while `0100011` should
-be rejected.
-</div>
-
-<div style={{
-  margin:'20px 0',
-  padding:'14px 18px 16px',
-  border:'1px solid var(--rule)',
-  borderLeft:'4px solid var(--accent)',
-  borderRadius:4,
-  background:'var(--surface)',
-}}>
-<div style={{
-  fontSize:11,
-  letterSpacing:'0.12em',
-  textTransform:'uppercase',
-  color:'var(--muted)',
-  fontWeight:600,
-  marginBottom:6,
-}}>Exercise 12 — Odd projection contains `dfa`</div>
-
-For a string *x*₁*x*₂…*x*<sub>n</sub>, the **odd projection** is
-the string formed by deleting every symbol at an even position,
-that is, *x*₁*x*₃*x*₅… For example, the odd projection of
-`ihateqrmt` is `iaert`, and the odd projection of `iloveinsta`
-is `ioent`.
-
-Design a machine that reads the 26 lowercase letters and accepts
-exactly those strings whose odd projection contains `dfa` as a
-substring.
-</div>
+The rest of this chapter is practice. Each of the pages that follow is a set
+of **design problems** on one theme: you are given a property of a string,
+and you draw the machine that accepts exactly the strings with it. Start
+wherever the theme interests you, since the pages do not depend on one
+another. The problems inside each page do build up, and the ones marked
+*harder* are there so that finishing early is not the same as running out.

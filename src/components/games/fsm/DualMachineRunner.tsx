@@ -229,31 +229,32 @@ export default function DualMachineRunner({
         />
       </div>
 
-      {/* What the verdict would be if the tape ran out here. */}
+      {/* What the verdict would be if the tape ran out here. True at every
+          step, so it is always on screen: a line that comes and goes would
+          shift the controls under the pointer. The height covers a
+          two-line wrap on a narrow screen for the same reason. */}
       <div
         style={{
           textAlign: "center",
           marginTop: 2,
-          minHeight: 20,
+          minHeight: 32,
           fontSize: 12,
           color: "var(--muted)",
         }}
       >
-        {!finished && (
-          <span>
-            A says {aAcc ? "yes" : "no"}, B says {bAcc ? "yes" : "no"}, so stop
-            here and it is{" "}
-            <span
-              style={{
-                color: verdictBool ? "var(--mcq-right)" : "var(--muted)",
-                fontWeight: 600,
-              }}
-            >
-              {verdictBool ? "accepted" : "rejected"}
-            </span>
-            .
+        <span>
+          A says {aAcc ? "yes" : "no"}, B says {bAcc ? "yes" : "no"}, so stop
+          here and it is{" "}
+          <span
+            style={{
+              color: verdictBool ? "var(--mcq-right)" : "var(--muted)",
+              fontWeight: 600,
+            }}
+          >
+            {verdictBool ? "accepted" : "rejected"}
           </span>
-        )}
+          .
+        </span>
       </div>
 
       {/* Controls */}
@@ -448,7 +449,7 @@ function PairTrail({
   const pairs: { a: State | null; b: State | null; symbol: string | null }[] = [
     { a: machineA.start, b: machineB.start, symbol: null },
   ];
-  for (let i = 0; i < step; i++) {
+  for (let i = 0; i < input.length; i++) {
     pairs.push({
       a: traceA[i]?.to ?? null,
       b: traceB[i]?.to ?? null,
@@ -471,10 +472,20 @@ function PairTrail({
       }}
     >
       {pairs.map((p, i) => {
-        const current = i === pairs.length - 1;
+        const current = i === step;
         const bothIn = p.a !== null && p.b !== null;
         return (
-          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+          <span
+            key={i}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              // Hops not yet taken keep their space but stay invisible, so
+              // the row never grows and the controls never shift.
+              visibility: i <= step ? "visible" : "hidden",
+            }}
+          >
             {p.symbol !== null && (
               <span style={{ color: "var(--muted)", padding: "0 1px" }}>
                 {"─"}
@@ -489,7 +500,7 @@ function PairTrail({
                 borderRadius: 999,
                 lineHeight: 1.15,
                 whiteSpace: "nowrap",
-                border: current ? `1.5px solid ${CURRENT_INK}` : "1px solid var(--rule)",
+                border: `1.5px solid ${current ? CURRENT_INK : "var(--rule)"}`,
                 background: current ? CURRENT : "var(--surface)",
                 color: current ? CURRENT_INK : "var(--ink)",
               }}

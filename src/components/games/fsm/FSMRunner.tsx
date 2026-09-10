@@ -42,6 +42,18 @@ const SPEEDS = [
 // enough to read the verdict before the next one starts.
 const SWEEP_GAP_MS = 750;
 
+const STATUS_ROW: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  minHeight: 22,
+  fontSize: 13,
+  color: "var(--muted)",
+  textAlign: "center",
+};
+
 export default function FSMRunner({
   machine,
   defaultInput = "",
@@ -129,8 +141,20 @@ export default function FSMRunner({
   const wouldAccept =
     currentState !== null && !trapped && machine.accepting.has(currentState);
 
-  const hops = result.trace.slice(0, step).map((t) => ({ symbol: t.symbol, to: t.to }));
+  // The whole walk, every time. `Trail` hides the hops not yet taken rather
+  // than leaving them out, so the box never changes size mid-run.
+  const hops = result.trace.map((t) => ({ symbol: t.symbol, to: t.to }));
   const gloss = machine.meaning && currentState ? machine.meaning[currentState] : undefined;
+  // The longest gloss this machine can ever print. An invisible copy of the
+  // status line carrying it reserves the row's height, so a short gloss
+  // followed by a long one does not shove the controls down.
+  const longestGloss = useMemo(() => {
+    if (!machine.meaning) return "";
+    return Object.values(machine.meaning).reduce(
+      (a, b) => (b.length > a.length ? b : a),
+      "",
+    );
+  }, [machine]);
 
   const stopSweep = () => {
     setSweeping(false);
@@ -177,37 +201,44 @@ export default function FSMRunner({
 
       {/* The road so far. */}
       <div style={{ marginTop: 10 }}>
-        <Trail machine={machine} hops={hops} />
+        <Trail machine={machine} hops={hops} revealed={step} />
       </div>
 
       {/* What the machine is holding on to at this instant, and what the
-          verdict would be if the tape ran out here. */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          marginTop: 4,
-          minHeight: 22,
-          fontSize: 13,
-          color: "var(--muted)",
-          textAlign: "center",
-        }}
-      >
-        {gloss && (
-          <span style={{ maxWidth: "44ch" }}>
-            <span style={{ color: "var(--muted)" }}>remembering: </span>
-            <span style={{ color: "var(--ink)" }}>{gloss}</span>
+          verdict would be if the tape ran out here. The real line is laid
+          over an invisible worst-case copy of itself: nothing here may
+          change height as the machine walks, or the buttons below move. */}
+      <div style={{ position: "relative", marginTop: 4 }}>
+        <div style={{ ...STATUS_ROW, visibility: "hidden" }} aria-hidden="true">
+          {longestGloss && (
+            <span style={{ maxWidth: "44ch" }}>
+              <span>remembering: </span>
+              <span>{longestGloss}</span>
+            </span>
+          )}
+          <LivePill would={false} />
+          {input.length > 0 && (
+            <span style={{ fontFamily: MONO, fontSize: 12 }}>
+              {input.length} of {input.length} read
+            </span>
+          )}
+        </div>
+        <div style={{ ...STATUS_ROW, position: "absolute", inset: 0 }}>
+          {gloss && (
+            <span style={{ maxWidth: "44ch" }}>
+              <span style={{ color: "var(--muted)" }}>remembering: </span>
+              <span style={{ color: "var(--ink)" }}>{gloss}</span>
+            </span>
+          )}
+          <span style={{ visibility: finished ? "hidden" : "visible" }}>
+            <LivePill would={wouldAccept} />
           </span>
-        )}
-        {!finished && <LivePill would={wouldAccept} />}
-        {input.length > 0 && (
-          <span style={{ fontFamily: MONO, fontSize: 12 }}>
-            {step} of {input.length} read
-          </span>
-        )}
+          {input.length > 0 && (
+            <span style={{ fontFamily: MONO, fontSize: 12 }}>
+              {step} of {input.length} read
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Controls */}

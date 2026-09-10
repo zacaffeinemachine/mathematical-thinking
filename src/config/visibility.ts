@@ -58,16 +58,21 @@ export const VISIBLE_PAGES: readonly string[] = [
   "logical-thinking/oracles-and-chimeras",
   "logical-thinking/reported-answers",
 
-  // Machines. The chapter is released as a whole: the first two pages are
-  // the ones a student can read before the lecture, and the rest follow
-  // the book's sections in order.
+  // Machines. Page 1 explains what a machine is. Everything after it is a
+  // set of design problems on one theme, and the themes do not depend on
+  // one another, so they can be released in any order or all at once.
+  // Deliberately no solutions anywhere: these pages exist to keep the
+  // quick students busy in class.
   "machines/fsm-intro",
-  "machines/many-inputs",
-  "machines/reading-the-language",
-  "machines/not",
-  "machines/or-and",
-  "machines/xor",
-  "machines/limitations",
+  "machines/ends-and-beginnings",
+  "machines/counting",
+  "machines/length",
+  "machines/somewhere-inside",
+  "machines/looking-back",
+  "machines/exact-words",
+  "machines/numbers",
+  "machines/two-conditions",
+  "machines/beyond-reach",
 
   // Logic Gates is open, but only the dominoes page is released. The rest
   // of the chapter stays hidden until its material is taught.

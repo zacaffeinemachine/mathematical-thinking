@@ -82,21 +82,25 @@ export interface TrailHop {
   to: State | null;
 }
 
-// start ──0──▶ q1 ──1──▶ q2 …  built up one hop at a time as the machine
-// walks. Accepting states are drawn with the double ring the diagram uses,
-// so the trail alone tells you where a verdict would have fallen.
+// start ──0──▸ q1 ──1──▸ q2 …  The whole walk is rendered from the start
+// and the hops not yet taken are merely made invisible, so the box is its
+// final size on the first frame. Growing it hop by hop pushed the controls
+// underneath it down the page on every Step, which made the button move out
+// from under the pointer.
 export function Trail({
   machine,
   hops,
+  revealed,
   compact = false,
-  minHeight = 34,
 }: {
   machine: FSM;
   hops: TrailHop[];
+  // How many hops have actually been taken. Defaults to all of them.
+  revealed?: number;
   compact?: boolean;
-  minHeight?: number;
 }) {
   const size = compact ? 12 : 13;
+  const shown = revealed ?? hops.length;
   return (
     <div
       style={{
@@ -105,15 +109,23 @@ export function Trail({
         alignItems: "center",
         justifyContent: "center",
         gap: 2,
-        minHeight,
+        minHeight: 32,
         fontFamily: MONO,
         fontSize: size,
         lineHeight: 1.9,
       }}
     >
-      <StateChip machine={machine} state={machine.start} current={hops.length === 0} size={size} />
+      <StateChip machine={machine} state={machine.start} current={shown === 0} size={size} />
       {hops.map((h, i) => (
-        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+        <span
+          key={i}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
+            visibility: i < shown ? "visible" : "hidden",
+          }}
+        >
           <span style={{ color: "var(--muted)", padding: "0 1px" }}>
             {"─"}
             <span style={{ color: "var(--ink)" }}>{h.symbol}</span>
@@ -122,9 +134,10 @@ export function Trail({
           {h.to === null ? (
             <span
               style={{
-                padding: "1px 7px",
+                padding: "4px 10px",
                 borderRadius: 999,
-                border: `1px solid var(--mcq-wrong)`,
+                lineHeight: 1.15,
+                border: `1.5px solid var(--mcq-wrong)`,
                 color: "var(--mcq-wrong)",
               }}
             >
@@ -134,7 +147,7 @@ export function Trail({
             <StateChip
               machine={machine}
               state={h.to}
-              current={i === hops.length - 1}
+              current={i === shown - 1}
               size={size}
             />
           )}
@@ -169,7 +182,7 @@ export function StateChip({
     fontSize: size,
     lineHeight: 1.15,
     whiteSpace: "nowrap",
-    border: current ? `1.5px solid ${CURRENT_INK}` : "1px solid var(--rule)",
+    border: `1.5px solid ${current ? CURRENT_INK : "var(--rule)"}`,
     background: fill,
     color: ink,
     boxShadow: accepting
