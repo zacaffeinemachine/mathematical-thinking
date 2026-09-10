@@ -24,7 +24,7 @@
 export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
   "logical-thinking",
-  // "machines",
+  "machines",
   // "logic-gates",
   // "boolean-algebra",
   // "infinity",
@@ -58,7 +58,11 @@ export const VISIBLE_PAGES: readonly string[] = [
   "logical-thinking/oracles-and-chimeras",
   "logical-thinking/reported-answers",
 
+  // Machines. The chapter is released as a whole: the first two pages are
+  // the ones a student can read before the lecture, and the rest follow
+  // the book's sections in order.
   "machines/fsm-intro",
+  "machines/many-inputs",
   "machines/reading-the-language",
   "machines/not",
   "machines/or-and",

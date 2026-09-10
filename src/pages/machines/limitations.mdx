@@ -1,11 +1,11 @@
 ---
 layout: ../../layouts/Chapter.astro
 title: Where machines stop
-order: 6
+order: 7
 chapter: machines
 chapterTitle: Machines
 blurb: Finiteness is the source of the cap. The Loop Lemma names it, and three natural languages fall just past it.
-description: The Loop Lemma and three impossibility results — 0ⁿ1ⁿ, square counts of 1s, prime counts of 1s.
+description: "The Loop Lemma and three impossibility results: 0ⁿ1ⁿ, square counts of 1s, prime counts of 1s."
 ---
 import FSMGraph from "../../components/games/fsm/FSMGraph.tsx";
 import { loopSchematic } from "../../components/games/fsm/machines.ts";
@@ -51,8 +51,9 @@ The picture is exactly this:
 
 Reading *u* drives the machine from the start state q₀ to some
 state qᵢ. Reading *v* takes qᵢ back to qᵢ. Reading *w* finishes
-the trip to the accepting state qₙ. Pumping *v* — replaying it
-*q* times instead of once — never changes where we end up.
+the trip to the accepting state qₙ. Pumping *v*, which means
+replaying it *q* times instead of once, never changes where we end
+up.
 
 ## Three impossibilities
 
@@ -61,7 +62,7 @@ sit on a long enough arithmetic progression. Three natural
 languages fall to it.
 
 **0ⁿ1ⁿ.** Strings with the same number of `0`s as `1`s, all the
-zeros first. Take *s* = `0`<sup>k</sup>`1`<sup>k</sup>; the loop
+zeros first. Take *s* = `0`<sup>k</sup>`1`<sup>k</sup>. The loop
 *v* must lie inside the leading run of zeros, so pumping it adds
 zeros without adding ones. The accepted string `0`<sup>k+m</sup>`1`<sup>k</sup>
 breaks the count.
@@ -78,16 +79,16 @@ least 2.
 
 ## The line
 
-The first half of this chapter showed what machines *can* do —
-recognise any property expressible with bounded memory, and
-combine such properties freely via the product construction. The
+The first half of this chapter showed what machines *can* do. They
+recognise any property that fits in bounded memory, and such
+properties can be combined freely by the product construction. The
 Loop Lemma names the other side of the line. A property that
-requires *unbounded* memory — matching counts, recognising
-squares, recognising primes — falls to a single weapon: take a
+requires *unbounded* memory, such as matching counts, recognising
+squares, or recognising primes, falls to a single weapon: take a
 long-enough accepted string, find the loop, pump.
 
 This boundary is structural, not a failure of cleverness. Crossing
-it requires a different kind of machine — a story for later
+it requires a different kind of machine, which is a story for later
 chapters.
 
 <div style={{margin:'48px 0 8px', textAlign:'center'}}>
@@ -121,8 +122,9 @@ chapters.
 }}>Exercise 1 — Finding a loop</div>
 
 Recall the machine that accepts binary strings whose number of
-`1`s is divisible by 3 — three states, with `r0` doubling as start
-and accept; `1` advances `r0 → r1 → r2 → r0`; `0` loops in place.
+`1`s is divisible by 3. It has three states, with `r0` doubling as
+start and accept. A `1` advances `r0 → r1 → r2 → r0`, and a `0`
+loops in place.
 
 1. Trace the machine on the string `s = 1101101`. List the state
    after each symbol.

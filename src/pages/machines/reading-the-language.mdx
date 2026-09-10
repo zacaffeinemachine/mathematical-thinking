@@ -1,10 +1,10 @@
 ---
 layout: ../../layouts/Chapter.astro
 title: Reading the Language of a Machine
-order: 2
+order: 3
 chapter: machines
 chapterTitle: Machines
-blurb: Flip the game around. A machine is dropped in front of you with no explanation — what does it accept?
+blurb: Flip the game around. A machine is dropped in front of you with no explanation. What does it accept?
 description: A reverse-engineering puzzle. Try strings on an unlabelled machine and figure out which strings it accepts.
 ---
 import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
@@ -25,11 +25,16 @@ The machine will not tell you what it is thinking. The two moves
 that work are:
 
 1. **Experiment.** Feed in short strings, in order: empty,
-   <code>0</code>, <code>1</code>, <code>00</code>, <code>01</code>, … 
+   <code>0</code>, <code>1</code>, <code>00</code>, <code>01</code>, …
    A pattern usually announces itself within ten or twelve attempts.
 2. **Name the states.** For each circle, ask *what must be true of
    the input so far for the machine to be sitting here?* When the
    names are right, the arrows click into place.
+
+Every machine on this page carries the panel from the previous one,
+folded shut. Do the experimenting by hand first. Open the panel when
+you want the whole block of verdicts at once, which is usually the
+moment a half-formed guess needs checking.
 
 ## Mystery machine
 
@@ -38,19 +43,20 @@ that work are:
   machine={mysteryMachine}
   defaultInput="1011"
   examples={["", "0", "1", "00", "01", "10", "11", "101", "110", "1011"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 
 <details style={{margin:'12px 0', padding:'12px 16px', border:'1px solid var(--rule)', borderRadius:6}}>
-<summary style={{cursor:'pointer', fontWeight:500}}>Reveal — what this machine accepts</summary>
+<summary style={{cursor:'pointer', fontWeight:500}}>Reveal: what this machine accepts</summary>
 
 It accepts every string that contains <code>11</code> as a substring.
 
-- **<code>s0</code>** — the input so far does not end in
+- **<code>s0</code>**: the input so far does not end in
   <code>1</code>. (The empty string lives here, and so do
   <code>0</code>, <code>100</code>, <code>0010</code>, …)
-- **<code>s1</code>** — the input ends in exactly one
+- **<code>s1</code>**: the input ends in exactly one
   <code>1</code>.
-- **<code>s2</code>** — we have already seen <code>11</code>
+- **<code>s2</code>**: we have already seen <code>11</code>
   somewhere. Both arrows from <code>s2</code> loop back: once a
   <code>11</code> has appeared, the verdict is locked in.
 
@@ -58,7 +64,7 @@ It accepts every string that contains <code>11</code> as a substring.
 
 ## A subtler language
 
-A second machine. It runs *two parity counters at once* — but the
+A second machine. It runs *two parity counters at once*, though the
 state names give that away if you stare long enough. Try the empty
 string, then <code>0</code>, <code>1</code>, <code>00</code>,
 <code>11</code>, <code>0011</code>, …
@@ -68,10 +74,11 @@ string, then <code>0</code>, <code>1</code>, <code>00</code>,
   machine={evenZerosEvenOnes}
   defaultInput="0011"
   examples={["", "0", "1", "00", "01", "11", "0011", "0110", "001", "010"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 
 <details style={{margin:'12px 0', padding:'12px 16px', border:'1px solid var(--rule)', borderRadius:6}}>
-<summary style={{cursor:'pointer', fontWeight:500}}>Reveal — what this machine accepts</summary>
+<summary style={{cursor:'pointer', fontWeight:500}}>Reveal: what this machine accepts</summary>
 
 Every string with an **even number of <code>0</code>s** *and* an
 **even number of <code>1</code>s**. The first letter of each state
@@ -79,8 +86,8 @@ name tracks the parity of <code>0</code>s (E for even, O for
 odd); the second letter tracks the parity of <code>1</code>s.
 The only accepting state is <code>EE</code>.
 
-This is a tiny preview of the **product construction** — running
-two parity machines on the same tape — that we'll meet two pages
+This is a tiny preview of the **product construction**, which runs
+two parity machines on the same tape, and which we meet three pages
 on.
 
 </details>
@@ -102,8 +109,8 @@ on.
 
 <p style={{textAlign:'center', color:'var(--muted)', fontSize:14, marginBottom:24}}>
 For each machine below, describe the language *L*(*M*) of accepted
-strings in plain English. The same protocol — *experiment, then
-name the states* — works on every one of them.
+strings in plain English. The same protocol, *experiment, then name
+the states*, works on every one of them.
 </p>
 
 <div style={{
@@ -128,6 +135,7 @@ name the states* — works on every one of them.
   machine={mystery1}
   defaultInput="0101"
   examples={["", "0", "01", "010", "0101", "1", "11", "111", "00"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 </div>
 
@@ -153,6 +161,7 @@ name the states* — works on every one of them.
   machine={mystery2}
   defaultInput="100"
   examples={["", "0", "00", "001", "100", "010", "101", "1100", "10101"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 </div>
 
@@ -171,13 +180,14 @@ name the states* — works on every one of them.
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:8,
-}}>Exercise 3 — Mystery 3 *(this one is sneaky — think modulo something)*</div>
+}}>Exercise 3 — Mystery 3 *(this one is sneaky: think modulo something)*</div>
 
 <FSMRunner
   client:visible
   machine={mystery3}
   defaultInput="111"
   examples={["", "1", "11", "111", "1010", "1111", "111111"]}
+  sweep={{ maxLength: 5, open: false, caption: "open the verdicts for every input of length at most 5" }}
 />
 </div>
 
@@ -203,6 +213,7 @@ name the states* — works on every one of them.
   machine={mystery4}
   defaultInput="000"
   examples={["", "0", "00", "000", "1", "01", "10", "0001"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 </div>
 
@@ -228,6 +239,7 @@ name the states* — works on every one of them.
   machine={mystery5}
   defaultInput="ab"
   examples={["", "a", "b", "ab", "ba", "aab", "abab", "bbbab", "aaa"]}
+  sweep={{ maxLength: 4, open: false, caption: "open the verdicts for every input of length at most 4" }}
 />
 </div>
 
@@ -248,11 +260,12 @@ name the states* — works on every one of them.
   marginBottom:6,
 }}>Exercise 6 — Two machines, one language</div>
 
-Find two **different** machines — different shapes, different
-state counts — that both recognise the language *"binary strings
-ending in `0`."* Then ask yourself: in what sense are the two
-machines *the same*, and in what sense are they *different*? We
-return to this two pages later, when XOR plus reachability turns
+Find two **different** machines, of different shapes and with
+different numbers of states, that both recognise the language
+*"binary strings ending in `0`."* Then ask yourself: in what sense
+are the two machines *the same*, and in what sense are they
+*different*? We
+return to this three pages later, when XOR plus reachability turns
 "do two machines recognise the same language?" into a finite
 check.
 </div>

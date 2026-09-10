@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FSM, State } from "./model";
 import { run } from "./model";
 import FSMGraph from "./FSMGraph";
+import { BTN_CSS, CURRENT, CURRENT_INK, MONO, Tape, label } from "./parts";
 
 type Rule = "OR" | "AND" | "XOR";
 
@@ -77,7 +78,6 @@ export default function DualMachineRunner({
   }, [playing, step, input.length, speedIdx]);
 
   const finished = step >= input.length;
-  const symbols = [...input];
 
   const aState = stateAfter(machineA, input, step);
   const bState = stateAfter(machineB, input, step);
@@ -208,57 +208,51 @@ export default function DualMachineRunner({
       </div>
 
       {/* Tape */}
+      <div style={{ marginTop: 14 }}>
+        <Tape
+          input={input}
+          step={step}
+          finished={finished}
+          emptyNote="no symbols to read: both machines stay where they start"
+        />
+      </div>
+
+      {/* The pair trail. This is the product construction itself: the
+          combined machine is in one place at a time, and that place is a
+          pair. Reading it left to right shows the pair moving. */}
+      <div style={{ marginTop: 10 }}>
+        <PairTrail
+          machineA={machineA}
+          machineB={machineB}
+          input={input}
+          step={step}
+        />
+      </div>
+
+      {/* What the verdict would be if the tape ran out here. */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 14,
-          flexWrap: "wrap",
-          gap: 4,
+          textAlign: "center",
+          marginTop: 2,
+          minHeight: 20,
+          fontSize: 12,
+          color: "var(--muted)",
         }}
       >
-        {symbols.length === 0 ? (
-          <span
-            style={{
-              color: "var(--muted)",
-              fontStyle: "italic",
-              fontSize: 14,
-            }}
-          >
-            empty input
+        {!finished && (
+          <span>
+            A says {aAcc ? "yes" : "no"}, B says {bAcc ? "yes" : "no"}, so stop
+            here and it is{" "}
+            <span
+              style={{
+                color: verdictBool ? "var(--mcq-right)" : "var(--muted)",
+                fontWeight: 600,
+              }}
+            >
+              {verdictBool ? "accepted" : "rejected"}
+            </span>
+            .
           </span>
-        ) : (
-          symbols.map((sym, i) => {
-            const consumed = i < step;
-            const isHead = i === step && !finished;
-            return (
-              <span
-                key={i}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minWidth: 26,
-                  height: 30,
-                  padding: "0 6px",
-                  border: `2px solid ${
-                    isHead ? "var(--accent)" : "var(--rule)"
-                  }`,
-                  borderRadius: 4,
-                  background: consumed
-                    ? "var(--rule)"
-                    : isHead
-                    ? "var(--surface)"
-                    : "transparent",
-                  color: consumed ? "var(--muted)" : "var(--ink)",
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: 15,
-                }}
-              >
-                {sym}
-              </span>
-            );
-          })
         )}
       </div>
 
@@ -303,6 +297,17 @@ export default function DualMachineRunner({
         <button
           className="fsm-btn"
           onClick={() => {
+            setPlaying(false);
+            setStep((s) => Math.max(s - 1, 0));
+          }}
+          disabled={step === 0}
+          title="one symbol back"
+        >
+          ◂ Back
+        </button>
+        <button
+          className="fsm-btn"
+          onClick={() => {
             if (input.length === 0) return;
             if (finished) {
               setStep(0);
@@ -321,8 +326,9 @@ export default function DualMachineRunner({
             setStep((s) => Math.min(s + 1, input.length));
           }}
           disabled={finished || input.length === 0}
+          title="one symbol forward"
         >
-          Step
+          Step ▸
         </button>
         <button
           className="fsm-btn"
@@ -406,30 +412,95 @@ export default function DualMachineRunner({
         }}
       >
         {verdict === "accept" && (
-          <span style={{ color: "#1b9a4d", fontWeight: 600 }}>
+          <span style={{ color: "var(--mcq-right)", fontWeight: 600 }}>
             ✓ accepted by the “{RULE_LABELS[rule]}” rule
           </span>
         )}
         {verdict === "reject" && (
-          <span style={{ color: "#c0392b", fontWeight: 600 }}>
+          <span style={{ color: "var(--mcq-wrong)", fontWeight: 600 }}>
             ✗ rejected by the “{RULE_LABELS[rule]}” rule
           </span>
         )}
       </div>
 
-      <style>{`
-        .fsm-btn {
-          padding: 4px 12px;
-          font-size: 14px;
-          background: var(--surface);
-          color: var(--ink);
-          border: 1px solid var(--rule);
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .fsm-btn:hover:not(:disabled) { border-color: var(--accent); }
-        .fsm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-      `}</style>
+      <style>{BTN_CSS}</style>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+//  The pair trail
+// ---------------------------------------------------------------------
+
+function PairTrail({
+  machineA,
+  machineB,
+  input,
+  step,
+}: {
+  machineA: FSM;
+  machineB: FSM;
+  input: string;
+  step: number;
+}) {
+  const traceA = run(machineA, input).trace;
+  const traceB = run(machineB, input).trace;
+  const pairs: { a: State | null; b: State | null; symbol: string | null }[] = [
+    { a: machineA.start, b: machineB.start, symbol: null },
+  ];
+  for (let i = 0; i < step; i++) {
+    pairs.push({
+      a: traceA[i]?.to ?? null,
+      b: traceB[i]?.to ?? null,
+      symbol: traceA[i]?.symbol ?? "?",
+    });
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 2,
+        minHeight: 32,
+        fontFamily: MONO,
+        fontSize: 13,
+        lineHeight: 1.9,
+      }}
+    >
+      {pairs.map((p, i) => {
+        const current = i === pairs.length - 1;
+        const bothIn = p.a !== null && p.b !== null;
+        return (
+          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+            {p.symbol !== null && (
+              <span style={{ color: "var(--muted)", padding: "0 1px" }}>
+                {"─"}
+                <span style={{ color: "var(--ink)" }}>{p.symbol}</span>
+                {"─▸"}
+              </span>
+            )}
+            <span
+              style={{
+                display: "inline-block",
+                padding: "4px 10px",
+                borderRadius: 999,
+                lineHeight: 1.15,
+                whiteSpace: "nowrap",
+                border: current ? `1.5px solid ${CURRENT_INK}` : "1px solid var(--rule)",
+                background: current ? CURRENT : "var(--surface)",
+                color: current ? CURRENT_INK : "var(--ink)",
+              }}
+            >
+              {bothIn
+                ? `(${label(machineA, p.a as State)}, ${label(machineB, p.b as State)})`
+                : "off the diagram"}
+            </span>
+          </span>
+        );
+      })}
     </div>
   );
 }

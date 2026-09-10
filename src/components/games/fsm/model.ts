@@ -20,6 +20,12 @@ export interface FSM {
   layout: Record<State, { x: number; y: number }>;
   // Optional human-readable labels shown on the node.
   labels?: Record<State, string>;
+  // Optional plain-English gloss for each state: what the machine is
+  // remembering while it sits there. The runner prints the gloss of the
+  // current state as the machine walks, which is the whole point of the
+  // exercise. Leave it out on a mystery machine, where saying what a
+  // state remembers would hand over the answer.
+  meaning?: Record<State, string>;
 }
 
 export interface Step {
@@ -81,4 +87,44 @@ export function edgeGroups(machine: FSM): EdgeGroup[] {
     }
   }
   return [...groups.values()];
+}
+
+// ---------------------------------------------------------------------
+//  Helpers used by the runners and by the "many inputs at once" panels.
+// ---------------------------------------------------------------------
+
+// Where the machine stands after reading the whole input. `null` means it
+// fell off the diagram on some symbol and never came back.
+export function finalState(machine: FSM, input: string): State | null {
+  return run(machine, input).finalState;
+}
+
+export function accepts(machine: FSM, input: string): boolean {
+  return run(machine, input).accepted;
+}
+
+// Every string over the alphabet of length 0, 1, 2, ... up to maxLen, in
+// the order a patient experimenter would try them: shortest first, and
+// within a length, in the order the alphabet is written.
+//
+// `cap` stops the obvious explosion on a large alphabet. It truncates,
+// which is the honest thing to do: the panel that uses this says how many
+// strings it is showing.
+export function shortlexUpTo(
+  alphabet: Symbol[],
+  maxLen: number,
+  cap = 128,
+): string[] {
+  const out: string[] = [];
+  let level: string[] = [""];
+  for (let len = 0; len <= maxLen; len++) {
+    for (const s of level) {
+      if (out.length >= cap) return out;
+      out.push(s);
+    }
+    const next: string[] = [];
+    for (const s of level) for (const a of alphabet) next.push(s + a);
+    level = next;
+  }
+  return out;
 }

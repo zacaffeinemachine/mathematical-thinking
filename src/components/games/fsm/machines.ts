@@ -16,6 +16,10 @@ export const lightSwitch: FSM = {
     Off: { x: 0.28, y: 0.5 },
     On: { x: 0.72, y: 0.5 },
   },
+  meaning: {
+    Off: "an even number of flicks so far, so the lamp is off",
+    On: "an odd number of flicks so far, so the lamp is on",
+  },
 };
 
 // Recognises binary strings ending in "01".
@@ -57,6 +61,11 @@ export const divisibleBy3Ones: FSM = {
     r0: { x: 0.5, y: 0.18 },
     r1: { x: 0.78, y: 0.72 },
     r2: { x: 0.22, y: 0.72 },
+  },
+  meaning: {
+    r0: "the number of 1s so far is a multiple of 3",
+    r1: "the number of 1s so far is one more than a multiple of 3",
+    r2: "the number of 1s so far is two more than a multiple of 3",
   },
 };
 
@@ -103,6 +112,11 @@ export const zerosMod3: FSM = {
     a2: { x: 0.22, y: 0.72 },
   },
   labels: { a0: "A₀", a1: "A₁", a2: "A₂" },
+  meaning: {
+    a0: "the number of 0s so far is a multiple of 3",
+    a1: "the number of 0s so far is one more than a multiple of 3",
+    a2: "the number of 0s so far is two more than a multiple of 3",
+  },
 };
 
 // Component machine B: count of 1s, modulo 4. Accept at B0 only.
@@ -124,6 +138,12 @@ export const onesMod4: FSM = {
     b3: { x: 0.22, y: 0.78 },
   },
   labels: { b0: "B₀", b1: "B₁", b2: "B₂", b3: "B₃" },
+  meaning: {
+    b0: "the number of 1s so far is a multiple of 4",
+    b1: "the number of 1s so far is one more than a multiple of 4",
+    b2: "the number of 1s so far is two more than a multiple of 4",
+    b3: "the number of 1s so far is three more than a multiple of 4",
+  },
 };
 
 // ----- §1 examples (gallery) ------------------------------------------
@@ -144,6 +164,10 @@ export const turnstile: FSM = {
     Locked: { x: 0.28, y: 0.5 },
     Unlocked: { x: 0.72, y: 0.5 },
   },
+  meaning: {
+    Locked: "the arm is locked, and a push will not move it",
+    Unlocked: "a coin has been paid, so the arm will turn once",
+  },
 };
 
 // Accepts binary strings ending in 0.
@@ -159,6 +183,10 @@ export const endsInZero: FSM = {
   layout: {
     start: { x: 0.28, y: 0.5 },
     accept: { x: 0.72, y: 0.5 },
+  },
+  meaning: {
+    start: "either nothing has been read yet, or the last symbol was a 1",
+    accept: "the last symbol read was a 0",
   },
 };
 
@@ -188,6 +216,12 @@ export const endsIn101: FSM = {
     s101: { x: 0.9, y: 0.75 },
   },
   labels: { none: "none", s1: "1", s10: "10", s101: "101" },
+  meaning: {
+    none: "nothing at the end of the input has started 101 off",
+    s1: "the input ends in 1, which is the first symbol of 101",
+    s10: "the input ends in 10, so two symbols of 101 are in place",
+    s101: "the input ends in 101",
+  },
 };
 
 // Accepts binary strings with an even number of 0s. (E is start *and*
@@ -204,6 +238,10 @@ export const evenZeros: FSM = {
   layout: {
     E: { x: 0.28, y: 0.5 },
     O: { x: 0.72, y: 0.5 },
+  },
+  meaning: {
+    E: "an even number of 0s so far",
+    O: "an odd number of 0s so far",
   },
 };
 
@@ -227,6 +265,11 @@ export const evenBlocksOfOnes: FSM = {
     dead: { x: 0.85, y: 0.82 },
   },
   labels: { even: "even", odd: "odd", dead: "dead" },
+  meaning: {
+    even: "every block of 1s that has been closed had even length, and no block is open",
+    odd: "the block of 1s now running has odd length so far, so one more 1 would fix it",
+    dead: "a block of odd length was closed by a 0, and nothing repairs that",
+  },
 };
 
 // Accepts binary strings containing at least two 1s.
@@ -246,6 +289,11 @@ export const atLeastTwoOnes: FSM = {
     q2: { x: 0.82, y: 0.55 },
   },
   labels: { q0: "start", q1: "q₁", q2: "accept" },
+  meaning: {
+    q0: "no 1 has arrived yet",
+    q1: "exactly one 1 so far",
+    q2: "two or more 1s, and no later symbol can undo that",
+  },
 };
 
 // Accepts strings of length at most 4. Alphabet kept to a single symbol
@@ -279,6 +327,14 @@ export const lengthAtMost4: FSM = {
     L4: "L₄",
     dead: "dead",
   },
+  meaning: {
+    L0: "nothing has been read yet",
+    L1: "one symbol read",
+    L2: "two symbols read",
+    L3: "three symbols read",
+    L4: "four symbols read, which is as many as the rule allows",
+    dead: "more than four symbols have arrived",
+  },
 };
 
 // Accepts binary strings that start with 1 and end with 0. Demonstrates
@@ -299,6 +355,12 @@ export const startsOneEndsZero: FSM = {
     a: { x: 0.78, y: 0.28 },
     accept: { x: 0.78, y: 0.78 },
     dead: { x: 0.18, y: 0.78 },
+  },
+  meaning: {
+    start: "nothing has been read yet",
+    a: "the input began with a 1, and the last symbol was a 1",
+    accept: "the input began with a 1, and the last symbol was a 0",
+    dead: "the input began with a 0, so the rule is broken for good",
   },
 };
 
@@ -334,6 +396,14 @@ export const divBy3Binary: FSM = {
     B0: "B₀",
     B1: "B₁",
     B2: "B₂",
+  },
+  meaning: {
+    A0: "the running total is a multiple of 3, and the next symbol gets added",
+    A1: "the running total is one more than a multiple of 3, and the next symbol gets added",
+    A2: "the running total is two more than a multiple of 3, and the next symbol gets added",
+    B0: "the running total is a multiple of 3, and the next symbol gets subtracted",
+    B1: "the running total is one more than a multiple of 3, and the next symbol gets subtracted",
+    B2: "the running total is two more than a multiple of 3, and the next symbol gets subtracted",
   },
 };
 
@@ -374,6 +444,14 @@ export const divBy5Binary: FSM = {
     R3: "R₃",
     R4: "R₄",
   },
+  meaning: {
+    start: "nothing has been read yet, so there is no number to speak of",
+    R0: "the number read so far leaves remainder 0 on division by 5",
+    R1: "the number read so far leaves remainder 1 on division by 5",
+    R2: "the number read so far leaves remainder 2 on division by 5",
+    R3: "the number read so far leaves remainder 3 on division by 5",
+    R4: "the number read so far leaves remainder 4 on division by 5",
+  },
 };
 
 // Accepts strings containing the substring "bfs". The alphabet is kept
@@ -396,6 +474,12 @@ export const substringBfs: FSM = {
     A: { x: 0.9, y: 0.78 },
   },
   labels: { Start: "Start", B: "b", BF: "bf", A: "accept" },
+  meaning: {
+    Start: "nothing at the end of what we have read starts bfs off",
+    B: "the input ends in b",
+    BF: "the input ends in bf",
+    A: "bfs has already appeared, and no later letter can take it away",
+  },
 };
 
 // Accepts binary strings of length at least 2 whose second-to-last symbol
@@ -420,6 +504,12 @@ export const secondToLastIsOne: FSM = {
     m11: { x: 0.75, y: 0.8 },
   },
   labels: { m00: "00", m01: "01", m10: "10", m11: "11" },
+  meaning: {
+    m00: "the last two symbols were 0 then 0",
+    m01: "the last two symbols were 0 then 1",
+    m10: "the last two symbols were 1 then 0",
+    m11: "the last two symbols were 1 then 1",
+  },
 };
 
 // Accepts only the exact string "qrmt". Alphabet trimmed to
@@ -462,6 +552,14 @@ export const passwordQrmt: FSM = {
     gamma: "QRM",
     accept: "accept",
     dead: "dead",
+  },
+  meaning: {
+    start: "nothing has been read yet",
+    alpha: "exactly q has been read",
+    beta: "exactly qr has been read",
+    gamma: "exactly qrm has been read",
+    accept: "exactly qrmt has been read",
+    dead: "the input has already gone wrong, and no later letter can save it",
   },
 };
 

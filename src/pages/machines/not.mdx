@@ -1,27 +1,27 @@
 ---
 layout: ../../layouts/Chapter.astro
-title: NOT — flipping a machine
-order: 3
+title: "NOT: flipping a machine"
+order: 4
 chapter: machines
 chapterTitle: Machines
 blurb: Same wires, opposite verdict. The simplest way to combine machines is to invert one.
-description: How to build a machine that accepts exactly the strings another machine rejects — by flipping the accepting set.
+description: How to build a machine that accepts exactly the strings another machine rejects, by flipping the accepting set.
 ---
 import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
 import { divisibleBy3Ones, notDivisibleBy3Ones } from "../../components/games/fsm/machines.ts";
 
 Suppose you have a machine *M* that accepts every string with some
 property *P*. You want a machine that accepts every string *without*
-that property — every string *M* rejects.
+that property, which is to say every string *M* rejects.
 
 The trick is almost embarrassing. Take *M*, change nothing about
 the wiring, and **swap which states are accepting.** Every double
-circle becomes a single circle; every single circle becomes a
+circle becomes a single circle. Every single circle becomes a
 double circle.
 
 Below, on the left, is the machine that accepts when the count of
 `1`s is divisible by 3. On the right is the very same wiring with
-the accepting set flipped — it accepts when the count is *not*
+the accepting set flipped, and it accepts when the count is *not*
 divisible by 3. Type the same input into both and watch the
 verdicts disagree.
 

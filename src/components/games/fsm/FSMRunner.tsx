@@ -1,7 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FSM, State } from "./model";
-import { run } from "./model";
+import { run, shortlexUpTo } from "./model";
 import FSMGraph from "./FSMGraph";
+import {
+  BTN_CSS,
+  LivePill,
+  MONO,
+  Tape,
+  Trail,
+  VerdictLine,
+} from "./parts";
+
+interface SweepSpec {
+  // Show every input of length 0, 1, ... up to this.
+  maxLength: number;
+  // Overrides the default caption above the panel.
+  caption?: string;
+  // Start with the panel open. Defaults to true.
+  open?: boolean;
+}
 
 interface FSMRunnerProps {
   machine: FSM;
@@ -9,6 +26,10 @@ interface FSMRunnerProps {
   examples?: string[];
   // Width of the SVG. Height defaults to width * 0.62.
   width?: number;
+  // When given, a panel of every short input appears below the controls,
+  // each one coloured by its verdict and clickable. "Run them all" walks
+  // the whole list in order.
+  sweep?: SweepSpec;
 }
 
 const SPEEDS = [
@@ -17,26 +38,38 @@ const SPEEDS = [
   { label: "4×", ms: 150 },
 ];
 
+// Pause between two strings when the sweep is walking the whole list, long
+// enough to read the verdict before the next one starts.
+const SWEEP_GAP_MS = 750;
+
 export default function FSMRunner({
   machine,
   defaultInput = "",
   examples = [],
   width = 520,
+  sweep,
 }: FSMRunnerProps) {
   const [input, setInput] = useState(defaultInput);
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(0);
+  const [sweeping, setSweeping] = useState(false);
+  const [sweepIdx, setSweepIdx] = useState(-1);
 
   const result = useMemo(() => run(machine, input), [machine, input]);
+  const finished = step >= input.length;
 
-  // Reset when input changes.
-  useEffect(() => {
+  // Every change of input goes through here, so that "load this string and
+  // start it" is a single act. An earlier version reset the step inside an
+  // effect on `input`, which cancelled the play the sweep had just asked
+  // for.
+  const load = useCallback((next: string, autoplay: boolean) => {
+    setInput(next);
     setStep(0);
-    setPlaying(false);
-  }, [input]);
+    setPlaying(autoplay && next.length > 0);
+  }, []);
 
-  // Auto-advance when playing.
+  // Auto-advance while playing.
   const timerRef = useRef<number | null>(null);
   useEffect(() => {
     if (!playing) return;
@@ -55,9 +88,30 @@ export default function FSMRunner({
     };
   }, [playing, step, input.length, speedIdx]);
 
-  const finished = step >= input.length;
+  // ------------------------------------------------------------------
+  //  The sweep: every short input, one after another.
+  // ------------------------------------------------------------------
+  const sweepList = useMemo(
+    () => (sweep ? shortlexUpTo(machine.alphabet, sweep.maxLength, 96) : []),
+    [machine, sweep?.maxLength],
+  );
 
-  // Derive current state and most recent transition from the trace.
+  useEffect(() => {
+    if (!sweeping) return;
+    if (playing || !finished) return;
+    const t = window.setTimeout(() => {
+      const next = sweepIdx + 1;
+      if (next >= sweepList.length) {
+        setSweeping(false);
+        return;
+      }
+      setSweepIdx(next);
+      load(sweepList[next], true);
+    }, SWEEP_GAP_MS);
+    return () => window.clearTimeout(t);
+  }, [sweeping, playing, finished, sweepIdx, sweepList, load]);
+
+  // Where the machine stands, and which arrow it just took.
   const { currentState, trapped, lastEdge } = useMemo(() => {
     if (step === 0) {
       return {
@@ -67,32 +121,44 @@ export default function FSMRunner({
       };
     }
     const last = result.trace[step - 1];
-    if (!last) {
-      return { currentState: machine.start, trapped: false, lastEdge: null };
-    }
-    if (last.to === null) {
-      return { currentState: null, trapped: true, lastEdge: null };
-    }
-    return {
-      currentState: last.to,
-      trapped: false,
-      lastEdge: { from: last.from, to: last.to },
-    };
+    if (!last) return { currentState: machine.start, trapped: false, lastEdge: null };
+    if (last.to === null) return { currentState: null, trapped: true, lastEdge: null };
+    return { currentState: last.to, trapped: false, lastEdge: { from: last.from, to: last.to } };
   }, [step, result, machine.start]);
 
-  // Verdict only after the whole tape is consumed.
-  const verdict = finished
-    ? trapped
-      ? "reject"
-      : currentState !== null && machine.accepting.has(currentState)
-      ? "accept"
-      : "reject"
-    : null;
+  const wouldAccept =
+    currentState !== null && !trapped && machine.accepting.has(currentState);
 
-  const symbols = [...input];
+  const hops = result.trace.slice(0, step).map((t) => ({ symbol: t.symbol, to: t.to }));
+  const gloss = machine.meaning && currentState ? machine.meaning[currentState] : undefined;
+
+  const stopSweep = () => {
+    setSweeping(false);
+    setSweepIdx(-1);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target instanceof HTMLInputElement) return;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      stopSweep();
+      setPlaying(false);
+      setStep((s) => Math.min(s + 1, input.length));
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      stopSweep();
+      setPlaying(false);
+      setStep((s) => Math.max(s - 1, 0));
+    }
+  };
 
   return (
-    <div className="fsm-runner" style={{ marginTop: 16, marginBottom: 16 }}>
+    <div
+      className="fsm-runner"
+      style={{ marginTop: 16, marginBottom: 16, outline: "none" }}
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+    >
       <div style={{ display: "flex", justifyContent: "center" }}>
         <FSMGraph
           machine={machine}
@@ -105,58 +171,42 @@ export default function FSMRunner({
         />
       </div>
 
-      {/* Tape */}
+      <div style={{ marginTop: 14 }}>
+        <Tape input={input} step={step} finished={finished} />
+      </div>
+
+      {/* The road so far. */}
+      <div style={{ marginTop: 10 }}>
+        <Trail machine={machine} hops={hops} />
+      </div>
+
+      {/* What the machine is holding on to at this instant, and what the
+          verdict would be if the tape ran out here. */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          marginTop: 14,
           flexWrap: "wrap",
-          gap: 4,
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+          marginTop: 4,
+          minHeight: 22,
+          fontSize: 13,
+          color: "var(--muted)",
+          textAlign: "center",
         }}
       >
-        {symbols.length === 0 ? (
-          <span
-            style={{
-              color: "var(--muted)",
-              fontStyle: "italic",
-              fontSize: 14,
-            }}
-          >
-            empty input — press Play to see the start state accept/reject
+        {gloss && (
+          <span style={{ maxWidth: "44ch" }}>
+            <span style={{ color: "var(--muted)" }}>remembering: </span>
+            <span style={{ color: "var(--ink)" }}>{gloss}</span>
           </span>
-        ) : (
-          symbols.map((sym, i) => {
-            const consumed = i < step;
-            const isHead = i === step && !finished;
-            return (
-              <span
-                key={i}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minWidth: 28,
-                  height: 32,
-                  padding: "0 6px",
-                  border: `2px solid ${
-                    isHead ? "var(--accent)" : "var(--rule)"
-                  }`,
-                  borderRadius: 4,
-                  background: consumed
-                    ? "var(--rule)"
-                    : isHead
-                    ? "var(--surface)"
-                    : "transparent",
-                  color: consumed ? "var(--muted)" : "var(--ink)",
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: 16,
-                }}
-              >
-                {sym}
-              </span>
-            );
-          })
+        )}
+        {!finished && <LivePill would={wouldAccept} />}
+        {input.length > 0 && (
+          <span style={{ fontFamily: MONO, fontSize: 12 }}>
+            {step} of {input.length} read
+          </span>
         )}
       </div>
 
@@ -184,10 +234,13 @@ export default function FSMRunner({
           <input
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              stopSweep();
+              load(e.target.value, false);
+            }}
             spellCheck={false}
             style={{
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: MONO,
               fontSize: 15,
               padding: "4px 8px",
               border: "1px solid var(--rule)",
@@ -202,7 +255,21 @@ export default function FSMRunner({
 
         <button
           onClick={() => {
+            stopSweep();
+            setPlaying(false);
+            setStep((s) => Math.max(s - 1, 0));
+          }}
+          disabled={step === 0}
+          className="fsm-btn"
+          title="one symbol back"
+        >
+          ◂ Back
+        </button>
+
+        <button
+          onClick={() => {
             if (input.length === 0) return;
+            stopSweep();
             if (finished) {
               setStep(0);
               setPlaying(true);
@@ -219,17 +286,20 @@ export default function FSMRunner({
         <button
           onClick={() => {
             if (finished) return;
+            stopSweep();
             setPlaying(false);
             setStep((s) => Math.min(s + 1, input.length));
           }}
           disabled={finished || input.length === 0}
           className="fsm-btn"
+          title="one symbol forward"
         >
-          Step
+          Step ▸
         </button>
 
         <button
           onClick={() => {
+            stopSweep();
             setStep(0);
             setPlaying(false);
           }}
@@ -254,8 +324,7 @@ export default function FSMRunner({
               style={{
                 padding: "4px 10px",
                 fontSize: 13,
-                background:
-                  speedIdx === i ? "var(--accent)" : "var(--surface)",
+                background: speedIdx === i ? "var(--accent)" : "var(--surface)",
                 color: speedIdx === i ? "white" : "var(--ink)",
                 border: "none",
                 cursor: "pointer",
@@ -267,7 +336,7 @@ export default function FSMRunner({
         </div>
       </div>
 
-      {/* Examples */}
+      {/* Hand-picked inputs */}
       {examples.length > 0 && (
         <div
           style={{
@@ -279,22 +348,15 @@ export default function FSMRunner({
             fontSize: 13,
           }}
         >
-          <span style={{ color: "var(--muted)", alignSelf: "center" }}>
-            try:
-          </span>
+          <span style={{ color: "var(--muted)", alignSelf: "center" }}>try:</span>
           {examples.map((ex) => (
             <button
               key={ex}
-              onClick={() => setInput(ex)}
-              style={{
-                padding: "2px 8px",
-                background: "transparent",
-                border: "1px solid var(--rule)",
-                borderRadius: 999,
-                color: "var(--ink)",
-                fontFamily: "ui-monospace, monospace",
-                cursor: "pointer",
+              onClick={() => {
+                stopSweep();
+                load(ex, true);
               }}
+              className="fsm-chip"
             >
               {ex.length === 0 ? "(empty)" : ex}
             </button>
@@ -303,80 +365,193 @@ export default function FSMRunner({
       )}
 
       {/* Verdict */}
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: 14,
-          minHeight: 24,
-          fontSize: 15,
-        }}
-      >
-        {verdict === "accept" && (
-          <span style={{ color: "#1b9a4d", fontWeight: 600 }}>
-            ✓ accepted — finished in <code>{currentState}</code>
-          </span>
-        )}
-        {verdict === "reject" && !trapped && (
-          <span style={{ color: "#c0392b", fontWeight: 600 }}>
-            ✗ rejected — finished in <code>{currentState}</code>
-          </span>
-        )}
-        {verdict === "reject" && trapped && (
-          <span style={{ color: "#c0392b", fontWeight: 600 }}>
-            ✗ rejected — no transition for that symbol
-          </span>
+      <div style={{ textAlign: "center", marginTop: 14, minHeight: 24, fontSize: 15 }}>
+        {finished && (
+          <VerdictLine
+            accepted={wouldAccept}
+            state={currentState}
+            machine={machine}
+            trapped={trapped}
+          />
         )}
       </div>
 
-      {/* Run log */}
-      {step > 0 && (
-        <details
-          style={{
-            marginTop: 12,
-            fontSize: 13,
-            color: "var(--muted)",
-            textAlign: "center",
+      {sweep && (
+        <SweepPanel
+          machine={machine}
+          list={sweepList}
+          maxLength={sweep.maxLength}
+          caption={sweep.caption}
+          open={sweep.open ?? true}
+          current={input}
+          sweeping={sweeping}
+          onPick={(s) => {
+            stopSweep();
+            load(s, true);
           }}
-        >
-          <summary style={{ cursor: "pointer", listStyle: "none" }}>
-            run log ▾
-          </summary>
-          <div
-            style={{
-              fontFamily: "ui-monospace, monospace",
-              marginTop: 6,
-              lineHeight: 1.6,
-            }}
-          >
-            {result.trace.slice(0, step).map((t, i) => (
-              <div key={i}>
-                {t.to === null
-                  ? `${t.from} ──${t.symbol}──▶ (no transition)`
-                  : `${t.from} ──${t.symbol}──▶ ${t.to}`}
-              </div>
-            ))}
-          </div>
-        </details>
+          onToggleSweep={() => {
+            if (sweeping) {
+              setSweeping(false);
+              setPlaying(false);
+              return;
+            }
+            setSweeping(true);
+            setSweepIdx(0);
+            load(sweepList[0], true);
+          }}
+        />
       )}
 
-      <style>{`
-        .fsm-btn {
-          padding: 4px 12px;
-          font-size: 14px;
-          background: var(--surface);
-          color: var(--ink);
-          border: 1px solid var(--rule);
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .fsm-btn:hover:not(:disabled) {
-          border-color: var(--accent);
-        }
-        .fsm-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-      `}</style>
+      <style>{BTN_CSS}</style>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+//  Every short input at once
+// ---------------------------------------------------------------------
+
+function SweepPanel({
+  machine,
+  list,
+  maxLength,
+  caption,
+  open,
+  current,
+  sweeping,
+  onPick,
+  onToggleSweep,
+}: {
+  machine: FSM;
+  list: string[];
+  maxLength: number;
+  caption?: string;
+  open: boolean;
+  current: string;
+  sweeping: boolean;
+  onPick: (s: string) => void;
+  onToggleSweep: () => void;
+}) {
+  const verdicts = useMemo(
+    () => list.map((s) => run(machine, s).accepted),
+    [machine, list],
+  );
+  const nAccepted = verdicts.filter(Boolean).length;
+
+  // Group by length so the reader can see the answer settle down as the
+  // strings get longer.
+  const rows = useMemo(() => {
+    const byLen = new Map<number, { s: string; ok: boolean }[]>();
+    list.forEach((s, i) => {
+      const arr = byLen.get(s.length) ?? [];
+      arr.push({ s, ok: verdicts[i] });
+      byLen.set(s.length, arr);
+    });
+    return [...byLen.entries()].sort((a, b) => a[0] - b[0]);
+  }, [list, verdicts]);
+
+  return (
+    <details open={open} style={{ marginTop: 18 }}>
+      <summary
+        style={{
+          cursor: "pointer",
+          fontSize: 13,
+          color: "var(--muted)",
+          textAlign: "center",
+          listStyle: "none",
+        }}
+      >
+        {caption ?? `every input of length at most ${maxLength}`} ▾
+      </summary>
+
+      <div
+        style={{
+          marginTop: 10,
+          padding: "12px 14px",
+          border: "1px solid var(--rule)",
+          borderRadius: 6,
+          background: "var(--surface)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            marginBottom: 10,
+            fontSize: 13,
+            color: "var(--muted)",
+          }}
+        >
+          <span>
+            {nAccepted} of {list.length} accepted. Click any one to watch it run.
+          </span>
+          <button onClick={onToggleSweep} className="fsm-btn">
+            {sweeping ? "Stop" : "Run them all"}
+          </button>
+        </div>
+
+        {rows.map(([len, items]) => (
+          <div
+            key={len}
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 10,
+              padding: "4px 0",
+              borderTop: "1px solid var(--rule)",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                color: "var(--muted)",
+                minWidth: 62,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                paddingTop: 4,
+              }}
+            >
+              length {len}
+            </span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {items.map(({ s, ok }) => {
+                const selected = s === current;
+                return (
+                  <button
+                    key={s || "(empty)"}
+                    onClick={() => onPick(s)}
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: 13,
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      border: ok
+                        ? "1px solid var(--mcq-right)"
+                        : "1px dashed var(--rule)",
+                      background: ok ? "var(--mcq-right-soft)" : "transparent",
+                      color: ok ? "var(--ink)" : "var(--muted)",
+                      outline: selected ? "2px solid var(--accent)" : "none",
+                      outlineOffset: 1,
+                    }}
+                    title={ok ? "accepted" : "rejected"}
+                  >
+                    {s.length === 0 ? "(empty)" : s}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        <div style={{ marginTop: 10, fontSize: 12, color: "var(--muted)" }}>
+          Solid green: accepted. Dashed grey: rejected. The accepted ones,
+          taken together, are the language of this machine.
+        </div>
+      </div>
+    </details>
   );
 }

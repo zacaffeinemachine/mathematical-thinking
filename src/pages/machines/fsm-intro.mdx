@@ -5,7 +5,7 @@ order: 1
 chapter: machines
 chapterTitle: Machines
 blurb: A few circles, a few arrows, and a tape of symbols sliding past. Watch the machine react.
-description: An interactive introduction to finite state machines — light switches, turnstiles, suffix detectors, password matchers, parity counters, and more.
+description: "An interactive introduction to finite state machines: light switches, turnstiles, suffix detectors, password matchers, parity counters, and more."
 ---
 import FSMRunner from "../../components/games/fsm/FSMRunner.tsx";
 import {
@@ -32,8 +32,9 @@ that depends only on its current mood and the next thing it sees.
 That's the whole story.
 
 We draw a machine as circles (one per mood) connected by labelled
-arrows. The **start** mood has a stub arrow from outside; an
-**accepting** mood — one we'd like to end in — has a double border.
+arrows. The **start** mood has a stub arrow coming in from
+outside. An **accepting** mood, one we would like to end in, has a
+double border.
 
 ## A light switch
 
@@ -58,15 +59,16 @@ The four pieces of a machine are:
 For the machine to be well-defined, *every* state must have an
 outgoing arrow for *every* symbol. When a rule like "if the first
 symbol is wrong, give up" needs to be enforced, we send the machine
-to a **dead** state — non-accepting, looping on every input.
+to a **dead** state, which is not accepting and loops on every
+input.
 
 ## The turnstile
 
 A subway turnstile has two moods, **Locked** and **Unlocked**, and
 two inputs, <code>c</code> for *coin* and <code>p</code> for *push*.
-A coin unlocks; a push locks. There are no accepting states — the
-turnstile is modelling continuous behaviour, not a yes/no test on
-a string.
+A coin unlocks. A push locks. There are no accepting states,
+because the turnstile is modelling continuous behaviour rather than
+a yes or no test on a string.
 
 <FSMRunner
   client:visible
@@ -91,7 +93,7 @@ That single bit of memory is enough to know whether to accept.
 ## Ending in 101
 
 The same idea, with a longer memory. Each mood is named after *how
-much of* <code>101</code> *currently sits at the end of the input* —
+much of* <code>101</code> *currently sits at the end of the input*:
 nothing, <code>1</code>, <code>10</code>, or the whole thing.
 
 <FSMRunner
@@ -105,8 +107,8 @@ Watch the two arrows leaving <code>101</code>, because they are where
 a first attempt usually goes wrong. A <code>1</code> does *not* send
 you back to the start: the input now ends in <code>1011</code>, whose
 last symbol is a <code>1</code>, so one symbol of progress is already
-banked. A <code>0</code> leaves the input ending <code>1010</code> —
-two symbols of progress, not none.
+banked. A <code>0</code> leaves the input ending <code>1010</code>,
+which is two symbols of progress, not none.
 
 Notice also that accepting is not permanent here. Run
 <code>10101</code> and watch the machine enter, leave, and re-enter
@@ -118,7 +120,7 @@ input runs out.
 A composite rule. The machine has to remember *two* things:
 "did the input start correctly?" and "what was the last symbol?" If
 the very first symbol is <code>0</code>, the rule is broken
-forever — the machine drops into the **dead** state and never
+forever, and the machine drops into the **dead** state and never
 recovers.
 
 <FSMRunner
@@ -143,7 +145,7 @@ machine into **dead**.
 />
 
 Notice what happens once you type the correct string: a single
-extra symbol — even another <code>q</code> — sends the machine to
+extra symbol, even another <code>q</code>, sends the machine to
 **dead**. The machine accepts <code>qrmt</code> and *only*
 <code>qrmt</code>.
 
@@ -151,8 +153,8 @@ extra symbol — even another <code>q</code> — sends the machine to
 
 A counter that stops counting at two. The machine has three moods:
 *zero <code>1</code>s seen*, *exactly one <code>1</code> seen*, and
-*two-or-more*. Once we are in the third mood, no input — zero or
-one — can knock us out. That trap is the *good* one: it locks
+*two-or-more*. Once we are in the third mood, nothing can knock us
+out, neither a zero nor a one. That trap is the *good* one: it locks
 acceptance in.
 
 <FSMRunner
@@ -167,7 +169,7 @@ acceptance in.
 Parity is the simplest interesting property. We need exactly one
 bit of memory: *is the count of zeros even or odd?* Zero is even,
 so <code>E</code> doubles as the start *and* the accepting state.
-Reading a <code>0</code> flips the parity; reading a <code>1</code>
+Reading a <code>0</code> flips the parity. Reading a <code>1</code>
 leaves it alone.
 
 <FSMRunner
@@ -181,7 +183,7 @@ leaves it alone.
 
 Call an uninterrupted stretch of <code>1</code>s a *block*. In
 <code>0110011</code> the blocks are <code>11</code> and
-<code>11</code>; in <code>0111011</code> they are <code>111</code>
+<code>11</code>. In <code>0111011</code> they are <code>111</code>
 and <code>11</code>. This machine accepts exactly when every block
 has even length.
 
@@ -194,7 +196,7 @@ has even length.
 
 This one is worth sitting with, because it separates two things
 that are easy to run together. The mood <code>odd</code> is *not*
-accepting — but it is not hopeless either: one more <code>1</code>
+accepting, but it is not hopeless either. One more <code>1</code>
 and the block is even again. A <code>0</code> arriving there is a
 different matter. It *closes* a block of odd length, and no later
 symbol can undo that, which is exactly what <code>dead</code> is
@@ -205,7 +207,7 @@ machine needs different moods for them.
 
 ## Length at most 4
 
-A pure counter. Each symbol — whatever it is — bumps the state one
+A pure counter. Each symbol, whatever it is, bumps the state one
 notch along the chain. After four symbols any further input falls
 into **dead**. Five accepting states (including the empty-string
 state) and one trap.
@@ -221,7 +223,7 @@ state) and one trap.
 
 Now we lift the count to *modulo* arithmetic. Three moods record
 *the count of <code>1</code>s, mod 3*. Reading a <code>0</code>
-loops in place; reading a <code>1</code> rotates around. Only
+loops in place. Reading a <code>1</code> rotates around. Only
 <code>r0</code> is accepting.
 
 <FSMRunner
@@ -231,10 +233,10 @@ loops in place; reading a <code>1</code> rotates around. Only
   examples={["", "1", "11", "111", "1010", "111111", "10101010"]}
 />
 
-The machine cannot remember *how many* <code>1</code>s it has seen
-— only the count modulo three. To remember an exact count we'd
-need a fresh state for every possible count, and that ladder would
-never end. Hold that thought; it returns at the end of the chapter.
+The machine cannot remember *how many* <code>1</code>s it has seen.
+It remembers only the count modulo three. To remember an exact count
+we would need a fresh state for every possible count, and that
+ladder would never end. Hold that thought. It returns at the end of the chapter.
 
 ## Divisible by 5
 
@@ -245,7 +247,7 @@ digit, double what you have and then add the digit.** So
 <code>1011</code> runs 0 → 1 → 2 → 5 → 11.
 
 The number itself grows without limit, so the machine cannot
-remember it — and does not need to. To know whether the final
+remember it, and does not need to. To know whether the final
 number is divisible by 5, it is enough to remember the *remainder*
 on division by 5, and there are only five of those. From remainder
 *i*, reading digit *d* lands on the remainder of 2*i* + *d*.
@@ -273,12 +275,12 @@ and so on. This machine accepts exactly when
 s₁ − s₂ + s₃ − s₄ + … is divisible by 3.
 </div>
 
-Note the sum can be negative — for <code>01</code> it is
-0 − 1 = −1 — so "divisible by 3" means the usual thing for whole
+Note the sum can be negative. For <code>01</code> it is
+0 − 1 = −1. So "divisible by 3" means the usual thing for whole
 numbers of either sign.
 
 The state's letter (A or B) tracks whether the *next* symbol sits
-at an odd or an even position; the subscript is the running
+at an odd or an even position. The subscript is the running
 remainder. The machine alternates between the two layers as it
 reads, *adding* at A-states and *subtracting* (the same as adding
 2, mod 3) at B-states.
@@ -293,25 +295,24 @@ reads, *adding* at A-states and *subtracting* (the same as adding
 
 The accepting states are <code>A₀</code> and <code>B₀</code>: the
 running remainder is zero whether the next symbol would sit at an
-odd or an even position. The diagram is dense by design — six
-states, twelve transitions — but every arrow is just one of the
-four arithmetic rules above.
+odd or an even position. The diagram is dense by design, six states
+and twelve transitions, but every arrow is just one of the four
+arithmetic rules above.
 
-It is worth saying why this particular condition is worth
-checking at all. Read the string as the binary representation of
-a number *n*, and *n* turns out to be divisible by 3 exactly when
-this alternating sum is — the binary cousin of the familiar rule
-that 121 is divisible by 11 because 1 − 2 + 1 = 0. So the machine
-above is, in disguise, a recognizer for the multiples of 3
-written in binary.
+Why is this particular condition worth checking at all? Read the
+string as the binary representation of a number *n*, and *n* turns
+out to be divisible by 3 exactly when this alternating sum is. That
+is the binary cousin of the familiar rule that 121 is divisible by
+11 because 1 − 2 + 1 = 0. So the machine above is, in disguise, a
+recognizer for the multiples of 3 written in binary.
 
 ## Substring detection: "bfs"
 
 The job: accept exactly those strings that contain
-<code>bfs</code> somewhere inside. The machine's states track the
-*longest prefix of <code>bfs</code> we have just seen* — empty,
-<code>b</code>, or <code>bf</code> — plus a fourth, *we have seen
-the whole thing*, which is a one-way trap. Alphabet: `{b, f, s, x}`,
+<code>bfs</code> somewhere inside. The machine's states track *how
+much of <code>bfs</code> we have just seen*, which is nothing,
+<code>b</code>, or <code>bf</code>, plus a fourth mood, *we have
+seen the whole thing*, which is a one-way trap. Alphabet: `{b, f, s, x}`,
 with <code>x</code> standing in for any other letter.
 
 <FSMRunner
@@ -322,7 +323,7 @@ with <code>x</code> standing in for any other letter.
 />
 
 The transitions are all about *keeping hope alive*. A
-<code>b</code> always lets us start a fresh attempt; a stray
+<code>b</code> always lets us start a fresh attempt. A stray
 <code>f</code> or <code>s</code> from the empty mood does nothing.
 Once we have seen the whole substring we lock into accept.
 
@@ -331,12 +332,12 @@ Once we have seen the whole substring we lock into accept.
 This looks like the very first recognizer we built, but it is a
 different animal. There the answer was decided by the last symbol,
 which the machine could simply hold on to. Here it must know a
-symbol that is *not* the last one — and while reading it cannot
-know which symbol will turn out to be second-to-last.
+symbol that is *not* the last one, and while reading it cannot know
+which symbol will turn out to be second-to-last.
 
 The way out is to remember the last *two* symbols at all times.
 Four possibilities, four moods. The mood named <code>ab</code>
-means the last two symbols read were *a* then *b*; reading *c*
+means the last two symbols read were *a* then *b*. Reading *c*
 slides the window along, <code>ab</code> → <code>bc</code>, and the
 oldest symbol is forgotten because it can never be needed again.
 
@@ -350,12 +351,19 @@ oldest symbol is forgotten because it can never be needed again.
 We pretend two <code>0</code>s were read before the string began,
 which costs nothing and conveniently makes strings of length 0 and
 1 come out rejected, as they should. The accepting moods are
-<code>10</code> and <code>11</code> — exactly those whose *first*
+<code>10</code> and <code>11</code>, exactly those whose *first*
 remembered symbol is a <code>1</code>, since that is the
 second-to-last symbol of the input.
 
 Wanting the *third*-to-last symbol needs a window of three, and so
 eight moods. Bigger, but not one bit cleverer.
+
+---
+
+Every machine above answers one question about one string at a time.
+The [next page](../many-inputs/) hands a machine every short input
+there is, all at once, which is where the shape of what it accepts
+becomes visible.
 
 ---
 
@@ -375,7 +383,7 @@ eight moods. Bigger, but not one bit cleverer.
 <p style={{textAlign:'center', color:'var(--muted)', fontSize:14, marginBottom:24}}>
 For each language below, design a finite state machine that accepts a
 string if and only if it belongs to the language. A clear diagram is
-enough — no proof of correctness is required.
+enough, and no proof of correctness is required.
 </p>
 
 <div style={{
@@ -414,7 +422,7 @@ odd-numbered position (the 1st, 3rd, 5th, …) is a `1`.
 
 **(e)** *S* is the collection of strings where all `0`s (if any)
 appear before all `1`s (if any). For example, `00111`, `111`,
-and `000` belong to *S*; `010` does not.
+and `000` belong to *S*, and `010` does not.
 </div>
 
 <div style={{
@@ -571,7 +579,7 @@ remembered remainder in opposite directions.
 The alphabet is `{0, 1}`. Design a machine that accepts a binary
 string *w* exactly when both of the following hold:
 
-- the length of *w* is at least 3;
+- the length of *w* is at least 3,
 - the third-to-last symbol of *w* is a `1`.
 </div>
 
@@ -594,7 +602,7 @@ string *w* exactly when both of the following hold:
 
 The alphabet is `{0, 1}`. Design a machine that accepts exactly
 those strings in which every `0` is immediately followed by a
-`1`. For example, `1101` is accepted; `1001` and `10` are not.
+`1`. For example, `1101` is accepted, and `1001` and `10` are not.
 </div>
 
 <div style={{
@@ -660,7 +668,7 @@ Design a machine that reads the 26 lowercase letters and accepts
 The alphabet is `{0, 1}`. Design a machine that accepts exactly
 those binary strings *w* satisfying both of the following:
 
-- the length of *w* is at least 2;
+- the length of *w* is at least 2,
 - the first symbol of *w* and the second-to-last symbol of *w*
   are identical.
 
@@ -686,7 +694,7 @@ be rejected.
 }}>Exercise 12 — Odd projection contains `dfa`</div>
 
 For a string *x*₁*x*₂…*x*<sub>n</sub>, the **odd projection** is
-the string formed by deleting every symbol at an even position —
+the string formed by deleting every symbol at an even position,
 that is, *x*₁*x*₃*x*₅… For example, the odd projection of
 `ihateqrmt` is `iaert`, and the odd projection of `iloveinsta`
 is `ioent`.
