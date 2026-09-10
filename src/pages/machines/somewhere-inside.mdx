@@ -7,42 +7,21 @@ chapterTitle: Machines
 blurb: Hunting for a run of symbols anywhere in the string. The problems are all about what to do when a promising start goes wrong.
 description: "Design-a-machine problems on finding a block of symbols somewhere inside the input."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-A machine hunting for a block of symbols keeps track of one thing: **how
-much of the block is sitting at the end of what it has read.** Nothing else
-about the past is any use to it.
-
-The whole difficulty of this page is what happens when a promising start
-goes wrong. Suppose the machine is hunting for `101` and it has just seen
-`10`. A `0` arrives, so the run is spoilt. It is very tempting to send the
-machine back to the beginning, and it is wrong often enough to be worth
-saying out loud: the input now ends in `100`, and that ends in `0`, which
-is no help, so back to the beginning is right this time. But if the machine
-had seen `10` and a `1` arrived, the input would end in `101`, which is the
-whole block. And if it had seen `1` and another `1` arrived, the input would
-end in `11`, whose last symbol is a `1`, so one symbol of progress survives.
-
-Every wrong answer on this page is a machine that throws away progress it
-still had. Before drawing an arrow that goes backwards, write down what the
-input ends in after that symbol, and count how much of the block is in it.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Two in a row">
-Accept exactly the strings that contain `00` somewhere inside.
+Design a machine that accepts exactly the strings that contain `00` somewhere inside.
 <Tests accept={["00", "100", "0011", "10010"]} reject={["", "0", "1", "0101", "1010"]} />
 </Problem>
 
 <Problem n={2} title="Three in a row">
-Accept exactly the strings that contain `101` somewhere inside.
+Design a machine that accepts exactly the strings that contain `101` somewhere inside.
 <Tests accept={["101", "0101", "1011", "11010"]} reject={["", "10", "100", "0110", "1100"]} />
 </Problem>
 
 <Problem n={3} title="Four in a row">
-Accept exactly the strings that contain `0110` somewhere inside.
+Design a machine that accepts exactly the strings that contain `0110`
+somewhere inside.
 
 This is where the temptation to reset all the way to the beginning does the
 most damage. Look hard at what happens when the machine has seen `011` and
@@ -51,7 +30,8 @@ another `1` arrives.
 </Problem>
 
 <Problem n={4} title="Never in a row">
-Accept exactly the strings that do **not** contain `11` anywhere.
+Design a machine that accepts exactly the strings that do **not** contain `11`
+anywhere.
 
 You can build this from the machine for *contains `11`* without redrawing a
 single arrow. Say what you did, and why it is allowed.
@@ -59,19 +39,20 @@ single arrow. Say what you did, and why it is allowed.
 </Problem>
 
 <Problem n={5} title="Both of two blocks">
-Accept exactly the strings that contain `01` somewhere **and** contain `10`
+Design a machine that accepts exactly the strings that contain `01` somewhere **and** contain `10`
 somewhere.
 <Tests accept={["010", "101", "0110", "1001"]} reject={["", "01", "10", "0011", "11"]} />
 </Problem>
 
-<Problem n={6} title="A word in the middle of a sentence">
-The alphabet here is `{a, b, c}`. Accept exactly the strings that contain
-`abc` somewhere inside.
+<Problem n={6} title="A word in the middle of a sentence" alphabet="{a, b, c}">
+Design a machine that accepts exactly the strings that contain `abc`
+somewhere inside.
 <Tests accept={["abc", "aabc", "abcc", "cabca"]} reject={["", "ab", "acb", "abab", "bca"]} />
 </Problem>
 
 <Problem n={7} title="One block only if the other one turns up" hard>
-Accept exactly the strings that contain `00` **if** they contain `11`.
+Design a machine that accepts exactly the strings that contain `00` **if**
+they contain `11`.
 
 A string with no `11` in it satisfies the rule for free, whatever else it
 does. A string with a `11` in it has to have a `00` somewhere too, and the
@@ -80,7 +61,8 @@ does. A string with a `11` in it has to have a `00` somewhere too, and the
 </Problem>
 
 <Problem n={8} title="Once and once only" hard>
-Accept exactly the strings that contain `11` exactly once.
+Design a machine that accepts exactly the strings that contain `11` exactly
+once.
 
 Overlapping counts as more than once, so `111` contains `11` twice: once at
 the first two symbols and once at the last two. Decide what your machine
@@ -88,16 +70,14 @@ should do with `111` before you draw it.
 <Tests accept={["11", "011", "110", "0110", "11010"]} reject={["", "1", "111", "1111", "11011"]} />
 </Problem>
 
-<Problem n={9} title="A block in every other symbol" hard>
-The alphabet here is the 26 lowercase letters. As on the first page, draw
-one arrow labelled `x` to stand for "any other letter" rather than drawing
-twenty-six.
-
+<Problem n={9} title="A block in every other symbol" hard alphabet="the 26 lowercase letters">
 The **odd part** of a string is what is left when every symbol at an even
-position is deleted, so the odd part of `dxfxa` is `dfa`, and the odd part
-of `ihateqrmt` is `iaert`.
+position is deleted, so the odd part of `dxfxa` is `dfa`, and the odd part of
+`ihateqrmt` is `iaert`.
 
-Accept exactly the strings whose odd part contains `dfa` somewhere inside.
+Design a machine that accepts exactly the strings whose odd part contains
+`dfa` somewhere inside. Draw one arrow labelled `x` for "any other letter"
+rather than drawing twenty-six.
 
 Note that `dfa` itself is not accepted. Work out its odd part and you will
 see why.

@@ -7,44 +7,23 @@ chapterTitle: Machines
 blurb: The count can run to a million, and the machine has six circles. Problems on parity, thresholds, and remainders.
 description: "Design-a-machine problems on parity, thresholds and counting modulo a number."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-A machine cannot count. Give it a string of a million `1`s and there is no
-circle labelled *nine hundred thousand and four*, because the circles were
-drawn before anyone knew how long the string would be.
-
-What it can do is keep the part of the count that the question actually
-needs. Three of those parts turn up again and again:
-
-- **parity**, which is the count with everything thrown away except whether
-  it is even or odd;
-- **a threshold**, which is the count with everything above some number
-  lumped together as *enough*;
-- **a remainder**, which is the count with everything thrown away except
-  what is left after dividing.
-
-Each one is a fixed number of circles no matter how long the string runs.
-Whenever a problem below looks like it needs the real count, ask which of
-the three would do instead.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Parity">
-Accept exactly the strings with an even number of `1`s.
+Design a machine that accepts exactly the strings with an even number of `1`s.
 
 Zero is an even number, so the empty string is accepted.
 <Tests accept={["", "0", "11", "0110", "1001"]} reject={["1", "10", "111", "0100"]} />
 </Problem>
 
 <Problem n={2} title="The other parity">
-Accept exactly the strings with an odd number of `0`s.
+Design a machine that accepts exactly the strings with an odd number of `0`s.
 <Tests accept={["0", "01", "10", "0001"]} reject={["", "1", "00", "0110", "11"]} />
 </Problem>
 
 <Problem n={3} title="A threshold">
-Accept exactly the strings containing at least three `1`s.
+Design a machine that accepts exactly the strings containing at least three
+`1`s.
 
 Once the third `1` has arrived, nothing that follows can matter. Make sure
 your diagram says so.
@@ -52,7 +31,7 @@ your diagram says so.
 </Problem>
 
 <Problem n={4} title="Exactly two">
-Accept exactly the strings containing exactly two `1`s.
+Design a machine that accepts exactly the strings containing exactly two `1`s.
 
 Compare this with the problem above. There, success was permanent. Here a
 third `1` has to take it away again, and take it away for good.
@@ -60,18 +39,18 @@ third `1` has to take it away again, and take it away for good.
 </Problem>
 
 <Problem n={5} title="A ceiling">
-Accept exactly the strings containing at most two `0`s.
+Design a machine that accepts exactly the strings containing at most two `0`s.
 <Tests accept={["", "1", "0", "00", "0110", "1010"]} reject={["000", "0001", "01010", "0000"]} />
 </Problem>
 
 <Problem n={6} title="A remainder">
-Accept exactly the strings in which the number of `0`s is divisible by 4.
+Design a machine that accepts exactly the strings in which the number of `0`s is divisible by 4.
 <Tests accept={["", "1", "0000", "010010"]} reject={["0", "00", "000", "00000"]} />
 </Problem>
 
 <Problem n={7} title="Two counts at once">
-Accept exactly the strings with an even number of `0`s **and** an odd number
-of `1`s.
+Design a machine that accepts exactly the strings with an even number of `0`s
+**and** an odd number of `1`s.
 
 You are being asked to remember two facts at the same time. How many circles
 does that cost, and why is it a product rather than a sum?
@@ -79,7 +58,7 @@ does that cost, and why is it a product rather than a sum?
 </Problem>
 
 <Problem n={8} title="A difference" hard>
-Accept exactly the strings for which
+Design a machine that accepts exactly the strings for which
 
 > (the number of `1`s) minus (the number of `0`s)
 
@@ -91,7 +70,8 @@ for whole numbers of either sign. Three circles are enough.
 </Problem>
 
 <Problem n={9} title="A bigger remainder" hard>
-Accept exactly the strings in which the number of `1`s is divisible by 6.
+Design a machine that accepts exactly the strings in which the number of `1`s
+is divisible by 6.
 
 Then answer this. Someone offers you a machine built by running a
 *divisible by 2* machine and a *divisible by 3* machine side by side and
@@ -101,7 +81,7 @@ accepting when both accept. Does it work? Would the same trick work for
 </Problem>
 
 <Problem n={10} title="Two remainders at once" hard>
-Accept exactly the strings with an even number of `0`s **and** a number of
+Design a machine that accepts exactly the strings with an even number of `0`s **and** a number of
 `1`s divisible by 3.
 <Tests accept={["", "00", "111", "00111", "0011100"]} reject={["0", "1", "11", "0111", "00110"]} />
 </Problem>

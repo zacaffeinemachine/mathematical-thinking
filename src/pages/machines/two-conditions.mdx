@@ -7,43 +7,23 @@ chapterTitle: Machines
 blurb: You have a machine for each of two properties. Now build one machine for both of them, or for either, or for exactly one.
 description: "Design-a-machine problems on combining two properties with and, or, and not."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-Every problem on this page is two problems you have already done, stuck
-together. That is the point: there is a method here, and it is worth finding
-for yourself before you are told it.
-
-The method starts from a question. If you had one machine for the first
-property and another for the second, and you were allowed to run **both of
-them on the same string at the same time**, could you tell at the end
-whether the combined rule holds?
-
-If the answer is yes, the next question is how one machine can do the work
-of two. Think about what "where the machine is" would have to mean.
-
-One of the three combinations is far easier than the other two, and costs no
-new circles and no new arrows at all. Find that one first: problem 3 is
-where it lives.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Both parities">
-Accept exactly the strings with an even number of `0`s **and** an even
+Design a machine that accepts exactly the strings with an even number of `0`s **and** an even
 number of `1`s.
 <Tests accept={["", "00", "11", "0011", "1100", "0110"]} reject={["0", "1", "01", "10", "001", "0111"]} />
 </Problem>
 
 <Problem n={2} title="Either one">
-Accept exactly the strings that have an even number of `0`s **or** end in
+Design a machine that accepts exactly the strings that have an even number of `0`s **or** end in
 `1`, or both.
 <Tests accept={["", "1", "11", "011", "001", "0011", "1001"]} reject={["0", "10", "110", "000", "0100"]} />
 </Problem>
 
 <Problem n={3} title="The opposite of a machine you have">
-Accept exactly the strings in which the number of `1`s is **not** divisible
-by 3.
+Design a machine that accepts exactly the strings in which the number of `1`s
+is **not** divisible by 3.
 
 The machine for *divisible by 3* is on the first page of this chapter. Get
 this one from it without drawing a single new circle or arrow, then write
@@ -52,14 +32,14 @@ one sentence saying what you changed and why it is guaranteed to work.
 </Problem>
 
 <Problem n={4} title="One block wanted, another forbidden">
-Accept exactly the strings that contain `11` somewhere **and** do not
+Design a machine that accepts exactly the strings that contain `11` somewhere **and** do not
 contain `00` anywhere.
 <Tests accept={["11", "011", "110", "0110", "1101"]} reject={["", "1", "00", "1100", "0011", "0101"]} />
 </Problem>
 
 <Problem n={5} title="Two counts, either will do">
-Accept exactly the strings in which the number of `0`s is divisible by 3
-**or** the number of `1`s is divisible by 4.
+Design a machine that accepts exactly the strings in which the number of `0`s
+is divisible by 3 **or** the number of `1`s is divisible by 4.
 
 Count the circles your method produces. Then count how many of them are
 accepting, and notice that this is the whole difference between *or* and
@@ -68,8 +48,8 @@ accepting, and notice that this is the whole difference between *or* and
 </Problem>
 
 <Problem n={6} title="Exactly one of the two" hard>
-Accept exactly the strings for which **exactly one** of the following two
-things is true:
+Design a machine that accepts exactly the strings for which **exactly one** of
+the following two things is true:
 
 - the string begins with `1`;
 - the string ends with `1`.
@@ -80,8 +60,8 @@ neither. The empty string does neither, so it is rejected.
 </Problem>
 
 <Problem n={7} title="A count and a block together" hard>
-Accept exactly the strings that have even length **and** contain `101`
-somewhere inside.
+Design a machine that accepts exactly the strings that have even length
+**and** contain `101` somewhere inside.
 
 Then answer the question the method raises. Your two machines have some
 number of circles each, say 2 and 4. The combined machine has at most 8. Is

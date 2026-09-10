@@ -7,25 +7,10 @@ chapterTitle: Machines
 blurb: Problems where the symbols do not matter and only the count of them does, and then problems where both matter at once.
 description: "Design-a-machine problems about the length of the input and about positions within it."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-In the problems on this page a symbol's identity is often beside the point.
-Every symbol does the same thing: it advances the machine one notch. What
-changes from problem to problem is what the notches are counting towards.
-
-Two shapes cover most of it. A **chain** counts up to some number and then
-stops caring, which is what a rule like *at least four* wants. A **ring**
-counts round and round, which is what a rule about multiples wants.
-
-The last few problems mix length with the symbols themselves, and there the
-machine has to hold both at once.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Exactly three">
-Accept exactly the strings of length 3.
+Design a machine that accepts exactly the strings of length 3.
 
 Watch the strings longer than 3. They are not accepted, and they are never
 going to be, so where do they go?
@@ -33,29 +18,29 @@ going to be, so where do they go?
 </Problem>
 
 <Problem n={2} title="At most two">
-Accept exactly the strings of length 2 or less.
+Design a machine that accepts exactly the strings of length 2 or less.
 <Tests accept={["", "0", "1", "00", "10", "11"]} reject={["000", "101", "1010", "111"]} />
 </Problem>
 
 <Problem n={3} title="At least four">
-Accept exactly the strings of length 4 or more.
+Design a machine that accepts exactly the strings of length 4 or more.
 <Tests accept={["0000", "1010", "00000", "1111011"]} reject={["", "0", "01", "010", "111"]} />
 </Problem>
 
 <Problem n={4} title="Even length">
-Accept exactly the strings of even length. The empty string has length 0,
+Design a machine that accepts exactly the strings of even length. The empty string has length 0,
 which is even.
 <Tests accept={["", "01", "10", "0000", "1101"]} reject={["0", "111", "10101", "1"]} />
 </Problem>
 
 <Problem n={5} title="A multiple of three">
-Accept exactly the strings whose length is a multiple of 3.
+Design a machine that accepts exactly the strings whose length is a multiple of 3.
 <Tests accept={["", "010", "111", "101010", "000000"]} reject={["0", "01", "1010", "11111"]} />
 </Problem>
 
 <Problem n={6} title="Length and last symbol together">
-Accept exactly the strings whose length is a multiple of 3 **and** whose
-last symbol is `1`.
+Design a machine that accepts exactly the strings whose length is a multiple
+of 3 **and** whose last symbol is `1`.
 
 Two things to remember at once. Notice that they are not independent: once
 you know the length is a multiple of 3, the last symbol still has to be
@@ -64,8 +49,8 @@ checked, and the machine has to have been checking it all along.
 </Problem>
 
 <Problem n={7} title="Even or a multiple of three" hard>
-Accept exactly the strings whose length is even **or** a multiple of 3, or
-both.
+Design a machine that accepts exactly the strings whose length is even **or**
+a multiple of 3, or both.
 
 The accepted lengths are 0, 2, 3, 4, 6, 8, 9, 10, and so on. The rejected
 ones are 1, 5, 7, 11, 13. How many circles does the ring need?
@@ -73,21 +58,21 @@ ones are 1, 5, 7, 11, 13. How many circles does the ring need?
 </Problem>
 
 <Problem n={8} title="A symbol at a fixed position" hard>
-Accept exactly the strings that have length at least 3 and whose **third**
+Design a machine that accepts exactly the strings that have length at least 3 and whose **third**
 symbol is a `0`.
 <Tests accept={["000", "110", "1101", "0000"]} reject={["", "1", "10", "111", "1011"]} />
 </Problem>
 
 <Problem n={9} title="Every other position" hard>
-Accept exactly the strings in which every symbol at an odd-numbered position
+Design a machine that accepts exactly the strings in which every symbol at an odd-numbered position
 is a `1`. Positions are counted from 1, so this is the 1st symbol, the 3rd,
 the 5th, and so on. The symbols at even positions may be anything.
 <Tests accept={["", "1", "10", "11", "1010", "1011"]} reject={["0", "01", "0101", "1100", "110"]} />
 </Problem>
 
 <Problem n={10} title="The first symbol decides which rule applies" hard>
-Accept exactly the strings that either begin with `1` and have even length,
-or begin with `0` and have odd length.
+Design a machine that accepts exactly the strings that either begin with `1`
+and have even length, or begin with `0` and have odd length.
 
 The empty string begins with neither, so it is rejected.
 <Tests accept={["0", "10", "010", "1010", "00000"]} reject={["", "1", "00", "0101", "101"]} />

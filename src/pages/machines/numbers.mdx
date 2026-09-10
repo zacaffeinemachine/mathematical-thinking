@@ -7,55 +7,46 @@ chapterTitle: Machines
 blurb: The string is not a string any more, it is a number written in binary. The machine does arithmetic it never writes down.
 description: "Design-a-machine problems where the input is read as a number."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-From here on the string is a **number**, written in binary and read left to
-right. The rule for reading it is one line:
-
-> start at 0, and on each new digit, double what you have and then add the
-> digit.
-
-So `1011` runs 0, then 1, then 2, then 5, then 11.
-
-The number itself has no ceiling, so no machine can hold it. What a machine
-can hold is the **remainder** the number leaves on dividing by whatever the
-question is about, and there are only ever finitely many of those. If the
-number so far leaves remainder *i*, then after reading a digit *d* the new
-remainder is whatever 2*i* + *d* leaves.
-
-That single sentence solves most of this page. Work out the arrows by
-arithmetic rather than by guessing, and check a few by running an actual
-number through.
-
-Leading zeros are allowed and do not change the value, so `0101` and `101`
-are both the number 5. The empty string is not a number at all, and every
-problem here rejects it.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Even numbers">
-Accept exactly the non-empty strings whose value is even.
+The string is a number written in binary, read left to right. Leading zeros
+are allowed, and the empty string is not a number, so it must be rejected.
 
-There is a way to answer this without thinking about remainders at all. Find
-it, then check that the remainder method gives the same machine.
+Design a machine that accepts exactly the strings whose value is even.
+
+A useful way to read the string as you go, which most of this page turns on:
+start at 0, and on each new digit double what you have and then add the
+digit. So `1011` runs 0, then 1, then 2, then 5, then 11. This first problem
+can also be answered without any arithmetic at all. Find that way too, and
+check the two agree.
 <Tests accept={["0", "10", "110", "00", "1010"]} reject={["", "1", "11", "101", "0111"]} />
 </Problem>
 
 <Problem n={2} title="Divisible by four">
-Accept exactly the non-empty strings whose value is divisible by 4.
+The string is a number written in binary, read left to right. Leading zeros
+are allowed, and the empty string is not a number, so it must be rejected.
+
+Design a machine that accepts exactly the strings whose value is divisible
+by 4.
 <Tests accept={["0", "00", "100", "1000", "1100"]} reject={["", "1", "10", "110", "1010"]} />
 </Problem>
 
 <Problem n={3} title="Divisible by six">
-Accept exactly the non-empty strings whose value is divisible by 6.
+The string is a number written in binary, read left to right. Leading zeros
+are allowed, and the empty string is not a number, so it must be rejected.
+
+Design a machine that accepts exactly the strings whose value is divisible
+by 6.
 <Tests accept={["0", "110", "1100", "010010"]} reject={["", "1", "10", "11", "111", "1101"]} />
 </Problem>
 
 <Problem n={4} title="A remainder that is not zero">
-Accept exactly the non-empty strings whose value leaves remainder 1 on
-division by 3.
+The string is a number written in binary, read left to right. Leading zeros
+are allowed, and the empty string is not a number, so it must be rejected.
+
+Design a machine that accepts exactly the strings whose value leaves remainder
+1 on division by 3.
 
 You need the same three circles as for *divisible by 3*, with a different
 one of them ringed. Say which, and why nothing else changes.
@@ -63,21 +54,24 @@ one of them ringed. Say which, and why nothing else changes.
 </Problem>
 
 <Problem n={5} title="Big enough" hard>
-Accept exactly the non-empty strings whose value is at least 8.
+The string is a number written in binary, read left to right. Leading zeros
+are allowed, and the empty string is not a number, so it must be rejected.
+
+Design a machine that accepts exactly the strings whose value is at least 8.
 
 Remainders are no use here. What is, is this: a number is at least 8 exactly
-when it has at least four digits **once the leading zeros are thrown away**.
-So the machine has to sit still through any run of leading zeros and only
-start counting when the first `1` arrives.
+when it has at least four digits once the leading zeros are thrown away. So
+the machine has to sit still through any run of leading zeros and start
+counting only when the first `1` arrives.
 <Tests accept={["1000", "1001", "01000", "11111", "0001111"]} reject={["", "0", "111", "0111", "00000", "1"]} />
 </Problem>
 
-<Problem n={6} title="Paying exactly five">
-A vending machine takes two kinds of coin, one worth 1 credit and one worth
-2 credits, so here the alphabet is `{1, 2}` and the string is the sequence
-of coins in the order they went in.
+<Problem n={6} title="Paying exactly five" alphabet="{1, 2}">
+A vending machine takes two kinds of coin, one worth 1 credit and one worth 2
+credits. The string is the sequence of coins in the order they went in.
 
-Accept exactly the sequences whose total value is exactly 5 credits.
+Design a machine that accepts exactly the sequences whose total value is
+exactly 5 credits.
 
 Every counter so far has moved one notch per symbol. Here two different
 symbols move the total by two different amounts, and a total that overshoots
@@ -85,9 +79,9 @@ symbols move the total by two different amounts, and a total that overshoots
 <Tests accept={["11111", "122", "212", "221", "2111"]} reject={["", "1", "1111", "22", "222", "111111"]} />
 </Problem>
 
-<Problem n={7} title="Paying a multiple of five" hard>
-The same two coins. Accept exactly the non-empty sequences whose total value
-is a multiple of 5.
+<Problem n={7} title="Paying a multiple of five" hard alphabet="{1, 2}">
+The same two coins, one worth 1 credit and one worth 2. Design a machine that
+accepts exactly the non-empty sequences whose total value is a multiple of 5.
 
 Overshooting is no longer fatal, which changes the shape of the machine
 completely. How many circles now, and what does each one mean?
@@ -95,18 +89,19 @@ completely. How many circles now, and what does each one mean?
 </Problem>
 
 <Problem n={8} title="The number written backwards" hard>
-This time read the string **right to left**, so the *first* symbol of the
-string is the *last* digit of the number. Under that reading, `1101` is the
-number 1011 in binary, which is 11.
+The string is a number written in binary, but this time read **right to
+left**, so the *first* symbol of the string is the *last* digit of the number.
+Under that reading `1101` is the number 1011 in binary, which is 11. The empty
+string is not a number and must be rejected.
 
-Accept exactly the non-empty strings whose value under this backwards
-reading is divisible by 5.
+Design a machine that accepts exactly the strings whose value under this
+backwards reading is divisible by 5.
 
 The machine still reads left to right, one symbol at a time. It cannot turn
-the string round. So the arithmetic has to be done in the other direction:
-a digit arriving now is worth 1, the next is worth 2, the next 4, then 8,
-then 16, and the machine must keep track of what that multiplier is worth
-as well as of the running remainder.
+the string round. So the arithmetic has to be done in the other direction: a
+digit arriving now is worth 1, the next is worth 2, the next 4, then 8, then
+16, and the machine must keep track of what that multiplier is worth as well
+as of the running remainder.
 
 How many circles does that need, and why is it more than five?
 <Tests accept={["0", "00", "101", "0101", "1111"]} reject={["", "1", "10", "11", "110"]} />

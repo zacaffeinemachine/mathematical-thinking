@@ -15,11 +15,15 @@ const MONO = 'ui-monospace, "JetBrains Mono", Menlo, monospace';
 export function Problem({
   n,
   title,
+  alphabet = "{0, 1}",
   hard = false,
   children,
 }: {
   n: number;
   title: string;
+  // Every problem says what its machine reads. It defaults to binary
+  // because most of them are, never because it is optional.
+  alphabet?: string;
   hard?: boolean;
   children: ReactNode;
 }) {
@@ -69,6 +73,9 @@ export function Problem({
             harder
           </span>
         )}
+        <span style={{ fontSize: 12, color: "var(--muted)" }}>
+          alphabet <code style={{ fontFamily: MONO }}>{alphabet}</code>
+        </span>
       </div>
       {children}
     </div>
@@ -138,41 +145,5 @@ export function Tests({
       {accept.length > 0 && <Row label="must accept" items={accept} tone="right" />}
       {reject.length > 0 && <Row label="must reject" items={reject} tone="wrong" />}
     </div>
-  );
-}
-
-// The banner that opens a problem page: what the theme is, and the one
-// sentence of advice that applies to every question underneath it.
-export function ThemeNote({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        margin: "18px 0 26px",
-        padding: "12px 16px",
-        borderLeft: "4px solid var(--accent)",
-        background: "var(--surface)",
-        borderRadius: 4,
-        fontSize: 14.5,
-        lineHeight: 1.6,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// The standing instruction, printed once at the top of every problem page.
-export function HowToAnswer({ alphabet = "{0, 1}" }: { alphabet?: string }) {
-  return (
-    <p style={{ color: "var(--muted)", fontSize: 14, lineHeight: 1.65 }}>
-      For each problem, draw a machine that accepts a string exactly when it
-      has the stated property, and reject every other string. Unless a problem
-      says otherwise the alphabet is{" "}
-      <code style={{ fontFamily: MONO }}>{alphabet}</code>. A clear diagram is
-      the whole answer, and no proof is wanted. Write one plain sentence
-      beside each circle saying what the machine remembers while it sits
-      there, because a machine whose circles you cannot name is usually
-      wrong.
-    </p>
   );
 }

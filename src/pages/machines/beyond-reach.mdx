@@ -4,119 +4,95 @@ title: Beyond Reach
 order: 10
 chapter: machines
 chapterTitle: Machines
-blurb: Problems that look exactly like the others on these pages, and that no machine can do. The work is saying why.
-description: "Problems that no finite state machine can solve, and the argument that shows it."
+blurb: Problems that look exactly like the others, and that mostly cannot be done at all. Design the machine, or show that none exists.
+description: "Problems that no finite state machine can solve, and two that look the same and can."
 ---
-import { Problem, ThemeNote } from "../../components/games/fsm/Problem.tsx";
-
-Every problem on this page looks like the ones before it. Each one describes
-a property of a string in a sentence, and asks for a machine that accepts
-exactly the strings with that property.
-
-**No machine can do any of them.** Do not go looking for a cleverer diagram.
-The work here is to say why the job is impossible, and there is a way of
-saying it that fits in a paragraph.
-
-<ThemeNote>
-**The argument.** A machine has a fixed number of circles, and that number
-was decided before anyone knew what string would arrive. Call it *k*.
-
-Now suppose two different strings leave the machine standing in the same
-circle. The machine has, at that moment, forgotten every difference between
-them. Whatever you type next, it takes the same arrows in both cases and
-ends up in the same place, so it gives **the same verdict** for both. Two
-strings that land together are stuck together forever.
-
-So here is how to prove a job impossible. Produce an endless supply of
-strings
-
-> *w*₁, *w*₂, *w*₃, …
-
-with this feature: for **any two** of them there is some tail you could type
-next that the rule says should be accepted after one and rejected after the
-other. Such a pair must land in different circles, because if they landed
-together the machine would be forced to give them the same verdict. So all
-of your strings need different circles. But there are only *k* circles and
-your supply never runs out, so no *k* is big enough, and there is no
-machine.
-
-For each problem below: name the supply, and name the tail that separates
-two of them. Two sentences is a complete answer.
-</ThemeNote>
+import { Problem } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="As many 1s as 0s">
-Accept exactly the strings containing the same number of `0`s as `1`s.
+Design a machine that accepts exactly the strings containing the same number
+of `0`s as `1`s, or show that no such machine exists.
 
-So the empty string is accepted, `01` and `1100` are accepted, and `0` and
-`011` are not.
+The empty string is accepted, `01` and `1100` are accepted, and `0` and `011`
+are not.
 
-For the supply, try `0`, `00`, `000`, and so on. What tail separates `00`
-from `000`?
+To show that none exists, start here. Suppose two of the strings `0`, `00`,
+`000`, `0000`, and so on left a machine standing in the same circle. From that
+moment the machine has forgotten the difference between them, so typing the
+same thing next must give the same verdict for both. Find something to type
+next that the rule says should be accepted after one and rejected after the
+other, and then count how many circles the machine would need.
 </Problem>
 
 <Problem n={2} title="Zeros then ones, matched">
-Accept exactly the strings that are some number of `0`s followed by the same
-number of `1`s: the empty string, `01`, `0011`, `000111`, and so on. A
-string like `0101` is not accepted, even though it has two of each.
+Design a machine that accepts exactly the strings that are some number of `0`s
+followed by the same number of `1`s, or show that no such machine exists.
+
+So the empty string, `01`, `0011` and `000111` are accepted, and `0101` is
+not, even though it has two of each.
 </Problem>
 
 <Problem n={3} title="The same forwards and backwards">
-Accept exactly the strings that read the same forwards and backwards, such
-as `010`, `1001`, `11011`, and every string of length 0 or 1.
+Design a machine that accepts exactly the strings that read the same forwards
+as backwards, or show that no such machine exists. Examples are `010`, `1001`,
+`11011`, and every string of length 0 or 1.
 
-The supply here needs a little more care than in problem 1, because
-`0`, `00`, `000` will not do. Try strings of the shape `0…01` instead, and
-say what tail separates two of them.
+The strings `0`, `00`, `000` are no help here, because a machine is allowed to
+treat them alike. Try strings of the shape `0…01` instead.
 </Problem>
 
 <Problem n={4} title="A square number of 1s">
-Accept exactly the strings in which the number of `1`s is 0, 1, 4, 9, 16,
-25, and so on: a whole number multiplied by itself.
+Design a machine that accepts exactly the strings in which the number of `1`s
+is 0, 1, 4, 9, 16, 25, and so on, a whole number multiplied by itself, or show
+that no such machine exists.
 
-There is a second way to see this one, and it is worth having as well as the
-argument above. The gaps between consecutive squares are 1, 3, 5, 7, 9, …
-and they grow without limit. Think about what a machine does when it is fed
-a very long run of `1`s and has to keep going round some loop of circles.
-What does that force about the gaps between the lengths it accepts?
+Here is a second line of attack, worth having as well as the first. Feed the
+machine a very long run of `1`s. It has only so many circles, so sooner or
+later it must arrive at a circle it has been in before, and from then on it
+goes round and round that loop. What does that force about the gaps between
+the lengths it accepts? The gaps between consecutive squares are 1, 3, 5, 7,
+9, and they grow without limit.
 </Problem>
 
 <Problem n={5} title="A prime number of 1s">
-Accept exactly the strings in which the number of `1`s is a prime number.
+Design a machine that accepts exactly the strings in which the number of `1`s
+is a prime number, or show that no such machine exists.
 </Problem>
 
 <Problem n={6} title="Two halves that match" hard>
-Accept exactly the strings that are some string written twice over: `0101`
-is accepted because it is `01` followed by `01`, and `abab` would be
-accepted over a two-letter alphabet. The empty string is accepted. `010` is
-not, because it has odd length.
+Design a machine that accepts exactly the strings that are some string written
+twice over, or show that no such machine exists.
+
+So `0101` is accepted, because it is `01` followed by `01`, and the empty
+string is accepted. `010` is not, because it has odd length.
 </Problem>
 
 <Problem n={7} title="More 1s than 0s" hard>
-Accept exactly the strings containing strictly more `1`s than `0`s.
+Design a machine that accepts exactly the strings containing strictly more
+`1`s than `0`s, or show that no such machine exists.
 
-Compare this with *the number of `1`s minus the number of `0`s is divisible
-by 3*, which was problem 8 on the counting page and which a machine handles
-in three circles. One of them keeps a remainder, and remainders stay small.
-Say in one sentence what the other one would have to keep instead.
+Compare it with *the number of `1`s minus the number of `0`s is divisible by
+3*, which is problem 8 on the counting page and which a machine handles in
+three circles. One of the two keeps a remainder, and remainders stay small
+however long the string runs. Say in one sentence what the other one would
+have to keep instead.
 </Problem>
 
 <Problem n={8} title="One that is not impossible" hard>
-Accept exactly the strings in which the number of `1`s is divisible by
-1000.
+Design a machine that accepts exactly the strings in which the number of `1`s
+is divisible by 1000.
 
-This one **can** be done, and your job is to say why the argument on this
-page does not touch it. Then say roughly how many circles the machine needs,
-without drawing it.
-
-Being large is not the same as being unbounded, and telling the two apart is
-most of what this page is teaching.
+This one can be done. Say roughly how many circles it needs, without drawing
+them all, and then say why the kind of argument that defeats the problems
+above does not touch it. Being large is not the same as being unbounded, and
+telling the two apart is most of what this page is for.
 </Problem>
 
 <Problem n={9} title="Another that is not impossible" hard>
-Accept exactly the strings of length at most one million.
+Design a machine that accepts exactly the strings of length at most one
+million.
 
-Again this can be done, and again the point is to say precisely why it
-escapes the argument. Then answer this: is there any string length at all
-for which the machine could be described as "remembering the whole input"?
-Does that trouble you?
+Again this can be done, and again the point is to say precisely why it escapes
+the difficulty. Then answer this: could that machine fairly be described as
+remembering the whole input? Does your answer trouble you?
 </Problem>

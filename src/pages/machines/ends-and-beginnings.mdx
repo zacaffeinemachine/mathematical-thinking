@@ -7,25 +7,10 @@ chapterTitle: Machines
 blurb: The first family of design problems. What sits at the end of the string, what sat at the start, and rules that can be broken for good.
 description: "Design-a-machine problems on endings, beginnings, and dead states."
 ---
-import { Problem, Tests, ThemeNote, HowToAnswer } from "../../components/games/fsm/Problem.tsx";
-
-<HowToAnswer />
-
-<ThemeNote>
-Two kinds of memory show up here, and they behave quite differently.
-
-Remembering **the end** is cheap. The machine holds the last symbol, or the
-last two, and every new symbol pushes the oldest one out. Nothing is ever
-final, because one more symbol can always change the answer.
-
-Remembering **the beginning** is different. Once the opening symbols are
-past, they never come again, and if they broke the rule the machine is
-finished. That is what a **dead** circle is for: not accepting, and every
-arrow from it points back at itself.
-</ThemeNote>
+import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="A warm-up">
-Accept exactly the strings that end in `1`.
+Design a machine that accepts exactly the strings that end in `1`.
 
 Two circles are enough. When you have it, say out loud what each of the two
 remembers.
@@ -33,12 +18,12 @@ remembers.
 </Problem>
 
 <Problem n={2} title="Two at the end">
-Accept exactly the strings that end in `00`.
+Design a machine that accepts exactly the strings that end in `00`.
 <Tests accept={["00", "100", "0000", "11100"]} reject={["", "0", "01", "010", "0001"]} />
 </Problem>
 
 <Problem n={3} title="Three at the end">
-Accept exactly the strings that end in `010`.
+Design a machine that accepts exactly the strings that end in `010`.
 
 Before you draw anything, answer this on paper: after reading `0101`, how
 much of `010` is sitting at the end? The wrong answer here is what makes
@@ -47,20 +32,20 @@ this machine come out wrong.
 </Problem>
 
 <Problem n={4} title="One at the start">
-Accept exactly the strings that begin with `1`.
+Design a machine that accepts exactly the strings that begin with `1`.
 
 This is the first problem on the page that needs a dead circle. Say why.
 <Tests accept={["1", "10", "1111", "1001"]} reject={["", "0", "01", "0111"]} />
 </Problem>
 
 <Problem n={5} title="Two at the start">
-Accept exactly the strings that begin with `00`.
+Design a machine that accepts exactly the strings that begin with `00`.
 <Tests accept={["00", "001", "0011", "0000"]} reject={["", "0", "01", "10", "0101"]} />
 </Problem>
 
 <Problem n={6} title="Never leave a 0 hanging">
-Accept exactly the strings in which every `0` is immediately followed by a
-`1`.
+Design a machine that accepts exactly the strings in which every `0` is
+immediately followed by a `1`.
 
 A `0` at the very end of the string has nothing following it, so it fails
 the rule.
@@ -68,8 +53,8 @@ the rule.
 </Problem>
 
 <Problem n={7} title="Never let a 1 arrive alone">
-Accept exactly the strings in which every `1` is immediately preceded by a
-`0`.
+Design a machine that accepts exactly the strings in which every `1` is
+immediately preceded by a `0`.
 
 A `1` at the very start of the string has nothing before it, so it fails the
 rule.
@@ -77,13 +62,13 @@ rule.
 </Problem>
 
 <Problem n={8} title="Zeros first">
-Accept exactly the strings in which every `0` comes before every `1`.
+Design a machine that accepts exactly the strings in which every `0` comes before every `1`.
 <Tests accept={["", "0", "1", "000", "111", "00111"]} reject={["10", "010", "0101", "1101"]} />
 </Problem>
 
 <Problem n={9} title="The same at both ends" hard>
-Accept exactly the strings of length at least 1 whose first symbol and last
-symbol are the same.
+Design a machine that accepts exactly the strings of length at least 1 whose
+first symbol and last symbol are the same.
 
 A string of length 1 counts: its first symbol *is* its last symbol.
 
@@ -94,7 +79,8 @@ the end, and how many circles does that cost?
 </Problem>
 
 <Problem n={10} title="Both ends fixed" hard>
-Accept exactly the strings that begin with `01` and end with `10`.
+Design a machine that accepts exactly the strings that begin with `01` and end
+with `10`.
 
 Watch the short strings. Is `010` accepted? Decide before you draw, and make
 sure your machine agrees with you.
@@ -102,8 +88,8 @@ sure your machine agrees with you.
 </Problem>
 
 <Problem n={11} title="A rule about the start that is not broken at the start" hard>
-Accept exactly the strings whose first symbol appears again somewhere later
-in the string.
+Design a machine that accepts exactly the strings whose first symbol appears
+again somewhere later in the string.
 
 So `0110` is accepted, because a second `0` turns up at the end. `0111` is
 not, because after the opening `0` there is never another one.
