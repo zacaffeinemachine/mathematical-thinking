@@ -98,7 +98,7 @@ export default function FSMTraceTable({
                             {"─▸"}
                           </span>
                           {t.to === null ? (
-                            <span style={{ color: "var(--mcq-wrong)", fontSize: 12 }}>off the diagram</span>
+                            <span style={{ color: "var(--fsm-reject)", fontSize: 12 }}>off the diagram</span>
                           ) : (
                             <StateChip
                               machine={machine}
@@ -116,7 +116,7 @@ export default function FSMTraceTable({
                       ...td,
                       textAlign: "right",
                       whiteSpace: "nowrap",
-                      color: accepted ? "var(--mcq-right)" : "var(--mcq-wrong)",
+                      color: accepted ? "var(--fsm-accept)" : "var(--fsm-reject)",
                       fontWeight: 600,
                     }}
                   >

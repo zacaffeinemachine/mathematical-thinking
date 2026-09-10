@@ -137,8 +137,8 @@ export function Trail({
                 padding: "4px 10px",
                 borderRadius: 999,
                 lineHeight: 1.15,
-                border: `1.5px solid var(--mcq-wrong)`,
-                color: "var(--mcq-wrong)",
+                border: `1.5px solid var(--fsm-reject)`,
+                color: "var(--fsm-reject)",
               }}
             >
               off the diagram
@@ -209,17 +209,17 @@ export function VerdictLine({
 }) {
   if (trapped || state === null) {
     return (
-      <span style={{ color: "var(--mcq-wrong)", fontWeight: 600 }}>
+      <span style={{ color: "var(--fsm-reject)", fontWeight: 600 }}>
         rejected: the machine fell off the diagram
       </span>
     );
   }
   return accepted ? (
-    <span style={{ color: "var(--mcq-right)", fontWeight: 600 }}>
+    <span style={{ color: "var(--fsm-accept)", fontWeight: 600 }}>
       accepted, finished in <code style={{ fontFamily: MONO }}>{label(machine, state)}</code>
     </span>
   ) : (
-    <span style={{ color: "var(--mcq-wrong)", fontWeight: 600 }}>
+    <span style={{ color: "var(--fsm-reject)", fontWeight: 600 }}>
       rejected, finished in <code style={{ fontFamily: MONO }}>{label(machine, state)}</code>
     </span>
   );
@@ -238,9 +238,9 @@ export function LivePill({ would }: { would: boolean }) {
         padding: "1px 9px",
         borderRadius: 999,
         fontSize: 12,
-        border: `1px solid ${would ? "var(--mcq-right)" : "var(--rule)"}`,
-        background: would ? "var(--mcq-right-soft)" : "transparent",
-        color: would ? "var(--mcq-right)" : "var(--muted)",
+        border: `1px solid ${would ? "var(--fsm-accept)" : "var(--rule)"}`,
+        background: would ? "var(--fsm-accept-soft)" : "transparent",
+        color: would ? "var(--fsm-accept)" : "var(--muted)",
         whiteSpace: "nowrap",
       }}
     >

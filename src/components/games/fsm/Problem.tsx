@@ -98,7 +98,7 @@ export function Tests({
   }: {
     label: string;
     items: string[];
-    tone: "right" | "wrong";
+    tone: "accept" | "reject";
   }) => (
     <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 6 }}>
       <span
@@ -120,8 +120,8 @@ export function Tests({
             fontSize: 12.5,
             padding: "1px 7px",
             borderRadius: 3,
-            border: `1px solid var(--mcq-${tone})`,
-            background: `var(--mcq-${tone}-soft)`,
+            border: `1px solid var(--fsm-${tone})`,
+            background: `var(--fsm-${tone}-soft)`,
             color: "var(--ink)",
           }}
         >
@@ -142,8 +142,8 @@ export function Tests({
         borderTop: "1px solid var(--rule)",
       }}
     >
-      {accept.length > 0 && <Row label="must accept" items={accept} tone="right" />}
-      {reject.length > 0 && <Row label="must reject" items={reject} tone="wrong" />}
+      {accept.length > 0 && <Row label="must accept" items={accept} tone="accept" />}
+      {reject.length > 0 && <Row label="must reject" items={reject} tone="reject" />}
     </div>
   );
 }

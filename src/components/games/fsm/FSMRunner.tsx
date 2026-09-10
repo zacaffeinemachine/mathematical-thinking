@@ -561,9 +561,9 @@ function SweepPanel({
                       borderRadius: 4,
                       cursor: "pointer",
                       border: ok
-                        ? "1px solid var(--mcq-right)"
+                        ? "1px solid var(--fsm-accept)"
                         : "1px dashed var(--rule)",
-                      background: ok ? "var(--mcq-right-soft)" : "transparent",
+                      background: ok ? "var(--fsm-accept-soft)" : "transparent",
                       color: ok ? "var(--ink)" : "var(--muted)",
                       outline: selected ? "2px solid var(--accent)" : "none",
                       outlineOffset: 1,
@@ -579,7 +579,7 @@ function SweepPanel({
         ))}
 
         <div style={{ marginTop: 10, fontSize: 12, color: "var(--muted)" }}>
-          Solid green: accepted. Dashed grey: rejected. The accepted ones,
+          Solid azure: accepted. Dashed grey: rejected. The accepted ones,
           taken together, are the language of this machine.
         </div>
       </div>

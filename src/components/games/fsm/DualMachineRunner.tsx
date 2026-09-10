@@ -247,7 +247,7 @@ export default function DualMachineRunner({
           here and it is{" "}
           <span
             style={{
-              color: verdictBool ? "var(--mcq-right)" : "var(--muted)",
+              color: verdictBool ? "var(--fsm-accept)" : "var(--muted)",
               fontWeight: 600,
             }}
           >
@@ -413,12 +413,12 @@ export default function DualMachineRunner({
         }}
       >
         {verdict === "accept" && (
-          <span style={{ color: "var(--mcq-right)", fontWeight: 600 }}>
+          <span style={{ color: "var(--fsm-accept)", fontWeight: 600 }}>
             ✓ accepted by the “{RULE_LABELS[rule]}” rule
           </span>
         )}
         {verdict === "reject" && (
-          <span style={{ color: "var(--mcq-wrong)", fontWeight: 600 }}>
+          <span style={{ color: "var(--fsm-reject)", fontWeight: 600 }}>
             ✗ rejected by the “{RULE_LABELS[rule]}” rule
           </span>
         )}

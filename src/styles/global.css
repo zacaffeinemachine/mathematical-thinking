@@ -41,6 +41,17 @@
   --mcq-wrong: #9b1c1c;
   --mcq-wrong-soft: rgba(155, 28, 28, 0.12);
 
+  /* Machines. A run that ends in an accepting circle, and a string a
+     machine must accept. Azure rather than green: the verdict is already
+     carried by a tick or a cross, and pairing blue with red instead of
+     green with red keeps the pair legible to a red-green colour-blind
+     reader. Deliberately NOT the --mcq-right green, which means "you got
+     the question right" on the quiz pages and is a different claim. */
+  --fsm-accept: #0b6bbd;
+  --fsm-accept-soft: rgba(11, 107, 189, 0.12);
+  --fsm-reject: #9b1c1c;
+  --fsm-reject-soft: rgba(155, 28, 28, 0.10);
+
   /* Dominoes — wood tones. Standing tiles must read darker than fallen
      ones so a toppled run is legible as a lighter trail across the board. */
   --dom-standing: #6b4a2f;
@@ -99,6 +110,12 @@
   --mcq-right-soft: rgba(86, 179, 127, 0.20);
   --mcq-wrong: #dc7070;
   --mcq-wrong-soft: rgba(220, 112, 112, 0.18);
+
+  /* Machines, dark. Same reasoning as the light values above. */
+  --fsm-accept: #5cadf5;
+  --fsm-accept-soft: rgba(92, 173, 245, 0.18);
+  --fsm-reject: #dc7070;
+  --fsm-reject-soft: rgba(220, 112, 112, 0.16);
 
   /* Dominoes. The light/dark relationship inverts here: on a dark board a
      standing tile is the dim one and a fallen tile catches the light. */
