@@ -11,9 +11,6 @@ import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Exactly three">
 Design a machine that accepts exactly the strings of length 3.
-
-Watch the strings longer than 3. They are not accepted, and they are never
-going to be, so where do they go?
 <Tests accept={["000", "101", "111", "010"]} reject={["", "1", "10", "0000", "10101"]} />
 </Problem>
 
@@ -28,8 +25,7 @@ Design a machine that accepts exactly the strings of length 4 or more.
 </Problem>
 
 <Problem n={4} title="Even length">
-Design a machine that accepts exactly the strings of even length. The empty string has length 0,
-which is even.
+Design a machine that accepts exactly the strings of even length.
 <Tests accept={["", "01", "10", "0000", "1101"]} reject={["0", "111", "10101", "1"]} />
 </Problem>
 
@@ -41,19 +37,12 @@ Design a machine that accepts exactly the strings whose length is a multiple of 
 <Problem n={6} title="Length and last symbol together">
 Design a machine that accepts exactly the strings whose length is a multiple
 of 3 **and** whose last symbol is `1`.
-
-Two things to remember at once. Notice that they are not independent: once
-you know the length is a multiple of 3, the last symbol still has to be
-checked, and the machine has to have been checking it all along.
 <Tests accept={["001", "111", "010101", "101011"]} reject={["", "1", "11", "010", "0101"]} />
 </Problem>
 
 <Problem n={7} title="Even or a multiple of three" hard>
 Design a machine that accepts exactly the strings whose length is even **or**
 a multiple of 3, or both.
-
-The accepted lengths are 0, 2, 3, 4, 6, 8, 9, 10, and so on. The rejected
-ones are 1, 5, 7, 11, 13. How many circles does the ring need?
 <Tests accept={["", "01", "010", "0101", "010101", "01010101"]} reject={["0", "01010", "0101010", "01010101010"]} />
 </Problem>
 
@@ -73,7 +62,5 @@ the 5th, and so on. The symbols at even positions may be anything.
 <Problem n={10} title="The first symbol decides which rule applies" hard>
 Design a machine that accepts exactly the strings that either begin with `1`
 and have even length, or begin with `0` and have odd length.
-
-The empty string begins with neither, so it is rejected.
 <Tests accept={["0", "10", "010", "1010", "00000"]} reject={["", "1", "00", "0101", "101"]} />
 </Problem>

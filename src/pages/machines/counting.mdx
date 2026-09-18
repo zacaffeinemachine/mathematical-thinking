@@ -11,8 +11,6 @@ import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="Parity">
 Design a machine that accepts exactly the strings with an even number of `1`s.
-
-Zero is an even number, so the empty string is accepted.
 <Tests accept={["", "0", "11", "0110", "1001"]} reject={["1", "10", "111", "0100"]} />
 </Problem>
 
@@ -24,17 +22,11 @@ Design a machine that accepts exactly the strings with an odd number of `0`s.
 <Problem n={3} title="A threshold">
 Design a machine that accepts exactly the strings containing at least three
 `1`s.
-
-Once the third `1` has arrived, nothing that follows can matter. Make sure
-your diagram says so.
 <Tests accept={["111", "1110", "010101", "1111"]} reject={["", "11", "0110", "1010"]} />
 </Problem>
 
 <Problem n={4} title="Exactly two">
 Design a machine that accepts exactly the strings containing exactly two `1`s.
-
-Compare this with the problem above. There, success was permanent. Here a
-third `1` has to take it away again, and take it away for good.
 <Tests accept={["11", "0110", "1001", "0101"]} reject={["", "1", "111", "0111", "1011"]} />
 </Problem>
 
@@ -51,9 +43,6 @@ Design a machine that accepts exactly the strings in which the number of `0`s is
 <Problem n={7} title="Two counts at once">
 Design a machine that accepts exactly the strings with an even number of `0`s
 **and** an odd number of `1`s.
-
-You are being asked to remember two facts at the same time. How many circles
-does that cost, and why is it a product rather than a sum?
 <Tests accept={["1", "001", "100", "111", "00111"]} reject={["", "0", "11", "01", "0011"]} />
 </Problem>
 
@@ -62,21 +51,14 @@ Design a machine that accepts exactly the strings for which
 
 > (the number of `1`s) minus (the number of `0`s)
 
-is divisible by 3.
-
-The difference can be negative, and "divisible by 3" means the usual thing
-for whole numbers of either sign. Three circles are enough.
+is divisible by 3. The difference can be negative, and "divisible by 3" means
+the usual thing for whole numbers of either sign.
 <Tests accept={["", "111", "000", "10", "01", "111000"]} reject={["1", "0", "11", "00", "1110"]} />
 </Problem>
 
 <Problem n={9} title="A bigger remainder" hard>
 Design a machine that accepts exactly the strings in which the number of `1`s
 is divisible by 6.
-
-Then answer this. Someone offers you a machine built by running a
-*divisible by 2* machine and a *divisible by 3* machine side by side and
-accepting when both accept. Does it work? Would the same trick work for
-*divisible by 4* built out of 2 and 2?
 <Tests accept={["", "0", "111111", "0111111"]} reject={["1", "11", "111", "11111", "1111111"]} />
 </Problem>
 

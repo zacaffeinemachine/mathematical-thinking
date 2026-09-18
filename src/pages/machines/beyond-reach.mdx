@@ -15,13 +15,6 @@ of `0`s as `1`s, or show that no such machine exists.
 
 The empty string is accepted, `01` and `1100` are accepted, and `0` and `011`
 are not.
-
-To show that none exists, start here. Suppose two of the strings `0`, `00`,
-`000`, `0000`, and so on left a machine standing in the same circle. From that
-moment the machine has forgotten the difference between them, so typing the
-same thing next must give the same verdict for both. Find something to type
-next that the rule says should be accepted after one and rejected after the
-other, and then count how many circles the machine would need.
 </Problem>
 
 <Problem n={2} title="Zeros then ones, matched">
@@ -36,22 +29,12 @@ not, even though it has two of each.
 Design a machine that accepts exactly the strings that read the same forwards
 as backwards, or show that no such machine exists. Examples are `010`, `1001`,
 `11011`, and every string of length 0 or 1.
-
-The strings `0`, `00`, `000` are no help here, because a machine is allowed to
-treat them alike. Try strings of the shape `0…01` instead.
 </Problem>
 
 <Problem n={4} title="A square number of 1s">
 Design a machine that accepts exactly the strings in which the number of `1`s
 is 0, 1, 4, 9, 16, 25, and so on, a whole number multiplied by itself, or show
 that no such machine exists.
-
-Here is a second line of attack, worth having as well as the first. Feed the
-machine a very long run of `1`s. It has only so many circles, so sooner or
-later it must arrive at a circle it has been in before, and from then on it
-goes round and round that loop. What does that force about the gaps between
-the lengths it accepts? The gaps between consecutive squares are 1, 3, 5, 7,
-9, and they grow without limit.
 </Problem>
 
 <Problem n={5} title="A prime number of 1s">
@@ -70,29 +53,14 @@ string is accepted. `010` is not, because it has odd length.
 <Problem n={7} title="More 1s than 0s" hard>
 Design a machine that accepts exactly the strings containing strictly more
 `1`s than `0`s, or show that no such machine exists.
-
-Compare it with *the number of `1`s minus the number of `0`s is divisible by
-3*, which is problem 8 on the counting page and which a machine handles in
-three circles. One of the two keeps a remainder, and remainders stay small
-however long the string runs. Say in one sentence what the other one would
-have to keep instead.
 </Problem>
 
 <Problem n={8} title="One that is not impossible" hard>
 Design a machine that accepts exactly the strings in which the number of `1`s
 is divisible by 1000.
-
-This one can be done. Say roughly how many circles it needs, without drawing
-them all, and then say why the kind of argument that defeats the problems
-above does not touch it. Being large is not the same as being unbounded, and
-telling the two apart is most of what this page is for.
 </Problem>
 
 <Problem n={9} title="Another that is not impossible" hard>
 Design a machine that accepts exactly the strings of length at most one
 million.
-
-Again this can be done, and again the point is to say precisely why it escapes
-the difficulty. Then answer this: could that machine fairly be described as
-remembering the whole input? Does your answer trouble you?
 </Problem>

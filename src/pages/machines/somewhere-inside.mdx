@@ -22,19 +22,12 @@ Design a machine that accepts exactly the strings that contain `101` somewhere i
 <Problem n={3} title="Four in a row">
 Design a machine that accepts exactly the strings that contain `0110`
 somewhere inside.
-
-This is where the temptation to reset all the way to the beginning does the
-most damage. Look hard at what happens when the machine has seen `011` and
-another `1` arrives.
 <Tests accept={["0110", "10110", "01100", "001101"]} reject={["", "011", "0101", "0111", "1100"]} />
 </Problem>
 
 <Problem n={4} title="Never in a row">
 Design a machine that accepts exactly the strings that do **not** contain `11`
 anywhere.
-
-You can build this from the machine for *contains `11`* without redrawing a
-single arrow. Say what you did, and why it is allowed.
 <Tests accept={["", "0", "1", "01", "1010", "0100"]} reject={["11", "011", "110", "1011"]} />
 </Problem>
 
@@ -53,20 +46,13 @@ somewhere inside.
 <Problem n={7} title="One block only if the other one turns up" hard>
 Design a machine that accepts exactly the strings that contain `00` **if**
 they contain `11`.
-
-A string with no `11` in it satisfies the rule for free, whatever else it
-does. A string with a `11` in it has to have a `00` somewhere too, and the
-`00` may come before or after.
 <Tests accept={["", "01", "0100", "0011", "1100", "1010"]} reject={["11", "011", "110", "1101"]} />
 </Problem>
 
 <Problem n={8} title="Once and once only" hard>
 Design a machine that accepts exactly the strings that contain `11` exactly
-once.
-
-Overlapping counts as more than once, so `111` contains `11` twice: once at
-the first two symbols and once at the last two. Decide what your machine
-should do with `111` before you draw it.
+once. Overlapping counts as more than once, so `111` contains `11` twice:
+once at the first two symbols and once at the last two.
 <Tests accept={["11", "011", "110", "0110", "11010"]} reject={["", "1", "111", "1111", "11011"]} />
 </Problem>
 
@@ -78,8 +64,5 @@ position is deleted, so the odd part of `dxfxa` is `dfa`, and the odd part of
 Design a machine that accepts exactly the strings whose odd part contains
 `dfa` somewhere inside. Draw one arrow labelled `x` for "any other letter"
 rather than drawing twenty-six.
-
-Note that `dfa` itself is not accepted. Work out its odd part and you will
-see why.
 <Tests accept={["dxfxa", "dafaa", "zzdxfxa", "dqfsa"]} reject={["", "dfa", "dxf", "xdxfxa", "adf"]} />
 </Problem>

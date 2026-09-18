@@ -11,9 +11,6 @@ import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="A warm-up">
 Design a machine that accepts exactly the strings that end in `1`.
-
-Two circles are enough. When you have it, say out loud what each of the two
-remembers.
 <Tests accept={["1", "01", "111", "0101"]} reject={["", "0", "10", "1110"]} />
 </Problem>
 
@@ -24,17 +21,11 @@ Design a machine that accepts exactly the strings that end in `00`.
 
 <Problem n={3} title="Three at the end">
 Design a machine that accepts exactly the strings that end in `010`.
-
-Before you draw anything, answer this on paper: after reading `0101`, how
-much of `010` is sitting at the end? The wrong answer here is what makes
-this machine come out wrong.
 <Tests accept={["010", "0010", "1010", "01010"]} reject={["01", "0100", "10", "0110"]} />
 </Problem>
 
 <Problem n={4} title="One at the start">
 Design a machine that accepts exactly the strings that begin with `1`.
-
-This is the first problem on the page that needs a dead circle. Say why.
 <Tests accept={["1", "10", "1111", "1001"]} reject={["", "0", "01", "0111"]} />
 </Problem>
 
@@ -46,18 +37,12 @@ Design a machine that accepts exactly the strings that begin with `00`.
 <Problem n={6} title="Never leave a 0 hanging">
 Design a machine that accepts exactly the strings in which every `0` is
 immediately followed by a `1`.
-
-A `0` at the very end of the string has nothing following it, so it fails
-the rule.
 <Tests accept={["", "1", "01", "1101", "010101"]} reject={["0", "10", "1001", "0110"]} />
 </Problem>
 
 <Problem n={7} title="Never let a 1 arrive alone">
 Design a machine that accepts exactly the strings in which every `1` is
 immediately preceded by a `0`.
-
-A `1` at the very start of the string has nothing before it, so it fails the
-rule.
 <Tests accept={["", "0", "01", "0101", "0010"]} reject={["1", "10", "011", "0011"]} />
 </Problem>
 
@@ -69,29 +54,17 @@ Design a machine that accepts exactly the strings in which every `0` comes befor
 <Problem n={9} title="The same at both ends" hard>
 Design a machine that accepts exactly the strings of length at least 1 whose
 first symbol and last symbol are the same.
-
-A string of length 1 counts: its first symbol *is* its last symbol.
-
-The machine cannot know, while reading, which symbol will turn out to be
-the last one. So what exactly does it have to carry from the beginning to
-the end, and how many circles does that cost?
 <Tests accept={["0", "1", "00", "010", "1001", "11"]} reject={["", "01", "10", "0111", "1000"]} />
 </Problem>
 
 <Problem n={10} title="Both ends fixed" hard>
 Design a machine that accepts exactly the strings that begin with `01` and end
 with `10`.
-
-Watch the short strings. Is `010` accepted? Decide before you draw, and make
-sure your machine agrees with you.
 <Tests accept={["010", "0110", "01010", "011110"]} reject={["", "01", "0101", "1010", "0011"]} />
 </Problem>
 
 <Problem n={11} title="A rule about the start that is not broken at the start" hard>
 Design a machine that accepts exactly the strings whose first symbol appears
 again somewhere later in the string.
-
-So `0110` is accepted, because a second `0` turns up at the end. `0111` is
-not, because after the opening `0` there is never another one.
 <Tests accept={["00", "11", "0110", "1001", "010"]} reject={["", "0", "1", "01", "0111", "10"]} />
 </Problem>

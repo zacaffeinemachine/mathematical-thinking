@@ -24,10 +24,6 @@ Design a machine that accepts exactly the strings that have an even number of `0
 <Problem n={3} title="The opposite of a machine you have">
 Design a machine that accepts exactly the strings in which the number of `1`s
 is **not** divisible by 3.
-
-The machine for *divisible by 3* is on the first page of this chapter. Get
-this one from it without drawing a single new circle or arrow, then write
-one sentence saying what you changed and why it is guaranteed to work.
 <Tests accept={["1", "11", "1111", "0101"]} reject={["", "0", "111", "111111", "010101"]} />
 </Problem>
 
@@ -40,10 +36,6 @@ contain `00` anywhere.
 <Problem n={5} title="Two counts, either will do">
 Design a machine that accepts exactly the strings in which the number of `0`s
 is divisible by 3 **or** the number of `1`s is divisible by 4.
-
-Count the circles your method produces. Then count how many of them are
-accepting, and notice that this is the whole difference between *or* and
-*and*.
 <Tests accept={["", "000", "1111", "000111", "0001111"]} reject={["01", "001", "011", "0111", "0011"]} />
 </Problem>
 
@@ -53,19 +45,11 @@ the following two things is true:
 
 - the string begins with `1`;
 - the string ends with `1`.
-
-So a string that does both is rejected, and so is a string that does
-neither. The empty string does neither, so it is rejected.
 <Tests accept={["10", "100", "01", "011", "1000"]} reject={["", "0", "1", "11", "00", "101"]} />
 </Problem>
 
 <Problem n={7} title="A count and a block together" hard>
 Design a machine that accepts exactly the strings that have even length
 **and** contain `101` somewhere inside.
-
-Then answer the question the method raises. Your two machines have some
-number of circles each, say 2 and 4. The combined machine has at most 8. Is
-8 always needed here, or can some of the eight be thrown away because no
-string ever reaches them?
 <Tests accept={["1010", "0101", "110100", "101001"]} reject={["", "101", "10101", "1100", "01"]} />
 </Problem>

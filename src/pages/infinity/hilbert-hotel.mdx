@@ -26,13 +26,16 @@ full — every room has a guest.
 
 - *Infinitely many infinite buses arrive.* This is the ultimate
   challenge. We have buses $B_1, B_2, B_3, \ldots$, each with
-  passengers $P_1, P_2, P_3, \ldots$. To assign a room to passenger
-  $P_j$ from bus $B_i$, we need to find a unique room number for
-  the pair $(i, j)$. But we just solved this with our second frog
-  puzzle! We can use the diagonal enumeration of
-  $\mathbb{N} \times \mathbb{N}$ to create a single list of all
-  passengers from all buses and assign them rooms $1, 2, 3, \ldots$
-  in that order.
+  passengers $P_1, P_2, P_3, \ldots$. To deal with passenger
+  $P_j$ from bus $B_i$ we need to give the pair $(i, j)$ a single
+  place in a queue. But we just solved this with our second frog
+  puzzle! The diagonal enumeration of $\mathbb{N} \times \mathbb{N}$
+  turns all the passengers from all the buses into one list, so the
+  entire fleet can be emptied into a *single* bus, with the passenger
+  at position $n$ of that list taking seat $n$. And a single full bus
+  outside a full hotel is exactly the situation we have just dealt
+  with: the guest in room $n$ moves to room $2n$, and the passenger
+  in seat $k$ takes room $2k-1$.
 
 The lesson of Hilbert's Hotel is that if a set is countably
 infinite, it can always be "shifted around" to make room for
