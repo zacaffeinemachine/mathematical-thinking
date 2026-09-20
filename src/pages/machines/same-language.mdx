@@ -1,0 +1,92 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Do These Agree?
+order: 11
+chapter: machines
+chapterTitle: Machines
+blurb: Two machines, one question. Do they accept exactly the same strings? Run the pair with the rule that accepts when exactly one of them does, and hunt.
+description: "Five pairs of finite state machines, and the question of whether each pair has the same language."
+---
+import EquivalenceProblem from "../../components/games/fsm/EquivalenceProblem.tsx";
+import {
+  parityPlain,
+  parityPadded,
+  substring101,
+  subsequence101,
+  evenOnesEvenZeros,
+  evenOnesEvenLength,
+  containsEleven,
+  someEvenBlockOfOnes,
+  twoElevens,
+  containsOneOneOne,
+} from "../../components/games/fsm/equivalence.ts";
+
+<EquivalenceProblem
+  client:visible
+  n={1}
+  title="Two states against four"
+  machineA={parityPlain}
+  machineB={parityPadded}
+  defaultInput="0110"
+  examples={["", "1", "11", "0110", "1010"]}
+>
+Machine B has twice as many states as machine A. Do the two have the same
+language, meaning that every string accepted by one is accepted by the other?
+</EquivalenceProblem>
+
+<EquivalenceProblem
+  client:visible
+  n={2}
+  title="One arrow apart"
+  machineA={substring101}
+  machineB={subsequence101}
+  defaultInput="1101"
+  examples={["", "101", "1101", "0110"]}
+>
+These two drawings are identical except in one place, where a single arrow
+goes somewhere else. Do they have the same language?
+</EquivalenceProblem>
+
+<EquivalenceProblem
+  client:visible
+  n={3}
+  title="Same circles, different wiring"
+  machineA={evenOnesEvenZeros}
+  machineB={evenOnesEvenLength}
+  defaultInput="0011"
+  examples={["", "11", "0011", "0101"]}
+>
+The two machines have the same four states, the same start, and the same
+single accepting state. Only the arrows between them differ. Do they have the
+same language?
+</EquivalenceProblem>
+
+<EquivalenceProblem
+  client:visible
+  n={4}
+  title="A state with no way out"
+  machineA={containsEleven}
+  machineB={someEvenBlockOfOnes}
+  defaultInput="110"
+  examples={["", "11", "110", "0110"]}
+>
+Each of these machines has a state that, once entered, it can never leave. In
+machine A that state accepts and in machine B it accepts too, so neither
+machine can ever change its mind once it arrives there. Do the two have the
+same language?
+</EquivalenceProblem>
+
+<EquivalenceProblem
+  client:visible
+  n={5}
+  title="Too long to stumble on"
+  hard
+  machineA={twoElevens}
+  machineB={containsOneOneOne}
+  defaultInput="1111"
+  examples={["", "11", "111", "1111"]}
+>
+Every string of length four or less is accepted by both of these machines or
+by neither, so typing short strings and watching what happens will tell you
+nothing at all. Do the two have the same language?
+</EquivalenceProblem>

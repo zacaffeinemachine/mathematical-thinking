@@ -127,33 +127,51 @@ export default function DualMachineRunner({
         >
           accept when:
         </span>
-        <div
-          style={{
-            display: "inline-flex",
-            border: "1px solid var(--rule)",
-            borderRadius: 4,
-            overflow: "hidden",
-          }}
-        >
-          {rules.map((r) => (
-            <button
-              key={r}
-              onClick={() => setRule(r)}
-              style={{
-                padding: "4px 12px",
-                fontSize: 13,
-                background: rule === r ? "var(--accent)" : "var(--surface)",
-                color: rule === r ? "white" : "var(--ink)",
-                border: "none",
-                cursor: "pointer",
-                fontFamily:
-                  'ui-monospace, "JetBrains Mono", Menlo, monospace',
-              }}
-            >
-              {RULE_LABELS[r]}
-            </button>
-          ))}
-        </div>
+        {/* With one rule on offer there is nothing to choose, so it is
+            stated rather than dressed as a button that does nothing. */}
+        {rules.length === 1 ? (
+          <span
+            style={{
+              padding: "4px 12px",
+              fontSize: 13,
+              border: "1px solid var(--rule)",
+              borderRadius: 4,
+              background: "var(--surface)",
+              color: "var(--ink)",
+              fontFamily: 'ui-monospace, "JetBrains Mono", Menlo, monospace',
+            }}
+          >
+            {RULE_LABELS[rules[0]]}
+          </span>
+        ) : (
+          <div
+            style={{
+              display: "inline-flex",
+              border: "1px solid var(--rule)",
+              borderRadius: 4,
+              overflow: "hidden",
+            }}
+          >
+            {rules.map((r) => (
+              <button
+                key={r}
+                onClick={() => setRule(r)}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: 13,
+                  background: rule === r ? "var(--accent)" : "var(--surface)",
+                  color: rule === r ? "white" : "var(--ink)",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily:
+                    'ui-monospace, "JetBrains Mono", Menlo, monospace',
+                }}
+              >
+                {RULE_LABELS[r]}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Two graphs side by side */}
