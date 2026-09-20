@@ -105,7 +105,16 @@ export default function FSMGraph({
   }
 
   const edges = computeEdges(machine, positions, nodeR, labelFont, width, height);
-  placeLabels(edges, machine, positions, nodeR, labelFont, width, height);
+
+  // Which wires still need their symbol written on them. Once a wire is
+  // drawn in its symbol's colour the letter is saying a second time what
+  // the colour already said, and at this size the letters were the
+  // clutter: dropping them is what makes the shape of the machine
+  // readable. A wire carrying BOTH symbols has no one colour, so its
+  // label is the only thing distinguishing it and it always stays.
+  const labelled =
+    colorBySymbol ? edges.filter((e) => e.symbols.length !== 1) : edges;
+  placeLabels(labelled, machine, positions, nodeR, labelFont, width, height);
 
   // The start stub normally comes in from the left, which is the
   // convention. It gives that up only when the left is occupied or off
@@ -298,7 +307,7 @@ export default function FSMGraph({
       })}
 
       {/* Labels last, so a wire drawn later can never cross one out. */}
-      {edges.map((e, i) => (
+      {labelled.map((e, i) => (
         <LabelChip
           key={`l${i}`}
           x={e.label.x}
