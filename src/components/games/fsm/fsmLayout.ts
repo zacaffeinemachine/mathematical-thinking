@@ -4,7 +4,7 @@
 // does exactly that, and it is how the routing was fixed in the first
 // place: run it after touching anything in this file.
 
-import type { FSM, State } from "./model";
+import type { FSM, State, Symbol } from "./model";
 import { edgeGroups } from "./model";
 
 export const NODE_STROKE = 1.8;
@@ -50,6 +50,9 @@ export interface EdgeGeom {
   from: State;
   to: State;
   text: string;
+  // The symbols this wire carries, kept apart as well as joined into
+  // `text`, so a renderer can colour a single-symbol wire by its symbol.
+  symbols: Symbol[];
   kind: EdgeKind;
   d: string;
   // Points sampled along the wire, used for clearance tests and for
@@ -241,7 +244,15 @@ export function computeEdges(
     const text = g.symbols.join(", ");
     const labelW = Math.max(labelFont * 0.7 * text.length, labelFont) + 8;
     const labelH = labelFont + 4;
-    const base = { from: g.from, to: g.to, text, labelW, labelH, label: { x: 0, y: 0 } };
+    const base = {
+      from: g.from,
+      to: g.to,
+      text,
+      symbols: g.symbols,
+      labelW,
+      labelH,
+      label: { x: 0, y: 0 },
+    };
 
     if (g.from === g.to) {
       const dir = loopDirection(machine, g.from, positions, nodeR, width, height);

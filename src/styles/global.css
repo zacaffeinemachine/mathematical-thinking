@@ -52,6 +52,21 @@
   --fsm-reject: #9b1c1c;
   --fsm-reject-soft: rgba(155, 28, 28, 0.10);
 
+  /* Symbol-coloured wires on a machine diagram, used only where two
+     machines are set side by side and the question is which arrow goes
+     where. At the size those diagrams are drawn the label is about 11px,
+     and a 0 read as a 1 is a wrong answer rather than a squint.
+
+     Teal and violet on purpose. Red is spoken for three times over
+     (--accent, --fsm-reject, and the burgundy the just-travelled wire
+     flashes), and warm gold is the current state, so the two symbol
+     colours have to stay clear of both. Teal against violet also
+     survives red-green colour blindness, and the symbol stays written on
+     the wire regardless: the colour is a second way to read it, never
+     the only one. */
+  --fsm-sym-a: #0f766e;
+  --fsm-sym-b: #6d28d9;
+
   /* Dominoes — wood tones. Standing tiles must read darker than fallen
      ones so a toppled run is legible as a lighter trail across the board. */
   --dom-standing: #6b4a2f;
@@ -116,6 +131,10 @@
   --fsm-accept-soft: rgba(92, 173, 245, 0.18);
   --fsm-reject: #dc7070;
   --fsm-reject-soft: rgba(220, 112, 112, 0.16);
+
+  /* Lifted for the dark canvas, same two hues. */
+  --fsm-sym-a: #2dd4bf;
+  --fsm-sym-b: #a78bfa;
 
   /* Dominoes. The light/dark relationship inverts here: on a dark board a
      standing tile is the dim one and a fallen tile catches the light. */

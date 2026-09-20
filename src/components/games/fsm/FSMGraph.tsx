@@ -21,6 +21,12 @@ interface FSMGraphProps {
   // animation restarts even when the same edge fires twice in a row
   // (e.g. a self-loop pumping repeatedly on the same input).
   pulseKey?: number;
+  // Colour each wire by the symbol it carries. Off everywhere except the
+  // side-by-side pairs on `same-language`, where two diagrams differ only
+  // in where a single-symbol arrow points and the label is too small to
+  // settle it at a glance. A wire carrying both symbols has no one colour
+  // and stays in ink; its label colours the symbols separately.
+  colorBySymbol?: boolean;
 }
 
 // Palette tuned to match the chapter's tikz figures (black-ink graph
@@ -32,6 +38,30 @@ const PAPER = "var(--surface)";
 const CURRENT_FILL = "#e6b450";    // warm gold
 const CURRENT_RING = "#7a5b14";    // darker gold for the inner ring
 const ACTIVE_EDGE = "#c0392b";     // burgundy red — matches QRMT highlighted_edge
+
+// Two symbol colours, themed in global.css. The order of `alphabet` picks
+// which is which, so the legend and the wires cannot disagree.
+const SYMBOL_COLORS = ["var(--fsm-sym-a)", "var(--fsm-sym-b)"];
+
+export function symbolColor(machine: FSM, symbol: string): string {
+  const i = machine.alphabet.indexOf(symbol);
+  return i >= 0 && i < SYMBOL_COLORS.length ? SYMBOL_COLORS[i] : INK;
+}
+
+// A wire's colour: its symbol's, when it carries exactly one.
+function wireColor(machine: FSM, symbols: string[], on: boolean): string {
+  if (!on || symbols.length !== 1) return INK;
+  return symbolColor(machine, symbols[0]);
+}
+
+// Markers are per colour, and the ids are shared across every diagram on
+// a page. That is safe because an id always names the same colour, which
+// is also why the ink marker has been shared all along.
+const MARKER_ID: Record<string, string> = {
+  [INK]: "fsm-arrow",
+  [SYMBOL_COLORS[0]]: "fsm-arrow-sym-a",
+  [SYMBOL_COLORS[1]]: "fsm-arrow-sym-b",
+};
 
 // Stealth arrowhead — slim, slightly concave at the back, the same shape
 // tikz `>=Stealth` produces. Drawn in a 12x10 box.
@@ -62,6 +92,7 @@ export default function FSMGraph({
   trapped = false,
   activeEdge = null,
   pulseKey = 0,
+  colorBySymbol = false,
 }: FSMGraphProps) {
   const pad = 38;
   const nodeR = Math.max(20, Math.round(Math.min(width, height) * 0.07));
@@ -125,6 +156,12 @@ export default function FSMGraph({
       <defs>
         <StealthMarker id="fsm-arrow" color={INK} />
         <StealthMarker id="fsm-arrow-active" color={ACTIVE_EDGE} />
+        {colorBySymbol && (
+          <>
+            <StealthMarker id="fsm-arrow-sym-a" color={SYMBOL_COLORS[0]} />
+            <StealthMarker id="fsm-arrow-sym-b" color={SYMBOL_COLORS[1]} />
+          </>
+        )}
         <style>{`
           @keyframes fsm-pulse {
             0%   { stroke-dashoffset: 1; stroke-width: 4.4; opacity: 0.55; }
@@ -154,19 +191,21 @@ export default function FSMGraph({
       </defs>
 
       {/* Wires, quiet ones first. */}
-      {edges.map((e, i) =>
-        isActive(e) ? null : (
+      {edges.map((e, i) => {
+        if (isActive(e)) return null;
+        const c = wireColor(machine, e.symbols, colorBySymbol);
+        return (
           <path
             key={`e${i}`}
             d={e.d}
             fill="none"
-            stroke={INK}
-            strokeWidth={EDGE_STROKE}
+            stroke={c}
+            strokeWidth={c === INK ? EDGE_STROKE : EDGE_STROKE + 0.5}
             strokeLinecap="round"
-            markerEnd="url(#fsm-arrow)"
+            markerEnd={`url(#${MARKER_ID[c] ?? "fsm-arrow"})`}
           />
-        ),
-      )}
+        );
+      })}
 
       {/* The wire just travelled, drawn on top so a parallel sibling can
           never hide it. Keyed on `pulseKey` so the animation restarts even
@@ -267,8 +306,14 @@ export default function FSMGraph({
           w={e.labelW}
           h={e.labelH}
           text={e.text}
+          symbols={e.symbols}
           fontSize={labelFont}
           color={isActive(e) ? ACTIVE_EDGE : INK}
+          symbolColors={
+            colorBySymbol && !isActive(e)
+              ? e.symbols.map((y) => symbolColor(machine, y))
+              : null
+          }
         />
       ))}
 
@@ -304,17 +349,25 @@ function LabelChip({
   w,
   h,
   text,
+  symbols,
   fontSize,
   color,
+  symbolColors = null,
 }: {
   x: number;
   y: number;
   w: number;
   h: number;
   text: string;
+  symbols: string[];
   fontSize: number;
   color: string;
+  // One colour per symbol, or null to write the whole label in `color`.
+  // A wire carrying both symbols is one grey wire, so its label is the
+  // only place the two can be told apart, and it colours them one by one.
+  symbolColors?: string[] | null;
 }) {
+  const tinted = symbolColors !== null && symbolColors.length === symbols.length;
   return (
     <g>
       <rect x={x - w / 2} y={y - h / 2} width={w} height={h} fill="var(--bg)" rx={3} />
@@ -327,10 +380,19 @@ function LabelChip({
         fill={color}
         style={{
           fontFamily: 'ui-monospace, "JetBrains Mono", Menlo, monospace',
-          fontWeight: 500,
+          // Heavier when tinted: these labels are around 11px, which is
+          // the whole reason the colour is there.
+          fontWeight: tinted ? 700 : 500,
         }}
       >
-        {text}
+        {tinted
+          ? symbols.map((sym, i) => (
+              <tspan key={sym}>
+                {i > 0 && <tspan fill="var(--muted)" style={{ fontWeight: 500 }}>, </tspan>}
+                <tspan fill={symbolColors[i]}>{sym}</tspan>
+              </tspan>
+            ))
+          : text}
       </text>
     </g>
   );

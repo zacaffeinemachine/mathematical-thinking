@@ -67,6 +67,7 @@ export default function EquivalenceProblem({
         machineB={machineB}
         rules={["XOR"]}
         initialRule="XOR"
+        colorBySymbol
         defaultInput={defaultInput}
         examples={examples}
         graphWidth={graphWidth}

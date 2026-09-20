@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FSM, State } from "./model";
 import { run } from "./model";
-import FSMGraph from "./FSMGraph";
+import FSMGraph, { symbolColor } from "./FSMGraph";
 import { BTN_CSS, CURRENT, CURRENT_INK, MONO, Tape, label } from "./parts";
 
 type Rule = "OR" | "AND" | "XOR";
@@ -15,6 +15,9 @@ interface DualMachineRunnerProps {
   initialRule?: Rule;
   // Per-machine SVG width.
   graphWidth?: number;
+  // Colour each wire by the symbol it carries, and print the key for it.
+  // See the note on FSMGraph's prop of the same name.
+  colorBySymbol?: boolean;
 }
 
 const SPEEDS = [
@@ -44,6 +47,7 @@ export default function DualMachineRunner({
   rules = ["OR", "AND", "XOR"],
   initialRule = "OR",
   graphWidth = 320,
+  colorBySymbol = false,
 }: DualMachineRunnerProps) {
   const [input, setInput] = useState(defaultInput);
   const [step, setStep] = useState(0);
@@ -174,6 +178,51 @@ export default function DualMachineRunner({
         )}
       </div>
 
+      {/* The key for the wire colours. It sits directly above the diagrams
+          rather than once at the top of the page, because a reader
+          comparing two machines should not have to scroll to find out
+          which colour is which. */}
+      {colorBySymbol && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "baseline",
+            flexWrap: "wrap",
+            gap: 10,
+            marginBottom: 8,
+            fontSize: 12.5,
+            color: "var(--muted)",
+          }}
+        >
+          <span>arrows are coloured by the symbol they read:</span>
+          {machineA.alphabet.map((sym) => (
+            <span key={sym} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <svg width={22} height={8} aria-hidden="true">
+                <line
+                  x1={0}
+                  y1={4}
+                  x2={22}
+                  y2={4}
+                  stroke={symbolColor(machineA, sym)}
+                  strokeWidth={2.4}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <code
+                style={{
+                  fontFamily: MONO,
+                  fontWeight: 700,
+                  color: symbolColor(machineA, sym),
+                }}
+              >
+                {sym}
+              </code>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Two graphs side by side */}
       <div
         style={{
@@ -201,6 +250,7 @@ export default function DualMachineRunner({
             currentState={aState}
             activeEdge={lastEdgeA}
             pulseKey={step}
+            colorBySymbol={colorBySymbol}
           />
         </div>
         <div style={{ flex: "0 1 auto" }}>
@@ -221,6 +271,7 @@ export default function DualMachineRunner({
             currentState={bState}
             activeEdge={lastEdgeB}
             pulseKey={step}
+            colorBySymbol={colorBySymbol}
           />
         </div>
       </div>

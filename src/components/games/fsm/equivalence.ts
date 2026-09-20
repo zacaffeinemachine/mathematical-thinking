@@ -117,49 +117,65 @@ export const subsequence101: FSM = {
 };
 
 // --- Pair 3 -----------------------------------------------------------
-//  A accepts: an even number of 1s and an even number of 0s.
-//  B accepts: an even number of 1s and an even length.
-//  The same four circles with the same one accepting, wired differently,
-//  and they agree: once the 1s are even, even length and even 0s say the
-//  same thing.
+//  Both accept: the string ends in a 1.
+//  A remembers the last TWO symbols; B remembers the last symbol and
+//  whether the length is even. Both carry more than the job needs, and
+//  they pad it out differently, so neither is a renaming of the other:
+//  A has two arrows that loop back where they started and B has none.
+//
+//  Why it has to be built this way. Two machines that are both as small
+//  as they can be and accept the same strings are always the same
+//  drawing with the states renamed, so a pair that is equal AND
+//  interesting needs at least one machine holding a state it could do
+//  without. The first version of this pair had two four-state machines,
+//  both as small as they could be, and it was the same machine twice.
 
-// q0 = (1s even, 0s even), q1 = (even, odd), q2 = (odd, even), q3 = (odd, odd).
-export const evenOnesEvenZeros: FSM = {
+// q0 = last two were 00 (and the start, where nothing has been read).
+// q1 = 01,  q2 = 10,  q3 = 11. Accepting: the second of the two is a 1.
+export const lastTwoSymbols: FSM = {
   states: ["q0", "q1", "q2", "q3"],
   alphabet: ["0", "1"],
   start: "q0",
-  accepting: new Set(["q0"]),
+  accepting: new Set(["q1", "q3"]),
   delta: {
-    q0: { "0": "q1", "1": "q2" },
-    q1: { "0": "q0", "1": "q3" },
-    q2: { "0": "q3", "1": "q0" },
-    q3: { "0": "q2", "1": "q1" },
+    q0: { "0": "q0", "1": "q1" },
+    q1: { "0": "q2", "1": "q3" },
+    q2: { "0": "q0", "1": "q1" },
+    q3: { "0": "q2", "1": "q3" },
   },
+  // A kite rather than a square: the only wires crossing the middle are
+  // the q1 and q2 pair, which share one channel, and nothing else runs
+  // through it. A square put four wires through the centre and stacked
+  // their labels on top of one another.
   layout: {
-    q0: { x: 0.22, y: 0.24 },
-    q1: { x: 0.78, y: 0.24 },
-    q2: { x: 0.22, y: 0.78 },
-    q3: { x: 0.78, y: 0.78 },
+    q0: { x: 0.14, y: 0.50 },
+    q1: { x: 0.44, y: 0.20 },
+    q2: { x: 0.44, y: 0.80 },
+    q3: { x: 0.80, y: 0.50 },
   },
 };
 
-// q0 = (length even, 1s even), q1 = (odd, even), q2 = (even, odd), q3 = (odd, odd).
-export const evenOnesEvenLength: FSM = {
+// q0 = last symbol 0, length even (and the start).  q1 = 0, odd.
+// q2 = 1, even.  q3 = 1, odd. Accepting: the last symbol is a 1.
+// The length is tracked and never consulted, which is the padding.
+export const lastSymbolAndLength: FSM = {
   states: ["q0", "q1", "q2", "q3"],
   alphabet: ["0", "1"],
   start: "q0",
-  accepting: new Set(["q0"]),
+  accepting: new Set(["q2", "q3"]),
   delta: {
     q0: { "0": "q1", "1": "q3" },
     q1: { "0": "q0", "1": "q2" },
-    q2: { "0": "q3", "1": "q1" },
-    q3: { "0": "q2", "1": "q0" },
+    q2: { "0": "q1", "1": "q3" },
+    q3: { "0": "q0", "1": "q2" },
   },
+  // Every wire is a side of the square: the machine is a four-cycle with
+  // both directions on each side, so nothing needs to cross the middle.
   layout: {
     q0: { x: 0.22, y: 0.24 },
     q1: { x: 0.78, y: 0.24 },
-    q2: { x: 0.22, y: 0.78 },
-    q3: { x: 0.78, y: 0.78 },
+    q2: { x: 0.78, y: 0.78 },
+    q3: { x: 0.22, y: 0.78 },
   },
 };
 

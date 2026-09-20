@@ -13,8 +13,8 @@ import {
   parityPadded,
   substring101,
   subsequence101,
-  evenOnesEvenZeros,
-  evenOnesEvenLength,
+  lastTwoSymbols,
+  lastSymbolAndLength,
   containsEleven,
   someEvenBlockOfOnes,
   twoElevens,
@@ -50,15 +50,15 @@ goes somewhere else. Do they have the same language?
 <EquivalenceProblem
   client:visible
   n={3}
-  title="Same circles, different wiring"
-  machineA={evenOnesEvenZeros}
-  machineB={evenOnesEvenLength}
+  title="Loops against no loops"
+  machineA={lastTwoSymbols}
+  machineB={lastSymbolAndLength}
   defaultInput="0011"
   examples={["", "11", "0011", "0101"]}
 >
-The two machines have the same four states, the same start, and the same
-single accepting state. Only the arrows between them differ. Do they have the
-same language?
+Both machines have four states and both accept in two of them. Machine A has
+two arrows that loop straight back to the state they left, and machine B has
+none at all. Do they have the same language?
 </EquivalenceProblem>
 
 <EquivalenceProblem
