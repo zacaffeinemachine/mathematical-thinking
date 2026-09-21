@@ -61,10 +61,13 @@ Design a machine that accepts exactly the strings in which that count is even.
 <Tests accept={["", "1", "111", "11011", "0000", "1110"]} reject={["11", "1111", "1101", "0110", "0011000"]} />
 </Problem>
 <Problem n={7} title="Never too close, never too far" hard>
-Design a machine that accepts exactly the strings in which every two `1`s that
-are next to each other in the string, with no `1` in between, have at least one
-`0` and at most three `0`s between them. A string with fewer than two `1`s in
-it has no such pair and is accepted.
+Go through the `1`s in the string from left to right. Between each `1` and the
+one after it sits a stretch of `0`s. In `1001` that stretch is two `0`s long,
+and in `11` it is empty.
+
+Design a machine that accepts exactly the strings in which every one of those
+stretches is 1, 2 or 3 symbols long. A string with fewer than two `1`s has no
+such stretch and is accepted.
 <Tests accept={["", "0", "1", "101", "1001", "10001", "1010001"]} reject={["11", "1101", "100001", "0110", "1000010001"]} />
 </Problem>
 <Problem n={8} title="One count even, another odd" hard>
