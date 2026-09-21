@@ -60,7 +60,13 @@ them and `1111` contains three.
 Design a machine that accepts exactly the strings in which that count is even.
 <Tests accept={["", "1", "111", "11011", "0000", "1110"]} reject={["11", "1111", "1101", "0110", "0011000"]} />
 </Problem>
-<Problem n={7} title="Never too close, never too far" hard>
+<Problem n={7} title="One count even, another odd">
+Design a machine that accepts exactly the strings in which the number of `1`s
+is **even** and the number of appearances of `01` is **odd**, where `01` is
+counted at every position where it fits.
+<Tests accept={["011", "0110", "0011", "00110", "01111"]} reject={["", "0", "1", "11", "010", "0101"]} />
+</Problem>
+<Problem n={8} title="Never too close, never too far" hard>
 Go through the `1`s in the string from left to right. Between each `1` and the
 one after it sits a stretch of `0`s. In `1001` that stretch is two `0`s long,
 and in `11` it is empty.
@@ -69,12 +75,6 @@ Design a machine that accepts exactly the strings in which every one of those
 stretches is 1, 2 or 3 symbols long. A string with fewer than two `1`s has no
 such stretch and is accepted.
 <Tests accept={["", "0", "1", "101", "1001", "10001", "1010001"]} reject={["11", "1101", "100001", "0110", "1000010001"]} />
-</Problem>
-<Problem n={8} title="One count even, another odd" hard>
-Design a machine that accepts exactly the strings in which the number of `1`s
-is **even** and the number of appearances of `01` is **odd**, where `01` is
-counted at every position where it fits.
-<Tests accept={["011", "0110", "0011", "00110", "01111"]} reject={["", "0", "1", "11", "010", "0101"]} />
 </Problem>
 <Problem n={9} title="Twice over, without sharing" hard>
 Design a machine that accepts exactly the strings that contain two appearances
