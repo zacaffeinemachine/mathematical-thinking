@@ -91,13 +91,14 @@ go, and a string with no blocks of a given symbol meets that symbol's
 condition.
 <Tests accept={["", "000", "111", "111000", "0001", "1000"]} reject={["01", "110", "100", "0011", "10101"]} />
 </Problem>
-<Problem n={10} title="Odd blocks, counted" alphabet="{x, y}" hard>
-A **block of `x`** is one unbroken stretch of `x`s, taken as long as it will
-go. The `x`s in `xxyxyyx` come in three such stretches, `xx` and `x` and `x`,
-so that string has three blocks of `x`, of lengths 2, 1 and 1.
+<Problem n={10} title="Even blocks, counted in threes" alphabet="{x, y}" hard>
+A block of `x` is one unbroken stretch of `x`s, taken as long as it will go.
+The `x`s in `xxyxyyx` come in three such stretches, `xx` and `x` and `x`, so
+that string has one block of even length and two of odd length.
 
 Design a machine that accepts exactly the strings in which the number of
-blocks of `x` of **odd** length is even. A string with no blocks of `x` at all
-has none of odd length, and zero is even, so it is accepted.
-<Tests accept={["", "y", "xx", "xyx", "yxxy", "xxyxyx"]} reject={["x", "xxx", "yxy", "xyxx", "xxxyxx"]} />
+blocks of `x` of **even** length is a multiple of 3. A string with no blocks
+of even length in it has none of them, and zero is a multiple of 3, so it is
+accepted.
+<Tests accept={["", "y", "x", "xyx", "xxx", "xyxxxyx", "xxyxxyxx"]} reject={["xx", "xxyxx", "xxxx", "xxyy", "xxyxxyxxyxx"]} />
 </Problem>
