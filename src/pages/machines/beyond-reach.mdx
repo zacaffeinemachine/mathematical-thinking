@@ -4,14 +4,14 @@ title: Beyond Reach
 order: 12
 chapter: machines
 chapterTitle: Machines
-blurb: Problems that look exactly like the others, and that mostly cannot be done at all. Design the machine, or show that none exists.
-description: "Problems that no finite state machine can solve, and two that look the same and can."
+blurb: Nine more design problems, on matching counts, symmetry and very large numbers.
+description: "Nine design problems for finite state machines, on matching counts, symmetry and very large numbers."
 ---
 import { Problem } from "../../components/games/fsm/Problem.tsx";
 
 <Problem n={1} title="As many 1s as 0s">
 Design a machine that accepts exactly the strings containing the same number
-of `0`s as `1`s, or show that no such machine exists.
+of `0`s as `1`s.
 
 The empty string is accepted, `01` and `1100` are accepted, and `0` and `011`
 are not.
@@ -19,7 +19,7 @@ are not.
 
 <Problem n={2} title="Zeros then ones, matched">
 Design a machine that accepts exactly the strings that are some number of `0`s
-followed by the same number of `1`s, or show that no such machine exists.
+followed by the same number of `1`s.
 
 So the empty string, `01`, `0011` and `000111` are accepted, and `0101` is
 not, even though it has two of each.
@@ -27,24 +27,23 @@ not, even though it has two of each.
 
 <Problem n={3} title="The same forwards and backwards">
 Design a machine that accepts exactly the strings that read the same forwards
-as backwards, or show that no such machine exists. Examples are `010`, `1001`,
-`11011`, and every string of length 0 or 1.
+as backwards. Examples are `010`, `1001`, `11011`, and every string of length
+0 or 1.
 </Problem>
 
 <Problem n={4} title="A square number of 1s">
 Design a machine that accepts exactly the strings in which the number of `1`s
-is 0, 1, 4, 9, 16, 25, and so on, a whole number multiplied by itself, or show
-that no such machine exists.
+is 0, 1, 4, 9, 16, 25, and so on, a whole number multiplied by itself.
 </Problem>
 
 <Problem n={5} title="A prime number of 1s">
 Design a machine that accepts exactly the strings in which the number of `1`s
-is a prime number, or show that no such machine exists.
+is a prime number.
 </Problem>
 
 <Problem n={6} title="Two halves that match" hard>
 Design a machine that accepts exactly the strings that are some string written
-twice over, or show that no such machine exists.
+twice over.
 
 So `0101` is accepted, because it is `01` followed by `01`, and the empty
 string is accepted. `010` is not, because it has odd length.
@@ -52,15 +51,15 @@ string is accepted. `010` is not, because it has odd length.
 
 <Problem n={7} title="More 1s than 0s" hard>
 Design a machine that accepts exactly the strings containing strictly more
-`1`s than `0`s, or show that no such machine exists.
+`1`s than `0`s.
 </Problem>
 
-<Problem n={8} title="One that is not impossible" hard>
+<Problem n={8} title="A multiple of 1000" hard>
 Design a machine that accepts exactly the strings in which the number of `1`s
 is divisible by 1000.
 </Problem>
 
-<Problem n={9} title="Another that is not impossible" hard>
+<Problem n={9} title="At most a million" hard>
 Design a machine that accepts exactly the strings of length at most one
 million.
 </Problem>
