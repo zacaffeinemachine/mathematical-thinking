@@ -46,7 +46,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   "logical-thinking/and-or-not",
   "logical-thinking/quantifiers",
   "logical-thinking/conditionals",
-  // "logical-thinking/testing-a-claim",
+  "logical-thinking/testing-a-claim",
   // "logical-thinking/knowing-what-others-know",
   // "logical-thinking/asking-about-answers",
 
