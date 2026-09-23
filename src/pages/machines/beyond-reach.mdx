@@ -4,8 +4,8 @@ title: Beyond Reach
 order: 12
 chapter: machines
 chapterTitle: Machines
-blurb: Seven more design problems, on matching counts, symmetry and special numbers.
-description: "Seven design problems for finite state machines, on matching counts, symmetry and special numbers."
+blurb: Eleven more design problems, on matching counts, brackets, symmetry and special numbers.
+description: "Eleven design problems for finite state machines, on matching counts, brackets, symmetry and special numbers."
 ---
 import { Problem } from "../../components/games/fsm/Problem.tsx";
 
@@ -25,23 +25,59 @@ So the empty string, `01`, `0011` and `000111` are accepted, and `0101` is
 not, even though it has two of each.
 </Problem>
 
-<Problem n={3} title="The same forwards and backwards">
+<Problem n={3} title="Brackets that close properly" alphabet="{(, )}">
+Design a machine that accepts exactly the strings in which the brackets close
+properly. That means: reading from left to right, the number of `)`s seen so
+far is never more than the number of `(`s seen so far, and at the end the two
+are equal.
+
+So the empty string, `()` and `(())()` are accepted, and `)(`, `(()` and
+`())(` are not.
+</Problem>
+
+<Problem n={4} title="A correct sum" alphabet="{1, +, =}">
+Design a machine that accepts exactly the strings made of a block of `1`s,
+then `+`, then a block of `1`s, then `=`, then a block of `1`s, where each
+block has at least one `1` and the last block is as long as the first two put
+together.
+
+So `1+1=11`, `11+1=111` and `1+11=111` are accepted, and `1+1=1`, `1+1=111`,
+`11=1+1` and `+1=1` are not.
+</Problem>
+
+<Problem n={5} title="The same forwards and backwards">
 Design a machine that accepts exactly the strings that read the same forwards
 as backwards. Examples are `010`, `1001`, `11011`, and every string of length
 0 or 1.
 </Problem>
 
-<Problem n={4} title="A square number of 1s">
+<Problem n={6} title="The middle symbol is a 1">
+Design a machine that accepts exactly the strings of odd length whose middle
+symbol is `1`.
+
+So `1`, `010` and `00111` are accepted, and the empty string, `0`, `0110` and
+`100` are not.
+</Problem>
+
+<Problem n={7} title="A square number of 1s">
 Design a machine that accepts exactly the strings in which the number of `1`s
 is 0, 1, 4, 9, 16, 25, and so on, a whole number multiplied by itself.
 </Problem>
 
-<Problem n={5} title="A prime number of 1s">
+<Problem n={8} title="A prime number of 1s">
 Design a machine that accepts exactly the strings in which the number of `1`s
 is a prime number.
 </Problem>
 
-<Problem n={6} title="Two halves that match" hard>
+<Problem n={9} title="Not the same number">
+Design a machine that accepts exactly the strings in which the number of `0`s
+is different from the number of `1`s.
+
+So `0`, `011` and `111` are accepted, and the empty string, `01` and `1100`
+are not.
+</Problem>
+
+<Problem n={10} title="Two halves that match" hard>
 Design a machine that accepts exactly the strings that are some string written
 twice over.
 
@@ -49,7 +85,7 @@ So `0101` is accepted, because it is `01` followed by `01`, and the empty
 string is accepted. `010` is not, because it has odd length.
 </Problem>
 
-<Problem n={7} title="More 1s than 0s" hard>
+<Problem n={11} title="More 1s than 0s" hard>
 Design a machine that accepts exactly the strings containing strictly more
 `1`s than `0`s.
 </Problem>
