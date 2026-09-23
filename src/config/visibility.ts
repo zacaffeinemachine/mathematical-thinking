@@ -72,9 +72,9 @@ export const VISIBLE_PAGES: readonly string[] = [
   "machines/exact-words",
   "machines/numbers",
   "machines/two-conditions",
-  // "machines/beyond-reach",
   "machines/same-language",
   "machines/deep-end",
+  "machines/beyond-reach",
 
   // Logic Gates is open, but only the dominoes page is released. The rest
   // of the chapter stays hidden until its material is taught.
