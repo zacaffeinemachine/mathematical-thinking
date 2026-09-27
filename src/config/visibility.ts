@@ -86,11 +86,12 @@ export const VISIBLE_PAGES: readonly string[] = [
   // "logic-gates/nand-universal",
   // "logic-gates/sandbox",
 
-  "boolean-algebra/two-values",
-  "boolean-algebra/the-laws",
-  "boolean-algebra/dictionary",
-  "boolean-algebra/oracles-revisited",
-  "boolean-algebra/wason-revisited",
+  // Boolean Algebra: only the two problem sets are released for now.
+  // "boolean-algebra/two-values",
+  // "boolean-algebra/the-laws",
+  // "boolean-algebra/dictionary",
+  // "boolean-algebra/oracles-revisited",
+  // "boolean-algebra/wason-revisited",
   "boolean-algebra/translate",
   "boolean-algebra/solve",
 
