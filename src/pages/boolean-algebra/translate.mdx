@@ -1,0 +1,185 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Twenty Translations
+order: 6
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: Twenty English sentences to turn into equations, from a plain "and" to an if-then with a count inside it.
+description: Practice translating conditions built from and, or, not and if-then into boolean equations, with an answer box that marks right or wrong.
+---
+import { Problem, EquationAnswer } from "../../components/games/boolean/BooleanProblems.tsx";
+
+Each problem names a few yes/no letters and then says something about them.
+Write the sentence as an equation in those letters. The problems get harder
+as you go down the page.
+
+**How to type an answer.** Use the letters, the digits `0` and `1`, `+`,
+brackets and `=`. A product can be written with `*` or by putting the letters
+side by side, so `(1+a)b + c = 1` and `(1+a)*b + c = 1` are read the same way.
+The `+` is the boolean one, so `1+1` is `0`. If a sentence needs two
+equations, separate them with a comma.
+
+Any correct equation is accepted, whatever its shape. The box checks whether
+your equation holds on exactly the same patterns of the letters as the
+sentence does, and tells you only whether it does.
+
+<Problem n={1}>
+$s$: it is sunny. $\quad w$: it is warm.
+
+*"It is sunny and warm."*
+
+<EquationAnswer letters="sw" answer="s*w=1" client:visible />
+</Problem>
+
+<Problem n={2}>
+$p$: the printer is on. $\quad h$: the printer has paper.
+
+*"The printer is on but has no paper."*
+
+<EquationAnswer letters="ph" answer="p+p*h=1" client:visible />
+</Problem>
+
+<Problem n={3}>
+$a$: the first fan is on. $\quad b$: the second fan is on.
+
+*"At least one of the two fans is off."*
+
+<EquationAnswer letters="ab" answer="a*b=0" client:visible />
+</Problem>
+
+<Problem n={4}>
+$b$: the bus is on time. $\quad t$: the train is on time.
+
+*"Neither the bus nor the train is on time."*
+
+<EquationAnswer letters="bt" answer="b+t+b*t=0" client:visible />
+</Problem>
+
+<Problem n={5}>
+$a$: the first key fits. $\quad b$: the second key fits.
+
+*"At least one of the two keys fits."*
+
+<EquationAnswer letters="ab" answer="a+b+a*b=1" client:visible />
+</Problem>
+
+<Problem n={6}>
+$a$: the left light is on. $\quad b$: the right light is on.
+
+*"The two lights are either both on or both off."*
+
+<EquationAnswer letters="ab" answer="a+b=0" client:visible />
+</Problem>
+
+<Problem n={7}>
+$a$: the first coin shows heads. $\quad b$: the second coin shows heads.
+
+*"Exactly one of the two coins shows heads."*
+
+<EquationAnswer letters="ab" answer="a+b=1" client:visible />
+</Problem>
+
+<Problem n={8}>
+$c$: the café is open. $\quad l$: the library is open.
+
+*"It is not the case that the café and the library are both closed."*
+
+<EquationAnswer letters="cl" answer="c+l+c*l=1" client:visible />
+</Problem>
+
+<Problem n={9}>
+$r$: the phone rings. $\quad a$: I answer it.
+
+*"If the phone rings, I answer it."*
+
+<EquationAnswer letters="ra" answer="r+r*a=0" client:visible />
+</Problem>
+
+<Problem n={10}>
+$s$: the milk is sour. $\quad u$: the milk is used.
+
+*"If the milk is sour, it is not used."*
+
+<EquationAnswer letters="su" answer="s*u=0" client:visible />
+</Problem>
+
+<Problem n={11}>
+$d$: the door is locked. $\quad a$: the alarm is on.
+
+*"If the door is not locked, then the alarm is on."*
+
+<EquationAnswer letters="da" answer="(1+d)(1+a)=0" client:visible />
+</Problem>
+
+<Problem n={12}>
+$f$: the fountain is on. $\quad p$: the park is open.
+
+*"The fountain is on if and only if the park is open."*
+
+<EquationAnswer letters="fp" answer="f+p=0" client:visible />
+</Problem>
+
+<Problem n={13}>
+$f$: the fountain is on. $\quad p$: the park is open.
+
+*"The fountain is on if and only if the park is closed."*
+
+<EquationAnswer letters="fp" answer="f+p=1" client:visible />
+</Problem>
+
+<Problem n={14}>
+$a$, $b$, $c$: the first, second, third window is open.
+
+*"All three windows are shut."*
+
+<EquationAnswer letters="abc" answer="(1+a)(1+b)(1+c)=1" client:visible />
+</Problem>
+
+<Problem n={15}>
+$a$, $b$, $c$: the first, second, third alarm goes off.
+
+*"At least one of the three alarms goes off."*
+
+<EquationAnswer letters="abc" answer="(1+a)(1+b)(1+c)=0" client:visible />
+</Problem>
+
+<Problem n={16} hard>
+$o$: the oven is on. $\quad e$: the kitchen is empty. $\quad s$: the smoke alarm is armed.
+
+*"If the oven is on and the kitchen is empty, then the smoke alarm is armed."*
+
+<EquationAnswer letters="oes" answer="o*e*(1+s)=0" client:visible />
+</Problem>
+
+<Problem n={17} hard>
+$s$: it snows. $\quad c$: the school closes. $\quad b$: the buses stop.
+
+*"If it snows, the school closes and the buses stop."*
+
+<EquationAnswer letters="scb" answer="s*(1+c*b)=0" client:visible />
+</Problem>
+
+<Problem n={18} hard>
+$a$, $b$, $c$: the first, second, third referee raises a flag.
+
+*"At least two of the three referees raise a flag."*
+
+<EquationAnswer letters="abc" answer="a*b+b*c+c*a=1" client:visible />
+</Problem>
+
+<Problem n={19} hard>
+$a$, $b$, $c$: the first, second, third switch is up.
+
+*"An even number of the three switches are up. (None at all counts as an even number.)"*
+
+<EquationAnswer letters="abc" answer="a+b+c=0" client:visible />
+</Problem>
+
+<Problem n={20} hard>
+$a$, $b$: the first, second child is hungry. $\quad p$, $q$: the first, second parent cooks.
+
+*"If at least one of the two children is hungry, then exactly one of the two parents cooks."*
+
+<EquationAnswer letters="abpq" answer="(a+b+a*b)(1+p+q)=0" client:visible />
+</Problem>
+

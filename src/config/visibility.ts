@@ -26,7 +26,7 @@ export const VISIBLE_CHAPTERS: readonly string[] = [
   "logical-thinking",
   "machines",
   // "logic-gates",
-  // "boolean-algebra",
+  "boolean-algebra",
   // "infinity",
   // "permutations",
 ];
@@ -91,6 +91,8 @@ export const VISIBLE_PAGES: readonly string[] = [
   "boolean-algebra/dictionary",
   "boolean-algebra/oracles-revisited",
   "boolean-algebra/wason-revisited",
+  "boolean-algebra/translate",
+  "boolean-algebra/solve",
 
   "infinity/yes-no-game",
   "infinity/friendly-fire",
