@@ -146,3 +146,49 @@ export function sameSolutions(a: string, b: string, vars: string): boolean {
   const x = solutions(a, vars), y = solutions(b, vars);
   return x.length === y.length && x.every((p, i) => p === y[i]);
 }
+
+/**
+ * Read a typed set of solutions, such as `{(0, 1), (1, 0)}`, as a list of 0/1
+ * strings in letter order. The empty set may be written `{}`, `∅` or `none`.
+ * Brackets and commas are optional, so `01, 10` is read the same way. Repeats
+ * are dropped. Throws ParseError when a tuple is malformed or the wrong length.
+ */
+export function parseSolutionSet(src: string, letters: string): string[] {
+  const n = letters.length;
+  let s = src.trim().replace(/[⟨〈]/g, "(").replace(/[⟩〉]/g, ")");
+  if (/^(∅|\{\s*\}|none|empty)$/i.test(s)) return [];
+  if (s.startsWith("{") !== s.endsWith("}"))
+    throw new ParseError("The braces { } do not match.");
+  if (s.startsWith("{")) s = s.slice(1, -1).trim();
+  if (!s) return [];
+  if (/[{}∅]/.test(s)) throw new ParseError("Write the set with one pair of braces around it.");
+  if (/[^01(),;\s]/.test(s)) {
+    const c = s.match(/[^01(),;\s]/)![0];
+    throw new ParseError(
+      /[2-9]/.test(c) ? "The only entries are 0 and 1." : `The symbol "${c}" is not part of the notation.`,
+    );
+  }
+
+  let tuples: string[];
+  if (/[()]/.test(s)) {
+    const re = /\(([^()]*)\)/g;
+    tuples = [];
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(s))) tuples.push(m[1]);
+    if (s.replace(re, "").replace(/[\s,;]/g, "") !== "")
+      throw new ParseError("Put every solution in brackets, like (0, 1).");
+  } else {
+    tuples = s.split(/[,;\s]+/).filter(Boolean);
+  }
+
+  const out: string[] = [];
+  for (const t of tuples) {
+    const bits = t.replace(/[\s,;]/g, "");
+    if (bits.length !== n)
+      throw new ParseError(
+        `Each solution lists ${n} values, one for each of ${letters.split("").join(", ")}.`,
+      );
+    if (!out.includes(bits)) out.push(bits);
+  }
+  return out;
+}

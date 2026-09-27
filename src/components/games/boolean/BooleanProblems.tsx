@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { SAY_RIGHT, SAY_WRONG } from "../MCQ.tsx";
-import { ParseError, patterns, sameSolutions, solutions } from "./equation.ts";
+import { ParseError, parseSolutionSet, sameSolutions, solutions } from "./equation.ts";
 
 // ---------------------------------------------------------------------------
 //  The furniture of the two Boolean Algebra problem pages.
@@ -11,9 +11,10 @@ import { ParseError, patterns, sameSolutions, solutions } from "./equation.ts";
 //  It never says which pattern an answer gets wrong.
 //
 //  <EquationAnswer> accepts any equation, or list of equations, that holds on
-//  exactly the same patterns as the intended one. <SolutionPicker> is marked
-//  all-or-nothing, like the puzzle answer sheets, so that it cannot be used to
-//  test one pattern at a time.
+//  exactly the same patterns as the intended one. <SolutionSet> takes the set
+//  of all solutions, typed out, and is marked all-or-nothing like the puzzle
+//  answer sheets. It replaced a grid of every pattern to tick, which let a
+//  student skip the solving and just substitute each pattern in turn.
 // ---------------------------------------------------------------------------
 
 const MONO = 'ui-monospace, "JetBrains Mono", Menlo, monospace';
@@ -205,71 +206,77 @@ export function EquationAnswer({ letters, answer }: { letters: string; answer: s
 }
 
 /**
- * Every pattern of the letters as a toggle. The student ticks the solutions;
- * ticking none says there are none. `answer` is the list of solutions as 0/1
- * strings in letter order, e.g. ["101", "011"].
+ * A box for the set of all solutions, e.g. `{(0, 1), (1, 0)}`, or `∅` when
+ * there are none. `answer` is the list of solutions as 0/1 strings in letter
+ * order, e.g. ["101", "011"].
  */
-export function SolutionPicker({ letters, answer }: { letters: string; answer: string[] }) {
-  const all = patterns(letters);
-  const [picked, setPicked] = useState<string[]>([]);
+export function SolutionSet({ letters, answer }: { letters: string; answer: string[] }) {
+  const [text, setText] = useState("");
   const [verdict, setVerdict] = useState<Verdict>(null);
-  const [touched, setTouched] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
 
-  const toggle = (p: string) => {
-    setPicked(picked.includes(p) ? picked.filter((x) => x !== p) : [...picked, p]);
-    setTouched(true);
-    setVerdict(null);
-  };
   const submit = () => {
-    const right = picked.length === answer.length && answer.every((p) => picked.includes(p));
+    if (!text.trim()) return;
+    let got: string[];
+    try {
+      got = parseSolutionSet(text, letters);
+    } catch (e) {
+      setVerdict(null);
+      setNote(e instanceof ParseError ? `Could not read that. ${e.message}` : "Could not read that.");
+      return;
+    }
+    setNote(null);
+    const right = got.length === answer.length && answer.every((p) => got.includes(p));
     setVerdict(right ? "correct" : "wrong");
-    setTouched(true);
   };
   const header = `(${letters.split("").join(", ")})`;
+  const t = tone(verdict);
 
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 6 }}>
-        Tick every solution <span style={{ fontFamily: MONO }}>{header}</span>. If there are none,
-        tick nothing and submit.
+        Enter the set of all solutions <span style={{ fontFamily: MONO }}>{header}</span>, or{" "}
+        <span style={{ fontFamily: MONO }}>{"{}"}</span> if there are none.
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {all.map((p) => {
-          const on = picked.includes(p);
-          const t = on ? tone(verdict) : null;
-          return (
-            <button
-              key={p}
-              type="button"
-              aria-pressed={on}
-              onClick={() => toggle(p)}
-              style={{
-                padding: "4px 10px",
-                borderRadius: 6,
-                border: `1px solid ${t ? `var(--mcq-${t})` : on ? "var(--mcq-pick)" : "var(--rule)"}`,
-                background: t ? `var(--mcq-${t}-soft)` : on ? "var(--mcq-pick-soft)" : "transparent",
-                color: t ? `var(--mcq-${t})` : "var(--ink)",
-                fontFamily: MONO,
-                fontSize: 14,
-                fontWeight: on ? 600 : 400,
-                cursor: "pointer",
-              }}
-            >
-              ({p.split("").join(", ")})
-            </button>
-          );
-        })}
-      </div>
+      <input
+        type="text"
+        value={text}
+        spellCheck={false}
+        autoCapitalize="off"
+        autoComplete="off"
+        aria-label="The set of all solutions"
+        placeholder="type a set"
+        onChange={(e) => {
+          setText(e.target.value);
+          setVerdict(null);
+          setNote(null);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") submit();
+        }}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          padding: "6px 10px",
+          borderRadius: 6,
+          border: `1px solid ${t ? `var(--mcq-${t})` : "var(--rule)"}`,
+          background: t ? `var(--mcq-${t}-soft)` : "transparent",
+          color: "var(--ink)",
+          fontFamily: MONO,
+          fontSize: 15,
+        }}
+      />
       <Buttons
         onSubmit={submit}
         onClear={() => {
-          setPicked([]);
+          setText("");
           setVerdict(null);
-          setTouched(false);
+          setNote(null);
         }}
-        canSubmit={true}
-        canClear={touched}
+        canSubmit={text.trim() !== ""}
+        canClear={text !== ""}
         verdict={verdict}
+        note={note}
       />
     </div>
   );

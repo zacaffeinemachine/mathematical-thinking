@@ -5,18 +5,20 @@ order: 7
 chapter: boolean-algebra
 chapterTitle: Boolean Algebra
 blurb: Ten equations and systems to solve, from a single line to four letters tied together three ways.
-description: Practice solving boolean equations and systems of equations, ticking every solution on a sheet that marks right or wrong.
+description: Practice solving boolean equations and systems of equations, entering the set of all solutions and being told whether it is exactly right.
 ---
-import { Problem, SolutionPicker } from "../../components/games/boolean/BooleanProblems.tsx";
+import { Problem, SolutionSet } from "../../components/games/boolean/BooleanProblems.tsx";
 
 Find every assignment of $\texttt{0}$ and $\texttt{1}$ to the letters that
 makes all of the equations hold at once. The problems get harder as you go
 down the page.
 
-Under each problem is every possible pattern of the letters. Tick the ones
-that are solutions and press **Submit**. A system may have no solutions at
-all, and then the right answer is to tick nothing. The sheet is marked as a
-whole: you are told only whether your list is exactly right.
+Under each problem, type the set of all solutions and press **Submit**.
+Write each solution as the values of the letters in order, so that in the
+letters $a$, $b$ the solution $a = \texttt{0}$, $b = \texttt{1}$ is
+`(0, 1)`, and a set of two solutions is `{(0, 1), (1, 0)}`. A system may
+have no solutions at all, and then the answer is the empty set, `{}`. You
+are told only whether your set is exactly right.
 
 Checking a pattern by substituting it is always allowed, and it is a good
 habit once you have an answer. The aim, though, is to *find* the solutions
@@ -29,7 +31,7 @@ $$
 \texttt{1} + a + b = \texttt{0}
 $$
 
-<SolutionPicker letters="ab" answer={["01", "10"]} client:visible />
+<SolutionSet letters="ab" answer={["01", "10"]} client:visible />
 </Problem>
 
 <Problem n={2}>
@@ -39,7 +41,7 @@ $$
 ab + b = \texttt{0}
 $$
 
-<SolutionPicker letters="ab" answer={["00", "10", "11"]} client:visible />
+<SolutionSet letters="ab" answer={["00", "10", "11"]} client:visible />
 </Problem>
 
 <Problem n={3}>
@@ -49,7 +51,7 @@ $$
 a + b = \texttt{0}, \qquad a + ab = \texttt{1}
 $$
 
-<SolutionPicker letters="ab" answer={[]} client:visible />
+<SolutionSet letters="ab" answer={[]} client:visible />
 </Problem>
 
 <Problem n={4}>
@@ -59,7 +61,7 @@ $$
 abc = \texttt{0}, \qquad ab = \texttt{1}
 $$
 
-<SolutionPicker letters="abc" answer={["110"]} client:visible />
+<SolutionSet letters="abc" answer={["110"]} client:visible />
 </Problem>
 
 <Problem n={5}>
@@ -69,7 +71,7 @@ $$
 a + b = \texttt{1}, \qquad b + c = \texttt{0}, \qquad ab + c = \texttt{0}
 $$
 
-<SolutionPicker letters="abc" answer={["100"]} client:visible />
+<SolutionSet letters="abc" answer={["100"]} client:visible />
 </Problem>
 
 <Problem n={6}>
@@ -79,7 +81,7 @@ $$
 a + b + c + ab + bc + ca + abc = \texttt{0}
 $$
 
-<SolutionPicker letters="abc" answer={["000"]} client:visible />
+<SolutionSet letters="abc" answer={["000"]} client:visible />
 </Problem>
 
 <Problem n={7} hard>
@@ -89,7 +91,7 @@ $$
 a(\texttt{1} + b) = \texttt{0}, \qquad b(\texttt{1} + c) = \texttt{0}, \qquad c(\texttt{1} + a) = \texttt{0}, \qquad ab = \texttt{0}
 $$
 
-<SolutionPicker letters="abc" answer={["000"]} client:visible />
+<SolutionSet letters="abc" answer={["000"]} client:visible />
 </Problem>
 
 <Problem n={8} hard>
@@ -99,7 +101,7 @@ $$
 a + bc = \texttt{0}, \qquad b + ac = \texttt{0}
 $$
 
-<SolutionPicker letters="abc" answer={["000", "001", "111"]} client:visible />
+<SolutionSet letters="abc" answer={["000", "001", "111"]} client:visible />
 </Problem>
 
 <Problem n={9} hard>
@@ -109,7 +111,7 @@ $$
 a + b + c + d = \texttt{1}, \qquad ab = cd, \qquad a + c = \texttt{0}
 $$
 
-<SolutionPicker letters="abcd" answer={["0001", "0100"]} client:visible />
+<SolutionSet letters="abcd" answer={["0001", "0100"]} client:visible />
 </Problem>
 
 <Problem n={10} hard>
@@ -119,6 +121,6 @@ $$
 ab + cd = \texttt{1}, \qquad ac + bd = \texttt{1}, \qquad ad + bc = \texttt{1}
 $$
 
-<SolutionPicker letters="abcd" answer={["0111", "1011", "1101", "1110"]} client:visible />
+<SolutionSet letters="abcd" answer={["0111", "1011", "1101", "1110"]} client:visible />
 </Problem>
 
