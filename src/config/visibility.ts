@@ -92,6 +92,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   // "boolean-algebra/dictionary",
   // "boolean-algebra/oracles-revisited",
   // "boolean-algebra/wason-revisited",
+  "boolean-algebra/simplify",
   "boolean-algebra/translate",
   "boolean-algebra/solve",
 

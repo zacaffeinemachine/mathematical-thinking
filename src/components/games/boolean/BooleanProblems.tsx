@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { SAY_RIGHT, SAY_WRONG } from "../MCQ.tsx";
-import { ParseError, parseSolutionSet, sameSolutions, solutions } from "./equation.ts";
+import { isSimplified, ParseError, parseSolutionSet, sameSolutions, solutions } from "./equation.ts";
 
 // ---------------------------------------------------------------------------
-//  The furniture of the two Boolean Algebra problem pages.
+//  The furniture of the Boolean Algebra problem pages.
 //
 //  Same house rule as MCQ.tsx and PuzzleAnswer.tsx: the ONLY feedback about
 //  the mathematics is right or wrong. A message saying the input could not be
@@ -15,6 +15,8 @@ import { ParseError, parseSolutionSet, sameSolutions, solutions } from "./equati
 //  of all solutions, typed out, and is marked all-or-nothing like the puzzle
 //  answer sheets. It replaced a grid of every pattern to tick, which let a
 //  student skip the solving and just substitute each pattern in turn.
+//  <ExpressionAnswer> accepts only the fully multiplied-out form, which is
+//  unique, so typing the original expression back is not accepted.
 // ---------------------------------------------------------------------------
 
 const MONO = 'ui-monospace, "JetBrains Mono", Menlo, monospace';
@@ -139,23 +141,30 @@ function tone(v: Verdict) {
   return v === "correct" ? "right" : v === "wrong" ? "wrong" : null;
 }
 
-/** A box for a typed equation, marked by the patterns it allows. */
-export function EquationAnswer({ letters, answer }: { letters: string; answer: string }) {
+/** A one-line typed answer. `check` says whether it is right, or throws ParseError. */
+function TypedAnswer({
+  check,
+  placeholder,
+}: {
+  check: (text: string) => boolean;
+  placeholder: string;
+}) {
   const [text, setText] = useState("");
   const [verdict, setVerdict] = useState<Verdict>(null);
   const [note, setNote] = useState<string | null>(null);
 
   const submit = () => {
     if (!text.trim()) return;
+    let right: boolean;
     try {
-      solutions(text, letters);
+      right = check(text);
     } catch (e) {
       setVerdict(null);
       setNote(e instanceof ParseError ? `Could not read that. ${e.message}` : "Could not read that.");
       return;
     }
     setNote(null);
-    setVerdict(sameSolutions(text, answer, letters) ? "correct" : "wrong");
+    setVerdict(right ? "correct" : "wrong");
   };
 
   const t = tone(verdict);
@@ -167,8 +176,8 @@ export function EquationAnswer({ letters, answer }: { letters: string; answer: s
         spellCheck={false}
         autoCapitalize="off"
         autoComplete="off"
-        aria-label="Your equation"
-        placeholder="type an equation"
+        aria-label="Your answer"
+        placeholder={placeholder}
         onChange={(e) => {
           setText(e.target.value);
           setVerdict(null);
@@ -202,6 +211,29 @@ export function EquationAnswer({ letters, answer }: { letters: string; answer: s
         note={note}
       />
     </div>
+  );
+}
+
+/** A box for a typed equation, marked by the patterns it allows. */
+export function EquationAnswer({ letters, answer }: { letters: string; answer: string }) {
+  return (
+    <TypedAnswer
+      placeholder="type an equation"
+      check={(text) => {
+        solutions(text, letters);
+        return sameSolutions(text, answer, letters);
+      }}
+    />
+  );
+}
+
+/** A box for a simplified expression: right only if fully multiplied out and equal. */
+export function ExpressionAnswer({ letters, answer }: { letters: string; answer: string }) {
+  return (
+    <TypedAnswer
+      placeholder="type the simplified expression"
+      check={(text) => isSimplified(text, answer, letters)}
+    />
   );
 }
 

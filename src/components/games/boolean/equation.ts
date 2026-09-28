@@ -53,6 +53,13 @@ class Parser {
   private next() { return this.t[this.p++]; }
   atEnd() { return this.p >= this.t.length; }
 
+  expression(): Node {
+    const n = this.expr();
+    if (this.peek() === "=") throw new ParseError("Type the simplified expression only, with no = sign.");
+    if (!this.atEnd()) throw new ParseError("Something is left over at the end.");
+    return n;
+  }
+
   equations(): [Node, Node][] {
     const eqs: [Node, Node][] = [this.equation()];
     while (this.peek() === ",") { this.next(); eqs.push(this.equation()); }
@@ -191,4 +198,76 @@ export function parseSolutionSet(src: string, letters: string): string[] {
     if (!out.includes(bits)) out.push(bits);
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+//  Simplification answers.
+//
+//  Every expression has exactly one fully multiplied-out form: a sum of
+//  distinct products of distinct letters (plus possibly the constant 1), or
+//  the single constant 0. So an answer is accepted when it has that shape
+//  and takes the same value as the original on every pattern. Checking the
+//  shape is what stops the original expression being typed back.
+// ---------------------------------------------------------------------------
+
+function sumTerms(n: Node, out: Node[]) {
+  if (n.k === "add") { sumTerms(n.l, out); sumTerms(n.r, out); }
+  else out.push(n);
+}
+
+function productFactors(n: Node, out: Node[]) {
+  if (n.k === "mul") { productFactors(n.l, out); productFactors(n.r, out); }
+  else out.push(n);
+}
+
+/** Throws ParseError unless `src` is written fully multiplied out. */
+function checkMultipliedOut(root: Node) {
+  const terms: Node[] = [];
+  sumTerms(root, terms);
+  const seen = new Set<string>();
+  for (const t of terms) {
+    const fs: Node[] = [];
+    productFactors(t, fs);
+    let key: string;
+    if (fs.length === 1 && fs[0].k === "const") {
+      if (fs[0].v === 0) {
+        if (terms.length > 1) throw new ParseError("Leave out any + 0.");
+        return;
+      }
+      key = "1";
+    } else {
+      const names: string[] = [];
+      for (const f of fs) {
+        if (f.k === "add") throw new ParseError("Multiply out every bracket.");
+        if (f.k === "pow") throw new ParseError("A finished answer has no powers.");
+        if (f.k === "const") throw new ParseError("A finished answer has no 0 or 1 inside a product.");
+        if (f.k === "var") {
+          if (names.includes(f.name)) throw new ParseError("A letter appears twice in one product.");
+          names.push(f.name);
+        }
+      }
+      key = names.sort().join("");
+    }
+    if (seen.has(key)) throw new ParseError("A term appears twice.");
+    seen.add(key);
+  }
+}
+
+/**
+ * Whether `src` is `target` fully simplified. Throws ParseError when `src`
+ * cannot be read, uses a letter outside `vars`, or is not multiplied out.
+ */
+export function isSimplified(src: string, target: string, vars: string): boolean {
+  const a = new Parser(tokenize(src)).expression();
+  const used = new Set<string>();
+  letters(a, used);
+  if ([...used].some((x) => !vars.includes(x)))
+    throw new ParseError(`Use only the letters ${vars.split("").join(", ")}.`);
+  checkMultipliedOut(a);
+  const b = new Parser(tokenize(target)).expression();
+  return patterns(vars).every((p) => {
+    const env: Record<string, number> = {};
+    vars.split("").forEach((v, i) => (env[v] = Number(p[i])));
+    return evaluate(a, env) === evaluate(b, env);
+  });
 }

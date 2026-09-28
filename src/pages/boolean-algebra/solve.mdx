@@ -1,10 +1,10 @@
 ---
 layout: ../../layouts/Chapter.astro
-title: Ten Systems
-order: 7
+title: Fifteen Systems
+order: 8
 chapter: boolean-algebra
 chapterTitle: Boolean Algebra
-blurb: Ten equations and systems to solve, from a single line to four letters tied together three ways.
+blurb: Fifteen equations and systems to solve, from a single line to four letters that cannot all be satisfied.
 description: Practice solving boolean equations and systems of equations, entering the set of all solutions and being told whether it is exactly right.
 ---
 import { Problem, SolutionSet } from "../../components/games/boolean/BooleanProblems.tsx";
@@ -84,7 +84,7 @@ $$
 <SolutionSet letters="abc" answer={["000"]} client:visible />
 </Problem>
 
-<Problem n={7} hard>
+<Problem n={7}>
 In the letters $a$, $b$, $c$:
 
 $$
@@ -94,7 +94,7 @@ $$
 <SolutionSet letters="abc" answer={["000"]} client:visible />
 </Problem>
 
-<Problem n={8} hard>
+<Problem n={8}>
 In the letters $a$, $b$, $c$:
 
 $$
@@ -104,7 +104,7 @@ $$
 <SolutionSet letters="abc" answer={["000", "001", "111"]} client:visible />
 </Problem>
 
-<Problem n={9} hard>
+<Problem n={9}>
 In the letters $a$, $b$, $c$, $d$:
 
 $$
@@ -114,7 +114,7 @@ $$
 <SolutionSet letters="abcd" answer={["0001", "0100"]} client:visible />
 </Problem>
 
-<Problem n={10} hard>
+<Problem n={10}>
 In the letters $a$, $b$, $c$, $d$:
 
 $$
@@ -122,5 +122,61 @@ ab + cd = \texttt{1}, \qquad ac + bd = \texttt{1}, \qquad ad + bc = \texttt{1}
 $$
 
 <SolutionSet letters="abcd" answer={["0111", "1011", "1101", "1110"]} client:visible />
+</Problem>
+
+<Problem n={11} hard>
+In the letters $a$, $b$, $c$, $d$:
+
+$$
+a + b + c + d = \texttt{0}, \qquad ab + cd = \texttt{1}, \qquad ac + bd = \texttt{0}
+$$
+
+<SolutionSet letters="abcd" answer={["0011", "1100"]} client:visible />
+</Problem>
+
+<Problem n={12} hard>
+In the letters $a$, $b$, $c$, $d$:
+
+$$
+\begin{gathered}
+a = b(\texttt{1} + c), \qquad b = c(\texttt{1} + d), \\
+c = d(\texttt{1} + a), \qquad d = a(\texttt{1} + b)
+\end{gathered}
+$$
+
+<SolutionSet letters="abcd" answer={["0000"]} client:visible />
+</Problem>
+
+<Problem n={13} hard>
+In the letters $a$, $b$, $c$:
+
+$$
+a = b + c + bc, \qquad b = a + c + ac, \qquad c = ab
+$$
+
+<SolutionSet letters="abc" answer={["000", "111"]} client:visible />
+</Problem>
+
+<Problem n={14} hard>
+In the letters $a$, $b$, $c$, $d$:
+
+$$
+(a + b)(c + d) = \texttt{1}, \qquad (a + c)(b + d) = \texttt{1}, \qquad (a + d)(b + c) = \texttt{0}
+$$
+
+<SolutionSet letters="abcd" answer={["0110", "1001"]} client:visible />
+</Problem>
+
+<Problem n={15} hard>
+In the letters $a$, $b$, $c$, $d$:
+
+$$
+\begin{gathered}
+a + bc = \texttt{1}, \qquad b + cd = \texttt{1}, \\
+c + da = \texttt{1}, \qquad d + ab = \texttt{1}
+\end{gathered}
+$$
+
+<SolutionSet letters="abcd" answer={[]} client:visible />
 </Problem>
 

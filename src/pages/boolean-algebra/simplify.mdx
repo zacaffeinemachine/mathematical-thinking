@@ -1,0 +1,179 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Fifteen Simplifications
+order: 6
+chapter: boolean-algebra
+chapterTitle: Boolean Algebra
+blurb: Fifteen fearsome-looking expressions, every one of which collapses to something short.
+description: Practice simplifying boolean expressions with the familiar laws and the two strange ones, with an answer box that marks right or wrong.
+---
+import { Problem, ExpressionAnswer } from "../../components/games/boolean/BooleanProblems.tsx";
+
+Simplify each expression as far as it will go. Every one of them looks worse
+than it is, and every one ends up short. The problems get harder as you go
+down the page.
+
+The tools are the familiar laws (order, grouping, multiplying out) and the two
+that belong to this world alone: a value added to itself gives
+$\texttt{0}$, and a value times itself gives itself back.
+
+**What counts as finished.** Multiply out every bracket, remove every power,
+and let every repeated term cancel. What is left is a sum of products of
+different letters, possibly with a $\texttt{1}$ among them, or else the
+single value $\texttt{0}$. Every expression has exactly one finished form,
+up to the order in which you write things, and only that form is accepted.
+
+**How to type an answer.** Use the letters, the digits `0` and `1`, and `+`.
+A product is written by putting the letters side by side, as in
+`ab + c`, or with `*`, as in `a*b + c`.
+
+<Problem n={1}>
+In the letters $a$, $b$, simplify
+
+$$
+(a+b)^2 + b
+$$
+
+<ExpressionAnswer letters="ab" answer="a" client:visible />
+</Problem>
+
+<Problem n={2}>
+In the letters $a$, $b$, simplify
+
+$$
+a(\texttt{1}+a) + b(\texttt{1}+b) + ab
+$$
+
+<ExpressionAnswer letters="ab" answer="ab" client:visible />
+</Problem>
+
+<Problem n={3}>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(a+b+c)^7 + (a+b)^3
+$$
+
+<ExpressionAnswer letters="abc" answer="c" client:visible />
+</Problem>
+
+<Problem n={4}>
+In the letters $a$, $b$, simplify
+
+$$
+(\texttt{1}+a)(\texttt{1}+b) + (\texttt{1}+a)b + a(\texttt{1}+b) + ab
+$$
+
+<ExpressionAnswer letters="ab" answer="1" client:visible />
+</Problem>
+
+<Problem n={5}>
+In the letters $a$, $b$, simplify
+
+$$
+(a+ab)(b+ab)
+$$
+
+<ExpressionAnswer letters="ab" answer="0" client:visible />
+</Problem>
+
+<Problem n={6}>
+In the letters $a$, $b$, simplify
+
+$$
+(\texttt{1}+a)(a+b)(\texttt{1}+b)
+$$
+
+<ExpressionAnswer letters="ab" answer="0" client:visible />
+</Problem>
+
+<Problem n={7}>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(a+b)(a+c) + a + bc
+$$
+
+<ExpressionAnswer letters="abc" answer="ab+ac" client:visible />
+</Problem>
+
+<Problem n={8}>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(ab + (\texttt{1}+a)c)^2 + ab + c
+$$
+
+<ExpressionAnswer letters="abc" answer="ac" client:visible />
+</Problem>
+
+<Problem n={9}>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(a+b+c)(ab+bc+ca)
+$$
+
+<ExpressionAnswer letters="abc" answer="abc" client:visible />
+</Problem>
+
+<Problem n={10}>
+In the letters $a$, $b$, simplify
+
+$$
+(a+b+ab)(\texttt{1}+a)(\texttt{1}+b)
+$$
+
+<ExpressionAnswer letters="ab" answer="0" client:visible />
+</Problem>
+
+<Problem n={11} hard>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(\texttt{1}+a)(\texttt{1}+b) + (\texttt{1}+b)(\texttt{1}+c) + (\texttt{1}+c)(\texttt{1}+a) + ab + bc + ca
+$$
+
+<ExpressionAnswer letters="abc" answer="1" client:visible />
+</Problem>
+
+<Problem n={12} hard>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+a(\texttt{1}+b)(\texttt{1}+c) + b(\texttt{1}+a)(\texttt{1}+c) + c(\texttt{1}+a)(\texttt{1}+b) + a + b + c
+$$
+
+<ExpressionAnswer letters="abc" answer="abc" client:visible />
+</Problem>
+
+<Problem n={13} hard>
+In the letters $a$, $b$, $c$, $d$, simplify
+
+$$
+(a+b)(c+d) + (a+c)(b+d) + (a+d)(b+c)
+$$
+
+<ExpressionAnswer letters="abcd" answer="0" client:visible />
+</Problem>
+
+<Problem n={14} hard>
+In the letters $a$, $b$, $c$, simplify
+
+$$
+(a+b)(\texttt{1}+ab) + (b+c)(\texttt{1}+bc) + (c+a)(\texttt{1}+ca)
+$$
+
+<ExpressionAnswer letters="abc" answer="0" client:visible />
+</Problem>
+
+<Problem n={15} hard>
+In the letters $a$, $b$, $c$, $d$, simplify
+
+$$
+(ab+cd)(ac+bd)(ad+bc)
+$$
+
+<ExpressionAnswer letters="abcd" answer="abc+abd+acd+bcd" client:visible />
+</Problem>
+
