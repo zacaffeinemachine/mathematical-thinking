@@ -45,12 +45,14 @@ export const threeSwitches: Puzzle = {
   ],
 };
 
-// 3. Three at the Well. Unique: Ariadne oracle, Selene and Thalia chimeras.
-// Chosen so the key differs from every island puzzle in Chapter 2.
+// 3. Three at the Well. Unique: Ariadne chimera, Selene oracle, Thalia
+// chimera. Chosen so the key differs from every island puzzle in Chapter 2.
+// (Keyed wrongly as oracle, chimera, chimera until 2026-09-30: the search
+// output was misread. Selene's sentence rules that out at a glance.)
 export const threeAtTheWell: Puzzle = {
   fields: [
-    { kind: "choice", label: "Ariadne is", options: KIND, answer: 0 },
-    { kind: "choice", label: "Selene is", options: KIND, answer: 1 },
+    { kind: "choice", label: "Ariadne is", options: KIND, answer: 1 },
+    { kind: "choice", label: "Selene is", options: KIND, answer: 0 },
     { kind: "choice", label: "Thalia is", options: KIND, answer: 1 },
   ],
 };
