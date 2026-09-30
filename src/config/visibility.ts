@@ -86,7 +86,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   // "logic-gates/nand-universal",
   // "logic-gates/sandbox",
 
-  // Boolean Algebra: only the two problem sets are released for now.
+  // Boolean Algebra: only the problem sets and the puzzle page are released for now.
   // "boolean-algebra/two-values",
   // "boolean-algebra/the-laws",
   // "boolean-algebra/dictionary",
@@ -95,6 +95,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   "boolean-algebra/simplify",
   "boolean-algebra/translate",
   "boolean-algebra/solve",
+  "boolean-algebra/puzzles",
 
   "infinity/yes-no-game",
   "infinity/friendly-fire",
