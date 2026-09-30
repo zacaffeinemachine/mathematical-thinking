@@ -1,11 +1,11 @@
 ---
 layout: ../../layouts/Chapter.astro
-title: Fifteen Puzzles
+title: Sixteen Puzzles
 order: 9
 chapter: boolean-algebra
 chapterTitle: Boolean Algebra
 blurb: Islanders, caskets, a stolen biscuit and rows of lamps, every one of them a system of boolean equations in disguise.
-description: Fifteen logic puzzles to solve by translating each clue into a boolean equation and solving the system, each with an answer sheet that marks right or wrong.
+description: Sixteen logic puzzles to solve by translating each clue into a boolean equation and solving the system, each with an answer sheet that marks right or wrong.
 ---
 import PuzzleAnswer from "../../components/games/PuzzleAnswer.tsx";
 import {
@@ -18,6 +18,7 @@ import {
   theConcert,
   fourDoors,
   theFourthVoice,
+  fourScarves,
   sixLamps,
   fiveOnTheFerry,
   aCardOfSentences,
@@ -181,7 +182,34 @@ settle.
 
 <PuzzleAnswer puzzle={theFourthVoice} client:visible />
 
-## 10. Six Lamps in a Row
+## 10. Four Scarves
+
+Four friends, Mara, Nils, Oona and Piet, each wear a scarf that is red, green
+or blue. Here is what we know.
+
+- Oona's scarf is not green.
+- Nils and Piet wear the same colour.
+- Exactly one of the four wears green.
+- Nils and Oona wear different colours.
+- Nils's scarf is not blue.
+
+A scarf has three possible colours, so a single yes/no letter cannot record
+it. Instead, give each friend **one letter per colour**. For Mara these are
+
+- $m_r = \texttt{1}$ if Mara's scarf is red, and $m_r = \texttt{0}$ if it is not,
+- $m_g = \texttt{1}$ if Mara's scarf is green, and $m_g = \texttt{0}$ if it is not,
+- $m_b = \texttt{1}$ if Mara's scarf is blue, and $m_b = \texttt{0}$ if it is not,
+
+and likewise $n_r, n_g, n_b$ for Nils, $o_r, o_g, o_b$ for Oona and
+$p_r, p_g, p_b$ for Piet. Every scarf has exactly one colour, so each friend
+also brings an equation saying that **exactly one of their three letters is
+$\texttt{1}$**. Translate the five clues, add these four equations, and solve.
+
+**What colour is each scarf?**
+
+<PuzzleAnswer puzzle={fourScarves} client:visible />
+
+## 11. Six Lamps in a Row
 
 Six lamps stand in a row, numbered 1 to 6 from the left, and under each lamp
 is a button. Pressing a button flips its own lamp and the lamps immediately
@@ -195,7 +223,7 @@ one way to do it. Which buttons do you press?
 
 <PuzzleAnswer puzzle={sixLamps} client:visible />
 
-## 11. Five on the Ferry
+## 12. Five on the Ferry
 
 Five islanders, Castor, Iris, Leander, Nyx and Pallas, are waiting for the
 ferry. Each makes a single statement.
@@ -210,7 +238,7 @@ ferry. Each makes a single statement.
 
 <PuzzleAnswer puzzle={fiveOnTheFerry} client:visible />
 
-## 12. A Card of Sentences
+## 13. A Card of Sentences
 
 A card has four sentences written on it, and nothing else.
 
@@ -223,7 +251,7 @@ A card has four sentences written on it, and nothing else.
 
 <PuzzleAnswer puzzle={aCardOfSentences} client:visible />
 
-## 13. The Round Table
+## 14. The Round Table
 
 Six islanders sit around a round table, so that each has exactly two
 neighbours. Every one of them says the same thing.
@@ -237,11 +265,11 @@ one of the six.
 
 <PuzzleAnswer puzzle={theRoundTable} client:visible />
 
-## 14. Five Lamps in a Row
+## 15. Five Lamps in a Row
 
 Now there are five lamps in a row, with a button under each, and pressing a
 button flips its own lamp and the lamps immediately beside it, exactly as in
-puzzle 10. A **starting pattern** says which of the five lamps are lit, so
+puzzle 11. A **starting pattern** says which of the five lamps are lit, so
 there are 32 starting patterns in all.
 
 To begin with, only lamp 1 is lit.
@@ -253,7 +281,7 @@ put out completely?**
 
 <PuzzleAnswer puzzle={fiveLamps} client:visible />
 
-## 15. The Lamp Grid
+## 16. The Lamp Grid
 
 Nine lamps stand in a square of three rows and three columns, with a button
 on each. Pressing a button flips its own lamp and the lamps directly above,

@@ -1,13 +1,13 @@
 import type { Puzzle } from "../PuzzleAnswer.tsx";
 
 // ---------------------------------------------------------------------------
-//  Answer keys for boolean-algebra/puzzles.mdx, fifteen logic puzzles to be
+//  Answer keys for boolean-algebra/puzzles.mdx, sixteen logic puzzles to be
 //  solved by the method of Chapter 4: one yes/no letter per unknown, one
 //  equation per clue, then solve the system. The statements live in the MDX,
 //  only the sheets and their keys live here, in the order the page uses them.
 //
 //  None of these is in the book. Every key was settled by exhaustive search,
-//  not by hand. The script is reproduced in SITE_OVERVIEW.md, "Fifteen
+//  not by hand. The script is reproduced in SITE_OVERVIEW.md, "Sixteen
 //  Puzzles"; rerun it before changing any entry below.
 //
 //  The same authoring rules as puzzles/logicalThinking.ts, plus one:
@@ -135,7 +135,20 @@ export const theFourthVoice: Puzzle = {
   ],
 };
 
-// 10. Six Lamps in a Row. Start ●○○●○● . A row of six has exactly one set of
+// 10. Four Scarves. Three colours, so each friend gets one letter per colour
+// and an exactly-one equation (the page's worked encoding). Five clues, each
+// needed. Unique: Mara green, Nils red, Oona blue, Piet red.
+const SCARF = ["Red", "Green", "Blue"];
+export const fourScarves: Puzzle = {
+  fields: [
+    { kind: "choice", label: "Mara's scarf is", options: SCARF, answer: 1 },
+    { kind: "choice", label: "Nils's scarf is", options: SCARF, answer: 0 },
+    { kind: "choice", label: "Oona's scarf is", options: SCARF, answer: 2 },
+    { kind: "choice", label: "Piet's scarf is", options: SCARF, answer: 0 },
+  ],
+};
+
+// 11. Six Lamps in a Row. Start ●○○●○● . A row of six has exactly one set of
 // presses that puts everything out: buttons 1, 3, 4 and 5.
 export const sixLamps: Puzzle = {
   fields: [1, 2, 3, 4, 5, 6].map((n, i) => ({
@@ -146,7 +159,7 @@ export const sixLamps: Puzzle = {
   })),
 };
 
-// 11. Five on the Ferry. Unique, and each sentence is needed: Castor, Iris
+// 12. Five on the Ferry. Unique, and each sentence is needed: Castor, Iris
 // and Nyx oracles, Leander and Pallas chimeras.
 export const fiveOnTheFerry: Puzzle = {
   fields: [
@@ -158,7 +171,7 @@ export const fiveOnTheFerry: Puzzle = {
   ],
 };
 
-// 12. A Card of Sentences. At most one "exactly k are false" can be true, and
+// 13. A Card of Sentences. At most one "exactly k are false" can be true, and
 // all four false would make sentence 4 true. So exactly one is true, three
 // are false, and the true one is sentence 3.
 export const aCardOfSentences: Puzzle = {
@@ -170,7 +183,7 @@ export const aCardOfSentences: Puzzle = {
   })),
 };
 
-// 13. The Round Table. Each seat gives a_i = a_(i-1) + a_(i+1). With at least
+// 14. The Round Table. Each seat gives a_i = a_(i-1) + a_(i+1). With at least
 // one oracle, the only solutions are the three turns of oracle, oracle,
 // chimera, oracle, oracle, chimera. The count is forced at 4 and no two
 // chimeras are neighbours, but every single seat is open.
@@ -187,7 +200,7 @@ export const theRoundTable: Puzzle = {
   ],
 };
 
-// 14. Five Lamps in a Row. For five lamps the system has a solution exactly
+// 15. Five Lamps in a Row. For five lamps the system has a solution exactly
 // when lamps 1 + 2 + 4 + 5 = 0 at the start, so 16 of the 32 starting
 // patterns can be put out, and "only the leftmost lit" is not one of them.
 export const fiveLamps: Puzzle = {
@@ -207,7 +220,7 @@ export const fiveLamps: Puzzle = {
   ],
 };
 
-// 15. The Lamp Grid. Start
+// 16. The Lamp Grid. Start
 //     ● ● ○
 //     ○ ○ ●
 //     ○ ● ●
