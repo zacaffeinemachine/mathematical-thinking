@@ -28,6 +28,24 @@ export interface Question {
   answer: number | number[];
 }
 
+/**
+ * One numbered question in several parts. The context is printed once, above
+ * the parts, and every part may lean on it. A part must not lean on another
+ * part: (b) may use what the context says, never what (a) asked or answered.
+ */
+export interface QuestionGroup {
+  context: string;
+  parts: Question[];
+}
+
+export type QuizItem = Question | QuestionGroup;
+
+function isGroup(item: QuizItem): item is QuestionGroup {
+  return "parts" in item;
+}
+
+const LETTERS = "abcdefghijklmnopqrstuvwxyz";
+
 // KaTeX runs at build time over MDX only, so `$…$` inside this island would
 // ship as literal dollar signs. Chapter 2 introduces no symbols at all, so
 // prompts and options are plain English with two bits of inline markup:
@@ -46,7 +64,15 @@ function sameSet(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((x) => b.includes(x));
 }
 
-export function MCQ({ n, question }: { n: number; question: Question }) {
+export function MCQ({
+  label,
+  question,
+  nested = false,
+}: {
+  label: string;
+  question: Question;
+  nested?: boolean;
+}) {
   const multi = Array.isArray(question.answer);
   const key = multi ? (question.answer as number[]) : [question.answer as number];
 
@@ -79,14 +105,18 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
 
   return (
     <div
-      style={{
-        margin: "20px 0",
-        padding: "14px 18px 16px",
-        border: "1px solid var(--rule)",
-        borderLeft: "4px solid var(--accent)",
-        borderRadius: 4,
-        background: "var(--surface)",
-      }}
+      style={
+        nested
+          ? { margin: "14px 0 0", padding: "14px 0 0", borderTop: "1px solid var(--rule)" }
+          : {
+              margin: "20px 0",
+              padding: "14px 18px 16px",
+              border: "1px solid var(--rule)",
+              borderLeft: "4px solid var(--accent)",
+              borderRadius: 4,
+              background: "var(--surface)",
+            }
+      }
     >
       <div
         style={{
@@ -98,7 +128,7 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
           marginBottom: 6,
         }}
       >
-        Question {n}
+        {label}
         {multi && " — select all that apply"}
       </div>
 
@@ -108,7 +138,7 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
 
       <div
         role={multi ? "group" : "radiogroup"}
-        aria-label={`Options for question ${n}`}
+        aria-label={`Options for ${label.toLowerCase()}`}
         style={{ display: "flex", flexDirection: "column", gap: 8 }}
       >
         {question.options.map((opt, i) => {
@@ -209,12 +239,48 @@ export function MCQ({ n, question }: { n: number; question: Question }) {
   );
 }
 
-export default function QuizSet({ questions }: { questions: Question[] }) {
+const CAPTION = {
+  fontSize: 11,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  color: "var(--muted)",
+  fontWeight: 600,
+  marginBottom: 6,
+} as const;
+
+function Group({ n, group }: { n: number; group: QuestionGroup }) {
+  return (
+    <div
+      style={{
+        margin: "20px 0",
+        padding: "14px 18px 16px",
+        border: "1px solid var(--rule)",
+        borderLeft: "4px solid var(--accent)",
+        borderRadius: 4,
+        background: "var(--surface)",
+      }}
+    >
+      <div style={CAPTION}>
+        Question {n} — {group.parts.length} parts
+      </div>
+      <p style={{ margin: 0, lineHeight: 1.6 }}>{inline(group.context)}</p>
+      {group.parts.map((q, j) => (
+        <MCQ key={j} label={`Part (${LETTERS[j]})`} question={q} nested />
+      ))}
+    </div>
+  );
+}
+
+export default function QuizSet({ questions }: { questions: QuizItem[] }) {
   return (
     <div className="not-prose my-8">
-      {questions.map((q, i) => (
-        <MCQ key={i} n={i + 1} question={q} />
-      ))}
+      {questions.map((item, i) =>
+        isGroup(item) ? (
+          <Group key={i} n={i + 1} group={item} />
+        ) : (
+          <MCQ key={i} label={`Question ${i + 1}`} question={item} />
+        ),
+      )}
     </div>
   );
 }

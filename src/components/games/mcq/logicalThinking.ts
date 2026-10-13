@@ -1,4 +1,4 @@
-import type { Question } from "../MCQ.tsx";
+import type { QuizItem } from "../MCQ.tsx";
 
 // ---------------------------------------------------------------------------
 //  Question banks for Chapter 2, Logical Thinking.
@@ -11,20 +11,23 @@ import type { Question } from "../MCQ.tsx";
 //    • Distractors must be unambiguously wrong — refutable by a specific line
 //      of the chapter. An "arguably also correct" option strands the reader.
 //    • Answers are read off the text, not recalled.
-//    • Every question stands on its own. No "same rule", "that circle", "the
-//      puzzle above": a prompt that needs a scene restates it in full, from a
-//      shared constant where several questions use the same scene. Options
-//      name things rather than point at them with "it" and "that".
+//    • No question leans on another. Questions that share a scene become one
+//      question in parts: { context, parts }, with the scene in `context`,
+//      printed once above the parts. A part may use the context but never
+//      another part's question or answer. Outside a group, a prompt that needs
+//      a scene states it. Options name things rather than point at them with
+//      "it" and "that".
 //
 //  `answer: number` is a single-answer question; `answer: number[]` is
-//  select-all-that-apply, graded on exact set equality.
+//  select-all-that-apply, graded on exact set equality. The part count of each
+//  bank stays at twelve; grouping changes how they are numbered, not how many.
 // ---------------------------------------------------------------------------
 
 // ===========================================================================
 //  §2.1 — And, Or, and Not
 // ===========================================================================
 
-export const andOrNot: Question[] = [
+export const andOrNot: QuizItem[] = [
   {
     // Point 189 — deny "both hold" ⇒ "at least one fails", then combine with a
     // known half. Two steps; the book never runs this scenario.
@@ -95,29 +98,34 @@ export const andOrNot: Question[] = [
     answer: 0,
   },
   {
-    // Point 189 + Point 227 — recognise De Morgan in an unfamiliar pair.
-    prompt:
-      "Are these two sentences the same claim? (i) *It is not true that the printer and the scanner are both working.* (ii) *The printer is not working, or the scanner is not working.*",
-    options: [
-      "Only when exactly one of the two machines has failed",
-      "No — the first is about the pair and the second is about each machine",
-      "No — the second allows both to have failed and the first does not",
-      "Yes — each is true in exactly the situations where at least one machine has failed",
+    context: "An office has a printer and a scanner.",
+    parts: [
+      {
+        // Point 189 + Point 227 — recognise De Morgan in an unfamiliar pair.
+        prompt:
+          "Are these two sentences the same claim? (i) *It is not true that the printer and the scanner are both working.* (ii) *The printer is not working, or the scanner is not working.*",
+        options: [
+          "Only when exactly one of the two machines has failed",
+          "No — the first is about the pair and the second is about each machine",
+          "No — the second allows both to have failed and the first does not",
+          "Yes — each is true in exactly the situations where at least one machine has failed",
+        ],
+        answer: 3,
+      },
+      {
+        // Point 189 — the same setup, but now the tempting misreading. Sits next to
+        // part (a) deliberately.
+        prompt:
+          "Is *It is not true that the printer and the scanner are both working* the same claim as *Neither the printer nor the scanner is working*?",
+        options: [
+          "Yes — both say the pair has failed",
+          "Yes, provided at least one machine has failed",
+          "No — the second is stronger, and a working printer beside a broken scanner separates them",
+          "No — the second is weaker, and a working printer beside a broken scanner separates them",
+        ],
+        answer: 2,
+      },
     ],
-    answer: 3,
-  },
-  {
-    // Point 189 — the same setup, but now the tempting misreading. Sits next to
-    // the previous question deliberately.
-    prompt:
-      "An office has a printer and a scanner. Is *It is not true that the printer and the scanner are both working* the same claim as *Neither the printer nor the scanner is working*?",
-    options: [
-      "Yes — both say the pair has failed",
-      "Yes, provided at least one machine has failed",
-      "No — the second is stronger, and a working printer beside a broken scanner separates them",
-      "No — the second is weaker, and a working printer beside a broken scanner separates them",
-    ],
-    answer: 2,
   },
   {
     // Point 146 — double denial, buried in officialese so it has to be unwound.
@@ -189,7 +197,7 @@ export const andOrNot: Question[] = [
 //  §2.2 — Quantifiers
 // ===========================================================================
 
-export const quantifiers: Question[] = [
+export const quantifiers: QuizItem[] = [
   {
     // Point 417 — refuting an *every* claim takes one case, not a survey.
     prompt:
@@ -227,28 +235,33 @@ export const quantifiers: Question[] = [
     answer: 1,
   },
   {
-    // Point 467 — the denial of *every* is *some … not*.
-    prompt:
-      "A coach announces: *Every player turned up to practice.* The captain says that is not true. What has the captain claimed?",
-    options: [
-      "That at least one player did not turn up",
-      "That most of the players did not turn up",
-      "That exactly one player did not turn up",
-      "That no player turned up",
+    context: "A coach announces: *Every player turned up to practice.*",
+    parts: [
+      {
+        // Point 467 — the denial of *every* is *some … not*.
+        prompt:
+          "The captain says the coach's announcement is not true. What has the captain claimed?",
+        options: [
+          "That at least one player did not turn up",
+          "That most of the players did not turn up",
+          "That exactly one player did not turn up",
+          "That no player turned up",
+        ],
+        answer: 0,
+      },
+      {
+        // Point 467 — a wrong denial can itself be false.
+        prompt:
+          "In fact nineteen of the twenty players turned up and one did not. The captain wants to say the coach is wrong, and says: *Nobody turned up to practice.* What is wrong with the captain's sentence?",
+        options: [
+          "Nothing — the captain's sentence is the right way to say the coach is wrong",
+          "The captain's sentence is false, since nineteen players turned up. To say the coach is wrong, the captain needs only that at least one player stayed away",
+          "The captain's sentence is true, but says more than is needed",
+          "The captain's sentence cannot be called true or false without asking the coach",
+        ],
+        answer: 1,
+      },
     ],
-    answer: 0,
-  },
-  {
-    // Point 467 — a wrong denial can itself be false.
-    prompt:
-      "A coach announces: *Every player turned up to practice.* In fact nineteen of the twenty players turned up and one did not. The captain wants to say the coach is wrong, and says: *Nobody turned up to practice.* What is wrong with the captain's sentence?",
-    options: [
-      "Nothing — the captain's sentence is the right way to say the coach is wrong",
-      "The captain's sentence is false, since nineteen players turned up. To say the coach is wrong, the captain needs only that at least one player stayed away",
-      "The captain's sentence is true, but says more than is needed",
-      "The captain's sentence cannot be called true or false without asking the coach",
-    ],
-    answer: 1,
   },
   {
     // Point 437 — quantifier order, verified by exhaustion on a 5x5 matching.
@@ -341,30 +354,35 @@ export const quantifiers: Question[] = [
 //  §2.3 — Conditionals
 // ===========================================================================
 
-export const conditionals: Question[] = [
+export const conditionals: QuizItem[] = [
   {
-    // Point 648 — the single falsifying situation, on a fresh notice.
-    prompt:
-      "A nursery's sign reads: *If a plant is kept in this shade house, it is watered daily.* Which single observation would show the sign to be false?",
-    options: [
-      "A plant kept outside the shade house that was not watered daily",
-      "A plant kept in the shade house that was not watered daily",
-      "A plant kept outside the shade house that was watered daily",
-      "A plant kept in the shade house that was watered daily",
+    context:
+      "A nursery's sign reads: *If a plant is kept in this shade house, it is watered daily.*",
+    parts: [
+      {
+        // Point 648 — the single falsifying situation, on a fresh notice.
+        prompt: "Which single observation would show the sign to be false?",
+        options: [
+          "A plant kept outside the shade house that was not watered daily",
+          "A plant kept in the shade house that was not watered daily",
+          "A plant kept outside the shade house that was watered daily",
+          "A plant kept in the shade house that was watered daily",
+        ],
+        answer: 1,
+      },
+      {
+        // Point 648 — the rows readers object to.
+        prompt:
+          "A plant that has never been inside the shade house turns out to have been watered daily anyway. What does that plant do to the sign?",
+        options: [
+          "Nothing — the sign says nothing about plants kept outside the shade house",
+          "It makes the sign false, since the plant was watered without meeting the condition",
+          "It makes the sign neither true nor false",
+          "It makes the sign true only if some shade-house plant was also watered",
+        ],
+        answer: 0,
+      },
     ],
-    answer: 1,
-  },
-  {
-    // Point 648 — the rows readers object to.
-    prompt:
-      "A nursery's sign reads: *If a plant is kept in this shade house, it is watered daily.* A plant that has never been inside the shade house turns out to have been watered daily anyway. What does that do to the sign?",
-    options: [
-      "Nothing — the sign says nothing about plants kept outside the shade house",
-      "It makes the sign false, since the plant was watered without meeting the condition",
-      "It makes the sign neither true nor false",
-      "It makes the sign true only if some shade-house plant was also watered",
-    ],
-    answer: 0,
   },
   {
     // Point 698 — an if-part that never occurs.
@@ -403,66 +421,75 @@ export const conditionals: Question[] = [
     answer: 3,
   },
   {
-    // Point 781 — affirming the consequent.
-    prompt:
-      "A bakery's rule: *If the bread is burnt, it is sold at half price.* You see a loaf being sold at half price. What follows?",
-    options: [
-      "Nothing — the rule does not say that half-price loaves are burnt",
-      "The loaf is burnt",
-      "The loaf is not burnt",
-      "The loaf is burnt, unless it was discounted for some other reason",
+    context: "A bakery's rule: *If the bread is burnt, it is sold at half price.*",
+    parts: [
+      {
+        // Point 781 — affirming the consequent.
+        prompt: "You see a loaf being sold at half price. What follows?",
+        options: [
+          "Nothing — the rule does not say that half-price loaves are burnt",
+          "The loaf is burnt",
+          "The loaf is not burnt",
+          "The loaf is burnt, unless it was discounted for some other reason",
+        ],
+        answer: 0,
+      },
+      {
+        // Point 781 — denying the antecedent.
+        prompt:
+          "A loaf is not burnt. What follows about its price?",
+        options: [
+          "It is sold at half price only if the baker chooses",
+          "It is not sold at half price",
+          "Nothing — the rule says nothing about loaves that are not burnt",
+          "It is sold at half price",
+        ],
+        answer: 2,
+      },
+      {
+        // Point 841 — the contrapositive, set against the converse and the
+        // converse-in-disguise. The fourth option is "P only if Q", which is the
+        // converse of the rule (Point 867).
+        prompt:
+          "Which sentence makes the same claim as the bakery's rule?",
+        options: [
+          "If a loaf is sold at half price, it is burnt",
+          "If a loaf is not sold at half price, it is not burnt",
+          "If a loaf is not burnt, it is not sold at half price",
+          "A loaf is sold at half price only if it is burnt",
+        ],
+        answer: 1,
+      },
     ],
-    answer: 0,
   },
   {
-    // Point 781 — denying the antecedent.
-    prompt:
-      "A bakery's rule: *If the bread is burnt, it is sold at half price.* A loaf is not burnt. What follows about its price?",
-    options: [
-      "It is sold at half price only if the baker chooses",
-      "It is not sold at half price",
-      "Nothing — the rule says nothing about loaves that are not burnt",
-      "It is sold at half price",
+    context:
+      "A gym notice reads: *You may use the pool only if you have a swimming cap.*",
+    parts: [
+      {
+        // Point 867 — *only if* runs against the word order.
+        prompt: "What does the notice forbid?",
+        options: [
+          "Owning a cap without using the pool",
+          "Being refused the pool while holding a cap",
+          "Being in the pool without a cap",
+          "Nothing — it only promises that a cap will get you in",
+        ],
+        answer: 2,
+      },
+      {
+        // Point 867 — dropping *only* replaces the claim with its converse.
+        prompt:
+          "The notice is reworded to *You may use the pool if you have a swimming cap.* What has changed?",
+        options: [
+          "It now promises that a cap is enough, and no longer forbids swimming without one",
+          "It now demands both that you hold a cap and that you use the pool",
+          "Nothing — the two wordings make the same claim",
+          "It now forbids swimming without a cap more strictly",
+        ],
+        answer: 0,
+      },
     ],
-    answer: 2,
-  },
-  {
-    // Point 841 — the contrapositive, set against the converse and the
-    // converse-in-disguise. The fourth option is "P only if Q", which is the
-    // converse of the rule (Point 867).
-    prompt:
-      "Which sentence makes the same claim as *If the bread is burnt, it is sold at half price*?",
-    options: [
-      "If a loaf is sold at half price, it is burnt",
-      "If a loaf is not sold at half price, it is not burnt",
-      "If a loaf is not burnt, it is not sold at half price",
-      "A loaf is sold at half price only if it is burnt",
-    ],
-    answer: 1,
-  },
-  {
-    // Point 867 — *only if* runs against the word order.
-    prompt:
-      "A gym notice reads: *You may use the pool only if you have a swimming cap.* What does the notice forbid?",
-    options: [
-      "Owning a cap without using the pool",
-      "Being refused the pool while holding a cap",
-      "Being in the pool without a cap",
-      "Nothing — it only promises that a cap will get you in",
-    ],
-    answer: 2,
-  },
-  {
-    // Point 867 — dropping *only* replaces the claim with its converse.
-    prompt:
-      "A gym notice used to read *You may use the pool only if you have a swimming cap.* It is reworded to *You may use the pool if you have a swimming cap.* What has changed?",
-    options: [
-      "It now promises that a cap is enough, and no longer forbids swimming without one",
-      "It now demands both that you hold a cap and that you use the pool",
-      "Nothing — the two wordings make the same claim",
-      "It now forbids swimming without a cap more strictly",
-    ],
-    answer: 0,
   },
   {
     // Point 958 — the extra situation an *exactly when* rules out.
@@ -499,75 +526,106 @@ export const conditionals: Question[] = [
 
 const SLIPS =
   "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Dover* and *Kendal*; two lie service-up, showing *express* and *standard*.";
-const DOVER_RULE =
-  "The office rule is: *If a parcel goes to Dover, it is sent by express.*";
 
-export const testingAClaim: Question[] = [
+export const testingAClaim: QuizItem[] = [
   {
     // Rule "if Dover then express" -> flip Dover and standard.
-    prompt: `${SLIPS} ${DOVER_RULE} Which slips must you turn over to be certain whether the rule was followed?`,
-    options: [
-      "The express slip",
-      "The standard slip",
-      "The Kendal slip",
-      "The Dover slip",
+    context: `${SLIPS} The office rule is: *If a parcel goes to Dover, it is sent by express.*`,
+    parts: [
+      {
+        prompt:
+          "Which slips must you turn over to be certain whether the rule was followed?",
+        options: [
+          "The express slip",
+          "The standard slip",
+          "The Kendal slip",
+          "The Dover slip",
+        ],
+        answer: [1, 3],
+      },
+      {
+        prompt:
+          "The hidden side of the Kendal slip names a service, either express or standard. Why is there no need to turn the Kendal slip over?",
+        options: [
+          "Turning it could only confirm the rule, and a rule that has been confirmed once needs no further test",
+          "The Kendal slip is settled once the Dover slip has been turned",
+          "A Kendal parcel is never sent by express",
+          "The rule says nothing about parcels going anywhere other than Dover",
+        ],
+        answer: 3,
+      },
+      {
+        // Rewritten Sep 2026: the old option A ("the rule is already satisfied
+        // by that slip") was true as well as the keyed answer, so a student
+        // reasoning correctly could be marked wrong. Every option below is now
+        // decided by the rule alone.
+        prompt:
+          "The hidden side of the express slip names a destination, either Dover or Kendal. Why is there no need to turn the express slip over?",
+        options: [
+          "The rule is about parcels sent by standard service, not about express ones",
+          "An express parcel must be going to Dover, so the hidden side is already settled",
+          "Neither hidden destination can break the rule: Dover on the back obeys it, and the rule asks nothing of a parcel going to Kendal",
+          "A slip lying service-up can never break a rule that begins with a destination",
+        ],
+        answer: 2,
+      },
+      {
+        prompt:
+          "The hidden side of the standard slip names a destination, either Dover or Kendal. Why must the standard slip be turned over?",
+        options: [
+          "If its other side reads Kendal, the rule is broken",
+          "Because every slip showing a service must be checked",
+          "If its other side reads Dover, we have a Dover parcel not sent by express, which is exactly what the rule forbids",
+          "Because a standard parcel is cheaper and more likely to be misrouted",
+        ],
+        answer: 2,
+      },
+      {
+        prompt:
+          "A clerk turns one slip over and finds Dover on one side and standard on the other. What does that one slip settle?",
+        options: [
+          "Nothing, until the other three slips are turned",
+          "That the rule should be reworded",
+          "The rule was not followed",
+          "The rule was followed",
+        ],
+        answer: 2,
+      },
+      {
+        prompt:
+          "All four slips are turned over, and not one of them shows Dover together with standard. What follows?",
+        options: [
+          "Nothing, since four slips are too few to settle anything",
+          "The rule held for every parcel the office has ever sent",
+          "The rule held for these four parcels, and every Dover parcel the office sends is therefore express",
+          "The rule held for these four parcels, and nothing follows about any other parcel",
+        ],
+        answer: 3,
+      },
+      {
+        // Point 1315 — the shape of the common error.
+        prompt:
+          "Asked which slips to turn over, most clerks reach first for the Dover slip and the express slip, the two that match the words of the rule. What has gone wrong in the clerks' instinct?",
+        options: [
+          "They are hunting for cases that fit the rule rather than for the case that would break it",
+          "They have forgotten that a slip has two sides",
+          "They have taken the rule to be about every parcel rather than these four",
+          "They have read *if* as *only if*",
+        ],
+        answer: 0,
+      },
+      {
+        // Point 1294 — the converse and the converse in disguise.
+        prompt: "Which of these does the office rule leave open?",
+        options: [
+          "That some parcel sent by express is going somewhere other than Dover",
+          "That some parcel going to Kendal is sent by standard service",
+          "That some parcel going to Dover is sent by standard service",
+          "That some parcel going to Kendal is sent by express",
+        ],
+        answer: [0, 1, 3],
+      },
     ],
-    answer: [1, 3],
-  },
-  {
-    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the Kendal slip names a service, either express or standard. Why is there no need to turn the Kendal slip over?`,
-    options: [
-      "Turning it could only confirm the rule, and a rule that has been confirmed once needs no further test",
-      "The Kendal slip is settled once the Dover slip has been turned",
-      "A Kendal parcel is never sent by express",
-      "The rule says nothing about parcels going anywhere other than Dover",
-    ],
-    answer: 3,
-  },
-  {
-    // Rewritten Sep 2026: the old option A ("the rule is already satisfied by
-    // that slip") was true as well as the keyed answer, so a student reasoning
-    // correctly could be marked wrong. Every option below is now decided by the
-    // rule alone, and the prompt restates the rule so the question stands on
-    // its own.
-    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the express slip names a destination, either Dover or Kendal. Why is there no need to turn the express slip over?`,
-    options: [
-      "The rule is about parcels sent by standard service, not about express ones",
-      "An express parcel must be going to Dover, so the hidden side is already settled",
-      "Neither hidden destination can break the rule: Dover on the back obeys it, and the rule asks nothing of a parcel going to Kendal",
-      "A slip lying service-up can never break a rule that begins with a destination",
-    ],
-    answer: 2,
-  },
-  {
-    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the standard slip names a destination, either Dover or Kendal. Why must the standard slip be turned over?`,
-    options: [
-      "If its other side reads Kendal, the rule is broken",
-      "Because every slip showing a service must be checked",
-      "If its other side reads Dover, we have a Dover parcel not sent by express, which is exactly what the rule forbids",
-      "Because a standard parcel is cheaper and more likely to be misrouted",
-    ],
-    answer: 2,
-  },
-  {
-    prompt: `${SLIPS} ${DOVER_RULE} A clerk turns one slip over and finds Dover on one side and standard on the other. What does that one slip settle?`,
-    options: [
-      "Nothing, until the other three slips are turned",
-      "That the rule should be reworded",
-      "The rule was not followed",
-      "The rule was followed",
-    ],
-    answer: 2,
-  },
-  {
-    prompt: `${SLIPS} ${DOVER_RULE} All four slips are turned over, and not one of them shows Dover together with standard. What follows?`,
-    options: [
-      "Nothing, since four slips are too few to settle anything",
-      "The rule held for every parcel the office has ever sent",
-      "The rule held for these four parcels, and every Dover parcel the office sends is therefore express",
-      "The rule held for these four parcels, and nothing follows about any other parcel",
-    ],
-    answer: 3,
   },
   {
     // Point 1313 — the general rule.
@@ -582,63 +640,49 @@ export const testingAClaim: Question[] = [
     answer: 2,
   },
   {
-    // Converse rule on the same four slips -> flip Kendal and express.
-    prompt: `${SLIPS} The office rule is: *If a parcel is sent by express, it goes to Dover.* Which slips must you turn over to be certain whether the rule was followed?`,
-    options: [
-      "The Kendal slip",
-      "The express slip",
-      "The standard slip",
-      "The Dover slip",
+    // Three rewordings on the same four slips, each part stating its own rule.
+    // Must-flip sets by the same exhaustive search.
+    context: `${SLIPS} The office is weighing three different rules, and wants to know which slips each one would make you turn over.`,
+    parts: [
+      {
+        // Converse -> flip Kendal and express.
+        prompt:
+          "The rule *If a parcel is sent by express, it goes to Dover.* Which slips must you turn over to be certain whether this rule was followed?",
+        options: [
+          "The Kendal slip",
+          "The express slip",
+          "The standard slip",
+          "The Dover slip",
+        ],
+        answer: [0, 1],
+      },
+      {
+        // Biconditional -> flip all four.
+        prompt:
+          "The rule *A parcel goes to Dover exactly when it is sent by express.* Which slips must you turn over to be certain whether this rule was followed?",
+        options: [
+          "The Dover slip and the standard slip",
+          "The Kendal slip and the express slip",
+          "All four of them",
+          "The Dover slip and the express slip",
+        ],
+        answer: 2,
+      },
+      {
+        // Point 867 chained into §2.4: "P only if Q" is "if P then Q" again, so
+        // the must-flip set is that of the first question, not of the converse
+        // in part (a). Verified: ['Dover', 'standard'].
+        prompt:
+          "The rule *A parcel goes to Dover only if it is sent by express.* Which slips must you turn over to be certain whether this rule was followed?",
+        options: [
+          "The Kendal slip and the express slip",
+          "All four of them",
+          "The Dover slip and the standard slip",
+          "The Dover slip and the express slip",
+        ],
+        answer: 2,
+      },
     ],
-    answer: [0, 1],
-  },
-  {
-    // Biconditional on the same four slips -> flip all four.
-    prompt: `${SLIPS} The office rule is: *A parcel goes to Dover exactly when it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?`,
-    options: [
-      "The Dover slip and the standard slip",
-      "The Kendal slip and the express slip",
-      "All four of them",
-      "The Dover slip and the express slip",
-    ],
-    answer: 2,
-  },
-  {
-    // Point 1294 — the converse and the converse in disguise.
-    prompt:
-      "A delivery office has the rule *If a parcel goes to Dover, it is sent by express.* Which of these does the rule leave open?",
-    options: [
-      "That some parcel sent by express is going somewhere other than Dover",
-      "That some parcel going to Kendal is sent by standard service",
-      "That some parcel going to Dover is sent by standard service",
-      "That some parcel going to Kendal is sent by express",
-    ],
-    answer: [0, 1, 3],
-  },
-  {
-    // Point 1315 — the shape of the common error.
-    prompt: `${SLIPS} ${DOVER_RULE} Asked which slips to turn over, most clerks reach first for the Dover slip and the express slip, the two that match the words of the rule. What has gone wrong in the clerks' instinct?`,
-    options: [
-      "They are hunting for cases that fit the rule rather than for the case that would break it",
-      "They have forgotten that a slip has two sides",
-      "They have taken the rule to be about every parcel rather than these four",
-      "They have read *if* as *only if*",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 867 chained into §2.4: the reworded rule is "P only if Q", which is
-    // the ORIGINAL rule again, so the must-flip set is unchanged. Sits opposite
-    // the converse question above, where the rewording does change the answer.
-    // Verified by the same exhaustive search: ['Dover', 'standard'].
-    prompt: `${SLIPS} The office rule is: *A parcel goes to Dover only if it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?`,
-    options: [
-      "The Kendal slip and the express slip",
-      "All four of them",
-      "The Dover slip and the standard slip",
-      "The Dover slip and the express slip",
-    ],
-    answer: 2,
   },
 ];
 
@@ -652,57 +696,83 @@ export const testingAClaim: Question[] = [
 //            red and two blue, the fourth left in the box and seen by nobody.
 // ===========================================================================
 
-const LINE =
-  "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of three red and two blue, and each knows this.";
-const LINE_TWO_ANSWERS =
+const LINE_SETUP =
+  "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody.";
+const TWO_ANSWERS =
   "The back logician is asked first and says *I do not know.* The middle logician is asked next and also says *I do not know.*";
-const CIRCLE =
-  "Three logicians stand in a circle, each able to see the other two. Their hats were drawn from two red and two blue, and each knows this; the fourth hat stays in the box and nobody sees it.";
 
-export const knowingWhatOthersKnow: Question[] = [
+export const knowingWhatOthersKnow: QuizItem[] = [
   {
-    prompt: `${LINE} The back logician is asked first and says *I do not know.* What does that answer rule out?`,
-    options: [
-      "That the middle and front hats are of different colours",
-      "That the middle and front hats are both blue",
-      "That the back logician's own hat is red",
-      "That the middle and front hats are both red",
+    context: `${LINE_SETUP} Their three hats were drawn from a pool of three red and two blue, and each knows this.`,
+    parts: [
+      {
+        prompt:
+          "The back logician is asked first and says *I do not know.* What does that answer rule out?",
+        options: [
+          "That the middle and front hats are of different colours",
+          "That the middle and front hats are both blue",
+          "That the back logician's own hat is red",
+          "That the middle and front hats are both red",
+        ],
+        answer: 1,
+      },
+      {
+        prompt:
+          "Suppose the back logician sees two blue hats in front. Why would the back logician then know their own hat colour?",
+        options: [
+          "Seeing two hats of any kind is enough to fix the third",
+          "Both blue hats would have been accounted for, so the back hat would have to be red",
+          "Both red hats would have been accounted for, so the back hat would have to be blue",
+          "The pool contains an odd number of hats, so the back hat is determined",
+        ],
+        answer: 1,
+      },
+      {
+        prompt: `${TWO_ANSWERS} What do the two answers together establish?`,
+        options: [
+          "The front hat is red",
+          "The middle hat is blue",
+          "The front hat is blue",
+          "The middle hat is red",
+        ],
+        answer: 0,
+      },
+      {
+        prompt: `${TWO_ANSWERS} After these two answers, who can name their own hat colour with certainty?`,
+        options: [
+          "The logician in front, who can see nobody at all",
+          "Nobody — the two answers are not enough",
+          "The logician in the middle",
+          "The logician at the back",
+        ],
+        answer: 0,
+      },
+      {
+        // Point 1478 — predictable answers carry nothing.
+        prompt:
+          "Suppose the front logician is asked first, before anyone else speaks. Would the front logician's answer tell the others anything?",
+        options: [
+          "No — everyone could have predicted it in advance, since the front logician sees nobody",
+          "Yes — it would have fixed the middle logician's colour",
+          "Only if the front logician had said *I know*",
+          "Yes — it would have ruled out one arrangement",
+        ],
+        answer: 0,
+      },
+      {
+        prompt: `${TWO_ANSWERS} The front logician then names their own hat colour without ever seeing a single hat. How is that possible?`,
+        options: [
+          "The front logician guessed, and happened to be right",
+          "The two answers given before carried all the information needed",
+          "The pool of hats alone fixes the front colour, whatever anyone says",
+          "The front logician could see a reflection in the wall",
+        ],
+        answer: 1,
+      },
     ],
-    answer: 1,
   },
   {
-    prompt: `${LINE} Suppose the back logician sees two blue hats in front. Why would the back logician then know their own hat colour?`,
-    options: [
-      "Seeing two hats of any kind is enough to fix the third",
-      "Both blue hats would have been accounted for, so the back hat would have to be red",
-      "Both red hats would have been accounted for, so the back hat would have to be blue",
-      "The pool contains an odd number of hats, so the back hat is determined",
-    ],
-    answer: 1,
-  },
-  {
-    prompt: `${LINE} ${LINE_TWO_ANSWERS} What do the two answers together establish?`,
-    options: [
-      "The front hat is red",
-      "The middle hat is blue",
-      "The front hat is blue",
-      "The middle hat is red",
-    ],
-    answer: 0,
-  },
-  {
-    prompt: `${LINE} ${LINE_TWO_ANSWERS} Who can now name their own hat colour with certainty?`,
-    options: [
-      "The logician in front, who can see nobody at all",
-      "Nobody — the two answers are not enough",
-      "The logician in the middle",
-      "The logician at the back",
-    ],
-    answer: 0,
-  },
-  {
-    prompt:
-      "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of two red and three blue, and each knows this. The back logician is asked first and says *I do not know.* What does that answer rule out?",
+    prompt: `${LINE_SETUP} Their three hats were drawn from a pool of two red and three blue, and each knows this. The back logician is asked first and says *I do not know.* What does that answer rule out?`,
     options: [
       "That the middle and front hats are both blue",
       "That the middle and front hats are both red",
@@ -712,34 +782,42 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 1,
   },
   {
-    prompt: `${CIRCLE} Before anyone speaks, how many of the three can name their own hat colour?`,
-    options: [
-      "Exactly two, whatever the arrangement",
-      "Exactly one, whatever the arrangement",
-      "None, whatever the arrangement",
-      "It depends on the arrangement",
+    context:
+      "Three logicians stand in a circle, each able to see the other two. Their hats were drawn from two red and two blue, and each knows this; the fourth hat stays in the box and nobody sees it. Nobody has spoken yet.",
+    parts: [
+      {
+        prompt: "How many of the three can name their own hat colour?",
+        options: [
+          "Exactly two, whatever the arrangement",
+          "Exactly one, whatever the arrangement",
+          "None, whatever the arrangement",
+          "It depends on the arrangement",
+        ],
+        answer: 1,
+      },
+      {
+        prompt:
+          "What must one of the logicians see in order to know their own hat colour?",
+        options: [
+          "Two hats of different colours",
+          "At least one red hat",
+          "At least one blue hat",
+          "Two hats of the same colour",
+        ],
+        answer: 3,
+      },
+      {
+        prompt:
+          "One of the logicians sees one red hat and one blue hat. What can this logician conclude about their own hat?",
+        options: [
+          "Nothing — both colours are still possible",
+          "That it is red",
+          "That it is the same colour as the hat left in the box",
+          "That it is blue",
+        ],
+        answer: 0,
+      },
     ],
-    answer: 1,
-  },
-  {
-    prompt: `${CIRCLE} Before anyone speaks, what must one of the logicians see in order to know their own hat colour?`,
-    options: [
-      "Two hats of different colours",
-      "At least one red hat",
-      "At least one blue hat",
-      "Two hats of the same colour",
-    ],
-    answer: 3,
-  },
-  {
-    prompt: `${CIRCLE} One of the logicians sees one red hat and one blue hat. What can this logician conclude about their own hat?`,
-    options: [
-      "Nothing — both colours are still possible",
-      "That it is red",
-      "That it is the same colour as the hat left in the box",
-      "That it is blue",
-    ],
-    answer: 0,
   },
   {
     // The governing idea of the section, .tex:1412-1419.
@@ -765,27 +843,6 @@ export const knowingWhatOthersKnow: Question[] = [
     ],
     answer: 2,
   },
-  {
-    // Point 1478 — predictable answers carry nothing.
-    prompt: `${LINE} Suppose the front logician is asked first, before anyone else speaks. Would the front logician's answer tell the others anything?`,
-    options: [
-      "No — everyone could have predicted it in advance, since the front logician sees nobody",
-      "Yes — it would have fixed the middle logician's colour",
-      "Only if the front logician had said *I know*",
-      "Yes — it would have ruled out one arrangement",
-    ],
-    answer: 0,
-  },
-  {
-    prompt: `${LINE} ${LINE_TWO_ANSWERS} The front logician then names their own hat colour without ever seeing a single hat. How is that possible?`,
-    options: [
-      "The front logician guessed, and happened to be right",
-      "The two answers given before carried all the information needed",
-      "The pool of hats alone fixes the front colour, whatever anyone says",
-      "The front logician could see a reflection in the wall",
-    ],
-    answer: 1,
-  },
 ];
 
 // ===========================================================================
@@ -800,23 +857,58 @@ export const knowingWhatOthersKnow: Question[] = [
 //  Under the naive reading of Elara's sentence the puzzle has NO solution.
 // ===========================================================================
 
-const RUBY_PUZZLE =
-  "On the Isles of Paradox, a ruby is hidden in the Jade, Onyx or Coral box. Elara says: *Orion's answer to 'Is the ruby in the Jade box?' is yes.* Orion says: *The ruby is in the Jade box.* Selene says: *The ruby is not in the Onyx box.* Exactly one of the three is a chimera.";
-const RUBY_QUESTION =
-  "On the Isles of Paradox, you meet an islander and do not know whether they are an oracle or a chimera. You ask: *Is your answer to 'Is the ruby in the Jade box?' yes?* and take a yes to mean the ruby is in the Jade box.";
+const ASK =
+  "*Is your answer to 'Is the ruby in the Jade box?' yes?*";
 
-export const askingAboutAnswers: Question[] = [
+export const askingAboutAnswers: QuizItem[] = [
   {
-    // Point 1728 — the reported-answer rule.
-    prompt:
-      "On the Isles of Paradox, Elara says: *Orion's answer to 'Is the ruby in the Jade box?' is yes.* Exactly when is that sentence true?",
-    options: [
-      "When exactly one of *the ruby is in the Jade box* and *Orion is an oracle* is true",
-      "When *the ruby is in the Jade box* and *Orion is an oracle* are both true or both false",
-      "When Orion is an oracle",
-      "When the ruby is in the Jade box",
+    context:
+      "On the Isles of Paradox, a ruby is hidden in the Jade, Onyx or Coral box. Elara says: *Orion's answer to 'Is the ruby in the Jade box?' is yes.* Orion says: *The ruby is in the Jade box.* Selene says: *The ruby is not in the Onyx box.* Exactly one of the three is a chimera.",
+    parts: [
+      {
+        // Point 1728 — the reported-answer rule.
+        prompt: "Exactly when is Elara's sentence true?",
+        options: [
+          "When exactly one of *the ruby is in the Jade box* and *Orion is an oracle* is true",
+          "When *the ruby is in the Jade box* and *Orion is an oracle* are both true or both false",
+          "When Orion is an oracle",
+          "When the ruby is in the Jade box",
+        ],
+        answer: 1,
+      },
+      {
+        prompt: "Where is the ruby?",
+        options: [
+          "In the Jade box",
+          "It cannot be determined",
+          "In the Onyx box",
+          "In the Coral box",
+        ],
+        answer: 3,
+      },
+      {
+        prompt: "Which of the three is the chimera?",
+        options: [
+          "It cannot be determined",
+          "Selene",
+          "Elara",
+          "Orion",
+        ],
+        answer: 3,
+      },
+      {
+        // Verified: under the naive reading the solution set is empty.
+        prompt:
+          "Suppose a reader takes Elara's sentence to mean simply *the ruby is in the Jade box.* What happens to the puzzle?",
+        options: [
+          "Nothing — the two readings come to the same thing",
+          "It has two solutions instead of one",
+          "It still has one solution, but the ruby ends up in the wrong box",
+          "No arrangement of the three speakers fits at all, and the puzzle stays shut",
+        ],
+        answer: 3,
+      },
     ],
-    answer: 1,
   },
   {
     // Point 1728 — the idea in one line.
@@ -830,81 +922,67 @@ export const askingAboutAnswers: Question[] = [
     answer: 0,
   },
   {
-    prompt: `${RUBY_PUZZLE} Where is the ruby?`,
-    options: [
-      "In the Jade box",
-      "It cannot be determined",
-      "In the Onyx box",
-      "In the Coral box",
+    context:
+      "On the Isles of Paradox, you meet an islander and do not know whether they are an oracle or a chimera. The islander knows which box holds the ruby, and you want to find out whether it is the Jade box.",
+    parts: [
+      {
+        // Point 1792 — the plain question is worthless.
+        prompt:
+          "Why is the plain question *Is the ruby in the Jade box?* no use here?",
+        options: [
+          "A chimera would refuse to answer it",
+          "It mentions only one of the boxes",
+          "A yes means the Jade box from an oracle and some other box from a chimera, and you cannot tell which you are facing",
+          "An islander is not obliged to answer a plain question",
+        ],
+        answer: 2,
+      },
+      {
+        // Point 1792 — the self-report is the embedded question.
+        prompt:
+          "Before you ask anything, the islander volunteers: *My answer to 'Is the ruby in the Jade box?' is yes.* What follows?",
+        options: [
+          "The ruby is in the Jade box, whichever kind the islander is",
+          "Nothing, since the sentence is about the islander and not about the ruby",
+          "The islander is an oracle",
+          "The ruby is in the Jade box if the islander is an oracle, and elsewhere if not",
+        ],
+        answer: 0,
+      },
+      {
+        // Point 1824 — why the chimera's answer flips to match.
+        prompt: `You ask ${ASK} and the islander says yes. Why can that yes be trusted even if the islander is a chimera?`,
+        options: [
+          "The question is phrased so cunningly that he does not notice it",
+          "A chimera cannot answer a hypothetical question at all",
+          "A chimera may answer a question about himself truthfully",
+          "He is forced to lie twice about one fact, and denying a claim twice returns the claim we started with",
+        ],
+        answer: 3,
+      },
+      {
+        // Point 1824 — phrasing is not what does the work.
+        prompt: `Does the question ${ASK} work because of the particular words *is your answer yes*?`,
+        options: [
+          "No, any question at all works, however it is put",
+          "Yes, that exact wording is what traps a chimera",
+          "No, any question that forces one fact through the islander's own lying twice would do",
+          "Yes, a chimera can evade any other phrasing",
+        ],
+        answer: 2,
+      },
+      {
+        // Point 1878 — what would defeat the method.
+        prompt: `Asking ${ASK} settles the Jade box without ever learning whether the islander is an oracle or a chimera. What kind of islander would defeat this method entirely?`,
+        options: [
+          "One who tells the truth sometimes and lies at other times, so there is no rule to cancel",
+          "One who knows the box but refuses to speak",
+          "One who always lies, since two lies are harder to undo than one",
+          "One who does not know which box holds the ruby",
+        ],
+        answer: 0,
+      },
     ],
-    answer: 3,
-  },
-  {
-    prompt: `${RUBY_PUZZLE} Which of the three is the chimera?`,
-    options: [
-      "It cannot be determined",
-      "Selene",
-      "Elara",
-      "Orion",
-    ],
-    answer: 3,
-  },
-  {
-    // Verified: under the naive reading the solution set is empty.
-    prompt: `${RUBY_PUZZLE} Suppose a reader takes Elara's sentence to mean simply *the ruby is in the Jade box.* What happens to the puzzle?`,
-    options: [
-      "Nothing — the two readings come to the same thing",
-      "It has two solutions instead of one",
-      "It still has one solution, but the ruby ends up in the wrong box",
-      "No arrangement of the three speakers fits at all, and the puzzle stays shut",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 1792 — the self-report is the embedded question.
-    prompt:
-      "You meet one islander and have no idea what kind they are. They volunteer: *My answer to 'Is the ruby in the Jade box?' is yes.* What follows?",
-    options: [
-      "The ruby is in the Jade box, whichever kind the islander is",
-      "Nothing, since the sentence is about the islander and not about the ruby",
-      "The islander is an oracle",
-      "The ruby is in the Jade box if the islander is an oracle, and elsewhere if not",
-    ],
-    answer: 0,
-  },
-  {
-    // Point 1824 — why the chimera's answer flips to match.
-    prompt: `${RUBY_QUESTION} Why can a yes be trusted even when the islander is a chimera?`,
-    options: [
-      "The question is phrased so cunningly that he does not notice it",
-      "A chimera cannot answer a hypothetical question at all",
-      "A chimera may answer a question about himself truthfully",
-      "He is forced to lie twice about one fact, and denying a claim twice returns the claim we started with",
-    ],
-    answer: 3,
-  },
-  {
-    // Point 1824 — phrasing is not what does the work.
-    prompt: `${RUBY_QUESTION} Does this method depend on the particular words *is your answer yes*?`,
-    options: [
-      "No, any question at all works, however it is put",
-      "Yes, that exact wording is what traps a chimera",
-      "No, any question that forces one fact through the islander's own lying twice would do",
-      "Yes, a chimera can evade any other phrasing",
-    ],
-    answer: 2,
-  },
-  {
-    // Point 1792 — the plain question is worthless.
-    prompt:
-      "Why is the plain question *Is the ruby in the Jade box?* no use when you do not know the islander's kind?",
-    options: [
-      "A chimera would refuse to answer it",
-      "It mentions only one of the boxes",
-      "A yes means the Jade box from an oracle and some other box from a chimera, and you cannot tell which you are facing",
-      "An islander is not obliged to answer a plain question",
-    ],
-    answer: 2,
   },
   {
     // Point 1840 — counting answers, not things.
@@ -919,9 +997,10 @@ export const askingAboutAnswers: Question[] = [
     answer: 2,
   },
   {
-    // Point 1856 + exercise .tex:1926, both recomputed.
+    // Point 1856 + exercise .tex:1926, both recomputed. Asks for the fewest:
+    // "how many are always enough" let Five and Nine count as right too.
     prompt:
-      "The ruby is hidden in one of nine boxes and the islander knows which. How many yes-or-no questions are always enough?",
+      "The ruby is hidden in one of nine boxes and the islander knows which. What is the smallest number of yes-or-no questions that is always enough to find it?",
     options: [
       "Five",
       "Three",
@@ -929,17 +1008,5 @@ export const askingAboutAnswers: Question[] = [
       "Nine",
     ],
     answer: 2,
-  },
-  {
-    // Point 1878 — what would defeat the method.
-    prompt:
-      "On the Isles of Paradox, asking an islander *Is your answer to 'Is the ruby in the Jade box?' yes?* finds the ruby without ever learning whether the islander is an oracle or a chimera. What kind of islander would defeat this method entirely?",
-    options: [
-      "One who tells the truth sometimes and lies at other times, so there is no rule to cancel",
-      "One who knows the box but refuses to speak",
-      "One who always lies, since two lies are harder to undo than one",
-      "One who does not know which box holds the ruby",
-    ],
-    answer: 0,
   },
 ];
