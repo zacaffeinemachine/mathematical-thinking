@@ -7,10 +7,14 @@ import type { Question } from "../MCQ.tsx";
 //  in the comment above it. Check the .tex, never SUMMARY.md — the summary is
 //  stale for this chapter in several places.
 //
-//  Two rules, both load-bearing because the student never sees an explanation:
+//  Three rules, all load-bearing because the student never sees an explanation:
 //    • Distractors must be unambiguously wrong — refutable by a specific line
 //      of the chapter. An "arguably also correct" option strands the reader.
 //    • Answers are read off the text, not recalled.
+//    • Every question stands on its own. No "same rule", "that circle", "the
+//      puzzle above": a prompt that needs a scene restates it in full, from a
+//      shared constant where several questions use the same scene. Options
+//      name things rather than point at them with "it" and "that".
 //
 //  `answer: number` is a single-answer question; `answer: number[]` is
 //  select-all-that-apply, graded on exact set equality.
@@ -106,7 +110,7 @@ export const andOrNot: Question[] = [
     // Point 189 — the same setup, but now the tempting misreading. Sits next to
     // the previous question deliberately.
     prompt:
-      "Same two machines. Is *It is not true that the printer and the scanner are both working* the same claim as *Neither the printer nor the scanner is working*?",
+      "An office has a printer and a scanner. Is *It is not true that the printer and the scanner are both working* the same claim as *Neither the printer nor the scanner is working*?",
     options: [
       "Yes — both say the pair has failed",
       "Yes, provided at least one machine has failed",
@@ -237,12 +241,12 @@ export const quantifiers: Question[] = [
   {
     // Point 467 — a wrong denial can itself be false.
     prompt:
-      "In a squad of twenty, nineteen players turned up and one did not. The captain replies to the coach: *So nobody turned up!* What is wrong with that reply?",
+      "A coach announces: *Every player turned up to practice.* In fact nineteen of the twenty players turned up and one did not. The captain wants to say the coach is wrong, and says: *Nobody turned up to practice.* What is wrong with the captain's sentence?",
     options: [
-      "It is false only because the captain did not count the squad",
-      "It is itself false — the denial claims only that at least one player was missing",
-      "Nothing — it is the correct denial of the coach's announcement",
-      "It is true but says less than the denial allows",
+      "Nothing — the captain's sentence is the right way to say the coach is wrong",
+      "The captain's sentence is false, since nineteen players turned up. To say the coach is wrong, the captain needs only that at least one player stayed away",
+      "The captain's sentence is true, but says more than is needed",
+      "The captain's sentence cannot be called true or false without asking the coach",
     ],
     answer: 1,
   },
@@ -353,7 +357,7 @@ export const conditionals: Question[] = [
   {
     // Point 648 — the rows readers object to.
     prompt:
-      "A plant that has never been inside the shade house turns out to have been watered daily anyway. What does that do to the sign?",
+      "A nursery's sign reads: *If a plant is kept in this shade house, it is watered daily.* A plant that has never been inside the shade house turns out to have been watered daily anyway. What does that do to the sign?",
     options: [
       "Nothing — the sign says nothing about plants kept outside the shade house",
       "It makes the sign false, since the plant was watered without meeting the condition",
@@ -413,7 +417,7 @@ export const conditionals: Question[] = [
   {
     // Point 781 — denying the antecedent.
     prompt:
-      "Same bakery, same rule. A loaf is not burnt. What follows about its price?",
+      "A bakery's rule: *If the bread is burnt, it is sold at half price.* A loaf is not burnt. What follows about its price?",
     options: [
       "It is sold at half price only if the baker chooses",
       "It is not sold at half price",
@@ -451,7 +455,7 @@ export const conditionals: Question[] = [
   {
     // Point 867 — dropping *only* replaces the claim with its converse.
     prompt:
-      "The notice is reworded to *You may use the pool if you have a swimming cap.* What has changed?",
+      "A gym notice used to read *You may use the pool only if you have a swimming cap.* It is reworded to *You may use the pool if you have a swimming cap.* What has changed?",
     options: [
       "It now promises that a cap is enough, and no longer forbids swimming without one",
       "It now demands both that you hold a cap and that you use the pool",
@@ -493,11 +497,15 @@ export const conditionals: Question[] = [
 //  must-flip set below was computed by exhaustive search over the hidden sides.
 // ===========================================================================
 
+const SLIPS =
+  "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Dover* and *Kendal*; two lie service-up, showing *express* and *standard*.";
+const DOVER_RULE =
+  "The office rule is: *If a parcel goes to Dover, it is sent by express.*";
+
 export const testingAClaim: Question[] = [
   {
     // Rule "if Dover then express" -> flip Dover and standard.
-    prompt:
-      "Four delivery slips lie on a desk. Each slip records a destination on one side and a service on the other. Two lie destination-up, showing *Dover* and *Kendal*; two lie service-up, showing *express* and *standard*. The office rule is: *If a parcel goes to Dover, it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?",
+    prompt: `${SLIPS} ${DOVER_RULE} Which slips must you turn over to be certain whether the rule was followed?`,
     options: [
       "The express slip",
       "The standard slip",
@@ -507,8 +515,7 @@ export const testingAClaim: Question[] = [
     answer: [1, 3],
   },
   {
-    prompt:
-      "The rule is *If a parcel goes to Dover, it is sent by express.* The Kendal slip lies destination-up, so its hidden side names a service, either express or standard. Why is there no need to turn it over?",
+    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the Kendal slip names a service, either express or standard. Why is there no need to turn the Kendal slip over?`,
     options: [
       "Turning it could only confirm the rule, and a rule that has been confirmed once needs no further test",
       "The Kendal slip is settled once the Dover slip has been turned",
@@ -523,8 +530,7 @@ export const testingAClaim: Question[] = [
     // correctly could be marked wrong. Every option below is now decided by the
     // rule alone, and the prompt restates the rule so the question stands on
     // its own.
-    prompt:
-      "The same four slips lie on the desk, and the rule is still: *If a parcel goes to Dover, it is sent by express.* The express slip lies service-up, so its hidden side names a destination, either Dover or Kendal. Why is there no need to turn it over?",
+    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the express slip names a destination, either Dover or Kendal. Why is there no need to turn the express slip over?`,
     options: [
       "The rule is about parcels sent by standard service, not about express ones",
       "An express parcel must be going to Dover, so the hidden side is already settled",
@@ -534,8 +540,7 @@ export const testingAClaim: Question[] = [
     answer: 2,
   },
   {
-    prompt:
-      "The rule is still *If a parcel goes to Dover, it is sent by express.* The standard slip lies service-up, so its hidden side names a destination, either Dover or Kendal. Why must it be turned over?",
+    prompt: `${SLIPS} ${DOVER_RULE} The hidden side of the standard slip names a destination, either Dover or Kendal. Why must the standard slip be turned over?`,
     options: [
       "If its other side reads Kendal, the rule is broken",
       "Because every slip showing a service must be checked",
@@ -545,8 +550,7 @@ export const testingAClaim: Question[] = [
     answer: 2,
   },
   {
-    prompt:
-      "The rule is *If a parcel goes to Dover, it is sent by express.* A clerk turns a slip over and finds Dover on one side and standard on the other. What does that settle?",
+    prompt: `${SLIPS} ${DOVER_RULE} A clerk turns one slip over and finds Dover on one side and standard on the other. What does that one slip settle?`,
     options: [
       "Nothing, until the other three slips are turned",
       "That the rule should be reworded",
@@ -556,8 +560,7 @@ export const testingAClaim: Question[] = [
     answer: 2,
   },
   {
-    prompt:
-      "The rule is *If a parcel goes to Dover, it is sent by express.* All four slips are turned over, and not one of them shows Dover together with standard. What follows?",
+    prompt: `${SLIPS} ${DOVER_RULE} All four slips are turned over, and not one of them shows Dover together with standard. What follows?`,
     options: [
       "Nothing, since four slips are too few to settle anything",
       "The rule held for every parcel the office has ever sent",
@@ -569,7 +572,7 @@ export const testingAClaim: Question[] = [
   {
     // Point 1313 — the general rule.
     prompt:
-      "Forget the slips. Four cards lie on a table, and the four visible faces are *P*, *not P*, *Q* and *not Q*. Each card carries the matching kind of fact on its hidden side. To test a claim of the form *if P, then Q*, which two faces must you turn over?",
+      "Four cards lie on a table, and the four visible faces are *P*, *not P*, *Q* and *not Q*. Each card carries the matching kind of fact on its hidden side. To test a claim of the form *if P, then Q*, which two faces must you turn over?",
     options: [
       "The face showing *not P* and the face showing Q",
       "The face showing P and the face showing Q",
@@ -580,8 +583,7 @@ export const testingAClaim: Question[] = [
   },
   {
     // Converse rule on the same four slips -> flip Kendal and express.
-    prompt:
-      "The office replaces its rule with: *If a parcel is sent by express, it goes to Dover.* The same four slips lie on the desk. Which must you turn over now?",
+    prompt: `${SLIPS} The office rule is: *If a parcel is sent by express, it goes to Dover.* Which slips must you turn over to be certain whether the rule was followed?`,
     options: [
       "The Kendal slip",
       "The express slip",
@@ -592,10 +594,9 @@ export const testingAClaim: Question[] = [
   },
   {
     // Biconditional on the same four slips -> flip all four.
-    prompt:
-      "The office strengthens the rule once more, to: *A parcel goes to Dover exactly when it is sent by express.* Which slips must you turn over?",
+    prompt: `${SLIPS} The office rule is: *A parcel goes to Dover exactly when it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?`,
     options: [
-      "The Dover slip and the standard slip, as before",
+      "The Dover slip and the standard slip",
       "The Kendal slip and the express slip",
       "All four of them",
       "The Dover slip and the express slip",
@@ -605,7 +606,7 @@ export const testingAClaim: Question[] = [
   {
     // Point 1294 — the converse and the converse in disguise.
     prompt:
-      "Return to the original rule, *If a parcel goes to Dover, it is sent by express.* Which of these does the rule leave open?",
+      "A delivery office has the rule *If a parcel goes to Dover, it is sent by express.* Which of these does the rule leave open?",
     options: [
       "That some parcel sent by express is going somewhere other than Dover",
       "That some parcel going to Kendal is sent by standard service",
@@ -616,8 +617,7 @@ export const testingAClaim: Question[] = [
   },
   {
     // Point 1315 — the shape of the common error.
-    prompt:
-      "Most clerks reach first for the Dover slip and the express slip, the two that match the words of the rule. What has gone wrong in that instinct?",
+    prompt: `${SLIPS} ${DOVER_RULE} Asked which slips to turn over, most clerks reach first for the Dover slip and the express slip, the two that match the words of the rule. What has gone wrong in the clerks' instinct?`,
     options: [
       "They are hunting for cases that fit the rule rather than for the case that would break it",
       "They have forgotten that a slip has two sides",
@@ -631,8 +631,7 @@ export const testingAClaim: Question[] = [
     // the ORIGINAL rule again, so the must-flip set is unchanged. Sits opposite
     // the converse question above, where the rewording does change the answer.
     // Verified by the same exhaustive search: ['Dover', 'standard'].
-    prompt:
-      "The office rewords its original rule to read: *A parcel goes to Dover only if it is sent by express.* The same four slips lie on the desk. Which must you turn over now?",
+    prompt: `${SLIPS} The office rule is: *A parcel goes to Dover only if it is sent by express.* Which slips must you turn over to be certain whether the rule was followed?`,
     options: [
       "The Kendal slip and the express slip",
       "All four of them",
@@ -653,10 +652,16 @@ export const testingAClaim: Question[] = [
 //            red and two blue, the fourth left in the box and seen by nobody.
 // ===========================================================================
 
+const LINE =
+  "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of three red and two blue, and each knows this.";
+const LINE_TWO_ANSWERS =
+  "The back logician is asked first and says *I do not know.* The middle logician is asked next and also says *I do not know.*";
+const CIRCLE =
+  "Three logicians stand in a circle, each able to see the other two. Their hats were drawn from two red and two blue, and each knows this; the fourth hat stays in the box and nobody sees it.";
+
 export const knowingWhatOthersKnow: Question[] = [
   {
-    prompt:
-      "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of three red and two blue, and each knows this. The back logician is asked first and says *I do not know.* What does that rule out?",
+    prompt: `${LINE} The back logician is asked first and says *I do not know.* What does that answer rule out?`,
     options: [
       "That the middle and front hats are of different colours",
       "That the middle and front hats are both blue",
@@ -666,8 +671,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 1,
   },
   {
-    prompt:
-      "Why would the back logician have known, in the case that was just ruled out?",
+    prompt: `${LINE} Suppose the back logician sees two blue hats in front. Why would the back logician then know their own hat colour?`,
     options: [
       "Seeing two hats of any kind is enough to fix the third",
       "Both blue hats would have been accounted for, so the back hat would have to be red",
@@ -677,8 +681,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 1,
   },
   {
-    prompt:
-      "The middle logician is asked next and also says *I do not know.* What does that establish?",
+    prompt: `${LINE} ${LINE_TWO_ANSWERS} What do the two answers together establish?`,
     options: [
       "The front hat is red",
       "The middle hat is blue",
@@ -688,8 +691,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 0,
   },
   {
-    prompt:
-      "Who can now name their own hat colour with certainty?",
+    prompt: `${LINE} ${LINE_TWO_ANSWERS} Who can now name their own hat colour with certainty?`,
     options: [
       "The logician in front, who can see nobody at all",
       "Nobody — the two answers are not enough",
@@ -700,7 +702,7 @@ export const knowingWhatOthersKnow: Question[] = [
   },
   {
     prompt:
-      "Suppose the pool had been two red and three blue instead, and the back logician again said *I do not know.* What would that rule out?",
+      "Three logicians stand in a line. The one at the back sees the other two; the one in the middle sees only the one in front; the one in front sees nobody. Their three hats were drawn from a pool of two red and three blue, and each knows this. The back logician is asked first and says *I do not know.* What does that answer rule out?",
     options: [
       "That the middle and front hats are both blue",
       "That the middle and front hats are both red",
@@ -710,8 +712,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 1,
   },
   {
-    prompt:
-      "Now a different arrangement. Three logicians stand in a circle, each able to see the other two. Their hats were drawn from two red and two blue; the fourth hat stays in the box and nobody sees it. Before anyone speaks, how many of the three can name their own hat colour?",
+    prompt: `${CIRCLE} Before anyone speaks, how many of the three can name their own hat colour?`,
     options: [
       "Exactly two, whatever the arrangement",
       "Exactly one, whatever the arrangement",
@@ -721,8 +722,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 1,
   },
   {
-    prompt:
-      "In that circle, what must a logician see in order to know their own hat colour?",
+    prompt: `${CIRCLE} Before anyone speaks, what must one of the logicians see in order to know their own hat colour?`,
     options: [
       "Two hats of different colours",
       "At least one red hat",
@@ -732,8 +732,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 3,
   },
   {
-    prompt:
-      "A logician in that circle sees one red hat and one blue hat. What can they conclude about their own?",
+    prompt: `${CIRCLE} One of the logicians sees one red hat and one blue hat. What can this logician conclude about their own hat?`,
     options: [
       "Nothing — both colours are still possible",
       "That it is red",
@@ -745,7 +744,7 @@ export const knowingWhatOthersKnow: Question[] = [
   {
     // The governing idea of the section, .tex:1412-1419.
     prompt:
-      "Why does an announcement of ignorance carry information at all?",
+      "In a hat puzzle, a logician is asked for their own hat colour and says *I do not know.* Why does an announcement of ignorance like this carry information at all?",
     options: [
       "It rules out every arrangement in which the speaker would have known, and it rules them out for everybody listening",
       "It tells the others that the speaker's own hat is the rarer colour",
@@ -757,7 +756,7 @@ export const knowingWhatOthersKnow: Question[] = [
   {
     // Point 1478 — the step is explicitly the contrapositive.
     prompt:
-      "Which tool from the chapter on conditionals carries you from *she would have known if the two hats matched* and *she does not know* to *the two hats do not match*?",
+      "In a hat puzzle, a logician reasons from *she would have known if the two hats matched* and *she does not know* to *the two hats do not match*. Which tool from the chapter on conditionals carries this step?",
     options: [
       "The converse",
       "Vacuous truth",
@@ -768,8 +767,7 @@ export const knowingWhatOthersKnow: Question[] = [
   },
   {
     // Point 1478 — predictable answers carry nothing.
-    prompt:
-      "In the line of three, suppose the front logician had been asked first, before anyone else spoke. Would that answer have told the others anything?",
+    prompt: `${LINE} Suppose the front logician is asked first, before anyone else speaks. Would the front logician's answer tell the others anything?`,
     options: [
       "No — everyone could have predicted it in advance, since the front logician sees nobody",
       "Yes — it would have fixed the middle logician's colour",
@@ -779,8 +777,7 @@ export const knowingWhatOthersKnow: Question[] = [
     answer: 0,
   },
   {
-    prompt:
-      "In the line of three, the front logician ends up naming a colour without ever seeing a single hat. How is that possible?",
+    prompt: `${LINE} ${LINE_TWO_ANSWERS} The front logician then names their own hat colour without ever seeing a single hat. How is that possible?`,
     options: [
       "The front logician guessed, and happened to be right",
       "The two answers given before carried all the information needed",
@@ -802,6 +799,11 @@ export const knowingWhatOthersKnow: Question[] = [
 //    -> ruby in the Coral box; Orion is the chimera; Elara and Selene oracles.
 //  Under the naive reading of Elara's sentence the puzzle has NO solution.
 // ===========================================================================
+
+const RUBY_PUZZLE =
+  "On the Isles of Paradox, a ruby is hidden in the Jade, Onyx or Coral box. Elara says: *Orion's answer to 'Is the ruby in the Jade box?' is yes.* Orion says: *The ruby is in the Jade box.* Selene says: *The ruby is not in the Onyx box.* Exactly one of the three is a chimera.";
+const RUBY_QUESTION =
+  "On the Isles of Paradox, you meet an islander and do not know whether they are an oracle or a chimera. You ask: *Is your answer to 'Is the ruby in the Jade box?' yes?* and take a yes to mean the ruby is in the Jade box.";
 
 export const askingAboutAnswers: Question[] = [
   {
@@ -828,8 +830,7 @@ export const askingAboutAnswers: Question[] = [
     answer: 0,
   },
   {
-    prompt:
-      "The ruby is hidden in the Jade, Onyx or Coral box. Elara says the sentence above. Orion says *The ruby is in the Jade box.* Selene says *The ruby is not in the Onyx box.* Exactly one of the three is a chimera. Where is the ruby?",
+    prompt: `${RUBY_PUZZLE} Where is the ruby?`,
     options: [
       "In the Jade box",
       "It cannot be determined",
@@ -839,7 +840,7 @@ export const askingAboutAnswers: Question[] = [
     answer: 3,
   },
   {
-    prompt: "In that same puzzle, which of the three is the chimera?",
+    prompt: `${RUBY_PUZZLE} Which of the three is the chimera?`,
     options: [
       "It cannot be determined",
       "Selene",
@@ -850,8 +851,7 @@ export const askingAboutAnswers: Question[] = [
   },
   {
     // Verified: under the naive reading the solution set is empty.
-    prompt:
-      "Suppose a reader takes Elara's sentence to mean simply *the ruby is in the Jade box.* What happens to the puzzle?",
+    prompt: `${RUBY_PUZZLE} Suppose a reader takes Elara's sentence to mean simply *the ruby is in the Jade box.* What happens to the puzzle?`,
     options: [
       "Nothing — the two readings come to the same thing",
       "It has two solutions instead of one",
@@ -874,7 +874,7 @@ export const askingAboutAnswers: Question[] = [
   },
   {
     // Point 1824 — why the chimera's answer flips to match.
-    prompt: "Why does that work even on a chimera?",
+    prompt: `${RUBY_QUESTION} Why can a yes be trusted even when the islander is a chimera?`,
     options: [
       "The question is phrased so cunningly that he does not notice it",
       "A chimera cannot answer a hypothetical question at all",
@@ -885,7 +885,7 @@ export const askingAboutAnswers: Question[] = [
   },
   {
     // Point 1824 — phrasing is not what does the work.
-    prompt: "Does the method depend on the particular words *is your answer yes*?",
+    prompt: `${RUBY_QUESTION} Does this method depend on the particular words *is your answer yes*?`,
     options: [
       "No, any question at all works, however it is put",
       "Yes, that exact wording is what traps a chimera",
@@ -933,7 +933,7 @@ export const askingAboutAnswers: Question[] = [
   {
     // Point 1878 — what would defeat the method.
     prompt:
-      "You can find the ruby without ever learning whether the islander is an oracle or a chimera. What kind of islander would defeat the method entirely?",
+      "On the Isles of Paradox, asking an islander *Is your answer to 'Is the ruby in the Jade box?' yes?* finds the ruby without ever learning whether the islander is an oracle or a chimera. What kind of islander would defeat this method entirely?",
     options: [
       "One who tells the truth sometimes and lies at other times, so there is no rule to cancel",
       "One who knows the box but refuses to speak",

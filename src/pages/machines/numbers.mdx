@@ -62,13 +62,16 @@ exactly 5 credits.
 </Problem>
 
 <Problem n={7} title="Paying a multiple of five" hard alphabet="{1, 2}">
-The same two coins, one worth 1 credit and one worth 2. Design a machine that
-accepts exactly the non-empty sequences whose total value is a multiple of 5.
+A vending machine takes two kinds of coin, one worth 1 credit and one worth 2
+credits. The string is the sequence of coins in the order they went in.
+
+Design a machine that accepts exactly the non-empty sequences whose total value
+is a multiple of 5.
 <Tests accept={["11111", "122", "22222", "1111111111"]} reject={["", "1", "11", "2", "22", "1111"]} />
 </Problem>
 
 <Problem n={8} title="The number written backwards" hard>
-The string is a number written in binary, but this time read **right to
+The string is a number written in binary, read **right to
 left**, so the *first* symbol of the string is the *last* digit of the number.
 Under that reading `1101` is the number 1011 in binary, which is 11. The empty
 string is not a number and must be rejected.
