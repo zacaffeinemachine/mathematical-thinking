@@ -89,3 +89,43 @@ export function evaluateUpTo(
   }
   return v;
 }
+
+// ---------------------------------------------------------------------------
+//  Extensions for the problem components in problems/ (November 2026).
+//  Nothing above this line changed, so CircuitDiagram and the circuits in
+//  circuits.ts behave exactly as before.
+// ---------------------------------------------------------------------------
+
+// A gate with more than two inputs: AND and OR of all of them, XOR is 1 when
+// an odd number of them are 1, NAND and NOR are the flips of AND and OR.
+// NOT reads its first input only.
+export function evalGateN(t: GateType, bits: Bit[]): Bit {
+  switch (t) {
+    case "NOT":  return ((bits[0] ?? 0) ^ 1) as Bit;
+    case "AND":  return (bits.every((b) => b === 1) ? 1 : 0) as Bit;
+    case "OR":   return (bits.some((b) => b === 1) ? 1 : 0) as Bit;
+    case "XOR":  return (bits.reduce<number>((s, b) => s ^ b, 0)) as Bit;
+    case "NAND": return (bits.every((b) => b === 1) ? 0 : 1) as Bit;
+    case "NOR":  return (bits.some((b) => b === 1) ? 0 : 1) as Bit;
+  }
+}
+
+// The same format as Circuit, with everything about drawing made optional.
+// Leave out every coordinate (and width / height) and the problem components
+// lay the circuit out themselves; give every coordinate and they use yours.
+// Labels default to the id. Gates may be listed in any order, and a gate may
+// have more than two inputs. Every Circuit is a CircuitSpec.
+export interface CircuitSpec {
+  width?: number;
+  height?: number;
+  inputs: Array<{ id: string; label?: string; x?: number; y?: number }>;
+  gates: Array<{
+    id: string;
+    type: GateType;
+    inputs: string[];
+    x?: number;
+    y?: number;
+    label?: string;
+  }>;
+  outputs: Array<{ id: string; label?: string; source: string; x?: number; y?: number }>;
+}

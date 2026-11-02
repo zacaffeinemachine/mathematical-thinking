@@ -1,0 +1,272 @@
+---
+layout: ../../layouts/Chapter.astro
+title: If Then Circuits
+order: 3
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Boxes that check if-then claims, from shop signs and safety rules to claims inside claims and "if and only if". Twenty-two problems to read, find and build.
+description: Practice problems on wiring if-then claims as circuits, the converse and contrapositive, unless, nested claims, and if and only if.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FillTable,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  SealedBox,
+  GateIcon,
+  CircuitPicture,
+} from "../../components/games/circuits/problems/index.ts";
+import * as B from "../../components/games/circuits/problems/banks/if-then.ts";
+
+Every box on this page checks an if-then claim. Its bulb is lit when the claim
+holds, and dark when the claim is broken, which happens only when the if-part
+holds and the then-part fails.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> claim holds</span>
+  <span><Bulb /> claim broken</span>
+</p>
+
+## Reading an if-then box
+
+<CircuitProblem n={1} title="Rain and coat">
+This box checks the claim *If it rains, I take my coat.* Switch *rain* is up
+when it rains, and switch *coat* is up when I take my coat. Today it rains and
+the coat stays at home. What does wire $p$ carry, and is the bulb lit? Tap the
+tag and the bulb to answer.
+
+<PredictOutput client:visible id="rain-coat" circuit={B.rainCoat} switches={B.rainCoatSwitches} wires={B.rainCoatTags} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="The other way round">
+Fill in the table for this box. Column $p$ is the wire coming out of the
+<GateIcon type="NOT" /> gate. Tap a cell to change it.
+
+<FillTable client:visible id="converse-fill" circuit={B.converseBox} wires={B.converseTags} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="Which claim is in the box?">
+A sealed box checks one of the four claims below. Here is what its bulb did on
+three settings.
+
+<div>
+{B.sightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="ab" />)}
+</div>
+
+Which claim does the box check? Read *a is up unless b is up* as *if b is
+down, then a is up*.
+
+<PickCircuit client:visible options={B.sightingClaims.map((s) => ({ caption: s }))} answer={B.sightingAnswer} columns={4} />
+</CircuitProblem>
+
+## Rules from everyday life
+
+In each problem below, first decide what an up switch means for each half of
+the rule. Then build the box.
+
+<CircuitProblem n={4} title="At the pool">
+A sign at a pool says *If you are under ten, you swim with an adult.* Switch
+*child* is up when the swimmer is under ten. Switch *adult* is up when an
+adult is with them.
+
+<div style={{display:'flex', flexDirection:'column', gap:4, margin:'12px 0'}}>
+<span><SwitchRow values="10" labels={["child", "adult"]} /> gives <Bulb /></span>
+<span><SwitchRow values="11" labels={["child", "adult"]} /> gives <Bulb lit /></span>
+</div>
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most two gates.
+
+<CircuitBuilder client:visible id="pool" inputs={B.pool.inputs} target={B.pool.target} gates={B.pool.gates} maxGates={B.pool.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="The shop sign">
+A shop has a sign that shows either OPEN or CLOSED. The rule is *If the shop
+is closed, the sign shows CLOSED.* Switch *open* is up when the shop is open.
+Switch *sign* is up when the sign shows OPEN.
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most two gates.
+
+<CircuitBuilder client:visible id="shop" inputs={B.shop.inputs} target={B.shop.target} gates={B.shop.gates} maxGates={B.shop.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="The saw guard">
+A workshop rule says *If the saw is running, its guard is closed.* Switch
+*running* is up when the saw is running. Switch *open* is up when the guard is
+open.
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most two gates.
+
+<CircuitBuilder client:visible id="saw" inputs={B.saw.inputs} target={B.saw.target} gates={B.saw.gates} maxGates={B.saw.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={7} title="Played unless it rains">
+A notice says *The match is played unless it rains.* Read it as *if it does
+not rain, then the match is played.* Switch *rain* is up when it rains.
+Switch *played* is up when the match is played.
+
+Build a box whose bulb is dark exactly when the notice is wrong. One gate is enough.
+
+<CircuitBuilder client:visible id="match" inputs={B.match.inputs} target={B.match.target} gates={B.match.gates} maxGates={B.match.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="Lights off unless">
+A rule for a classroom says *The lights are off unless someone is in the
+room.* Read it as *if nobody is in the room, then the lights are off.* Switch
+*someone* is up when someone is in the room. Switch *light* is up when the
+lights are on.
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most two gates.
+
+<CircuitBuilder client:visible id="lights" inputs={B.lights.inputs} target={B.lights.target} gates={B.lights.gates} maxGates={B.lights.maxGates} width={520} />
+</CircuitProblem>
+
+## The four relatives
+
+<CircuitProblem n={9} title="One claim, drawn many ways">
+Which of these boxes light the bulb exactly when the claim *If b is down, then
+a is down* holds?
+
+<PickCircuit client:visible options={B.contraOptions.map((c) => ({ circuit: c }))} answer={B.contraAnswer} columns={2} />
+</CircuitProblem>
+
+<CircuitProblem n={10} title="The dog and the cat">
+Switch *dog* is up when the dog is inside, and switch *cat* is up when the cat
+is inside. This box checks the claim *If the dog is inside, then the cat is
+outside.*
+
+<CircuitPicture circuit={B.petBox} />
+
+Which of these sentences does the same box check? Read the last one as *if the
+cat is not inside, then the dog is inside.*
+
+<PickCircuit client:visible options={B.petSentences.map((s) => ({ caption: s }))} answer={B.petAnswer} columns={3} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="A claim and its converse">
+Bulb *claim* checks *If a is up, then b is up.* Bulb *converse* checks *If b
+is up, then a is up.* Find the setting that lights *claim* and leaves
+*converse* dark. The bulbs stay hidden until you press Check.
+
+<FindSetting client:visible id="claim-converse" circuit={B.claimConverse} goal={B.claimConverseGoal} reveal="none" />
+</CircuitProblem>
+
+## Bigger halves
+
+<CircuitProblem n={12} title="Laser safety">
+A lab rule says *If you use the laser, you wear goggles and gloves.* Each switch
+is up when its own part is true: *laser* when you use the laser, *goggles* when
+you wear goggles, *gloves* when you wear gloves.
+
+<div style={{display:'flex', flexDirection:'column', gap:4, margin:'12px 0'}}>
+<span><SwitchRow values="111" labels={["laser", "goggles", "gloves"]} /> gives <Bulb lit /></span>
+<span><SwitchRow values="110" labels={["laser", "goggles", "gloves"]} /> gives <Bulb /></span>
+</div>
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most three gates.
+
+<CircuitBuilder client:visible id="laser" inputs={B.laser.inputs} target={B.laser.target} gates={B.laser.gates} maxGates={B.laser.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="Arriving late">
+A school rule says *If you arrive late, you bring a note or a parent.* Switch
+*late* is up when you arrive late, *note* when you bring a note, and *parent*
+when you bring a parent.
+
+Build a box whose bulb is dark exactly when the rule is broken. Use at most three gates.
+
+<CircuitBuilder client:visible id="late" inputs={B.late.inputs} target={B.late.target} gates={B.late.gates} maxGates={B.late.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="Every way to break it">
+This box checks the claim *If a is up, then b and c disagree.* List every
+setting that makes the bulb dark. Flip the switches to a setting, then press
+*Add this setting*. When the list is complete, press *Check my list*.
+
+<FindSetting client:visible id="disagree-all" circuit={B.disagreeBox} goal={B.disagreeGoal} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={15} title="Read the wires">
+This box checks the claim *If a or b is up, then c is down.* The switches are
+set as shown and cannot be moved. What do wires $p$ and $q$ carry, and is the
+bulb lit?
+
+<PredictOutput client:visible id="or-down" circuit={B.orDownBox} switches={B.orDownSwitches} wires={B.orDownTags} />
+</CircuitProblem>
+
+## A claim inside a claim
+
+<CircuitProblem n={16} title="The one dark setting">
+This box was wired word for word from the claim *If a is up, then: if b is up,
+then c is up.* The lower <GateIcon type="OR" /> gate checks the inner claim. Find
+the one setting that makes the bulb dark. The bulb stays hidden until you press
+Check.
+
+<FindSetting client:visible id="nested-dark" circuit={B.nestedBox} goal={B.nestedGoal} reveal="none" />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="Same claim?">
+Which of these boxes light the bulb on exactly the same settings as the claim
+*If a is up, then: if b is up, then c is up*?
+
+<PickCircuit client:visible options={B.sameClaimOptions.map((c) => ({ circuit: c }))} answer={B.sameClaimAnswer} />
+</CircuitProblem>
+
+## If and only if
+
+<CircuitProblem n={18} title="Which boxes agree?">
+Which of these boxes light the bulb exactly when *a is up if and only if b is
+up* holds?
+
+<PickCircuit client:visible options={B.iffOptions.map((c) => ({ circuit: c }))} answer={B.iffAnswer} columns={2} />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="Testing the vault lamp">
+A vault has two key switches, *left* and *right*, and a green lamp. The lamp
+should be lit if and only if both keys are turned. Switch *lamp* is up when the
+lamp is lit.
+
+<div style={{display:'flex', flexDirection:'column', gap:4, margin:'12px 0'}}>
+<span><SwitchRow values="110" labels={["left", "right", "lamp"]} /> gives <Bulb /></span>
+<span><SwitchRow values="100" labels={["left", "right", "lamp"]} /> gives <Bulb lit /></span>
+</div>
+
+Build a tester whose bulb is lit exactly when the lamp behaves as it should.
+Use at most three gates.
+
+<CircuitBuilder client:visible id="vault-lamp" inputs={B.vault.inputs} target={B.vault.target} gates={B.vault.gates} maxGates={B.vault.maxGates} width={540} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={20} title="A claim in the if-part" hard>
+Build a box that checks *If (if a is up, then b is up), then c is up.* Wired
+word for word it takes four gates. Do it with three.
+
+<CircuitBuilder client:visible id="if-in-if" inputs={B.ifInIf.inputs} target={B.ifInIf.target} gates={B.ifInIf.gates} maxGates={B.ifInIf.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="If and only if, without XOR" hard>
+Build a box that checks *a is up if and only if b is up*, using only
+<GateIcon type="NOT" />, <GateIcon type="AND" /> and <GateIcon type="OR" />.
+Use at most four gates.
+
+<CircuitBuilder client:visible id="iff-no-xor" inputs={B.iffNoXor.inputs} target={B.iffNoXor.target} gates={B.iffNoXor.gates} maxGates={B.iffNoXor.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={22} title="Two rules at once" hard>
+A board game has two rules: *If you roll a six, you move* and *If you move, you
+draw a card.* Switch *six* is up when you roll a six, *move* when you move, and
+*card* when you draw a card.
+
+Build a box whose bulb is lit exactly when both rules are kept. Built one rule
+at a time it takes five gates. Do it with four.
+
+<CircuitBuilder client:visible id="two-rules" inputs={B.twoRules.inputs} target={B.twoRules.target} gates={B.twoRules.gates} maxGates={B.twoRules.maxGates} width={540} />
+</CircuitProblem>

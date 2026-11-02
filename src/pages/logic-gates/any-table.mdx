@@ -1,0 +1,254 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Any Table at All
+order: 5
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Spike detectors, the recipe that builds any table, circuits from OR and NOT alone, and votes built smaller than the recipe. Twenty-one problems.
+description: Practice problems on spike detectors, the recipe for any truth table, OR and NOT being enough, and small circuits for votes.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  SealedBox,
+  TruthTable,
+  GateIcon,
+  CircuitPicture,
+} from "../../components/games/circuits/problems/index.ts";
+import * as T from "../../components/games/circuits/problems/banks/any-table.ts";
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+A spike detector is lit on one row of its table and dark on every other row.
+Every gate counts towards a limit, <GateIcon type="NOT" /> included, and every gate takes two wires (a NOT takes one).
+
+## Spike detectors
+
+<CircuitProblem n={1} title="A board of detectors">
+Each <GateIcon type="AND" /> here is the spike detector of one row. The switches
+are set to $a$ up and $b$ down, and cannot be moved. Tap each bulb to say
+whether it is lit, then check.
+
+<PredictOutput client:visible id="board" circuit={T.board} switches={T.boardSwitches} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Which row opens it?">
+This circuit is the spike detector of one setting of the four switches. Set the
+switches to that setting. The bulb stays hidden until you press Check, so read
+it off the gates.
+
+<FindSetting client:visible id="which-row" circuit={T.whichRow} reveal="none" />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="One row of two">
+Here is the whole table, as four sightings of a sealed box.
+
+<div>
+{T.spike01Sightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="ab" />)}
+</div>
+
+Build the spike detector, with at most two gates.
+
+<CircuitBuilder client:visible id="spike-01" inputs={T.spike01.inputs} target={T.spike01.target} gates={T.spike01.gates} maxGates={T.spike01.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="One row of three">
+The bulb is lit for <SwitchRow values="101" labels="abc" /> and dark for each
+of the other seven settings. Build it with at most three gates.
+
+<CircuitBuilder client:visible id="spike-101" inputs={T.spike101.inputs} target={T.spike101.target} gates={T.spike101.gates} maxGates={T.spike101.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="All four down">
+The bulb is lit for <SwitchRow values="0000" labels="abcd" /> and dark for each
+of the other fifteen settings. The recipe would use seven gates here: four
+NOTs and three ANDs. Use at most four.
+
+<CircuitBuilder client:visible id="all-down" inputs={T.allDown.inputs} target={T.allDown.target} gates={T.allDown.gates} maxGates={T.allDown.maxGates} />
+</CircuitProblem>
+
+## The recipe
+
+<CircuitProblem n={6} title="Count before you build">
+A friend hands you this table.
+
+<TruthTable inputs={T.countTable.inputs} outputs={{ bulb: T.countTable.column }} />
+
+How many gates does the recipe use for it? Count as the book does. Each switch
+gets at most one NOT, shared by every detector that needs it. Each detector
+joins its three pieces with two-input ANDs. The detectors are joined with
+two-input ORs.
+
+<PickCircuit client:visible options={T.countOptions.map((k) => ({ caption: `${k} gates` }))} answer={T.countAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={7} title="Read the recipe backwards">
+This circuit was made by the recipe. List every setting that lights the bulb.
+The bulb stays hidden, so read the detectors. Set the switches, press *Add this
+setting*, and press *Check my list* when the list is complete.
+
+<FindSetting client:visible id="backwards" circuit={T.backwards} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="A friend's table">
+Build any circuit with this table. The recipe fits in fourteen gates, so that
+is the limit.
+
+<TruthTable inputs={T.friend.inputs} outputs={{ bulb: T.friend.target }} />
+
+<CircuitBuilder client:visible id="friend" inputs={T.friend.inputs} target={T.friend.target} gates={T.friend.gates} maxGates={T.friend.maxGates} height={400} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="Many circuits, one table">
+<TruthTable inputs={T.manyTable.inputs} outputs={{ bulb: T.manyTable.column }} />
+
+Which of these circuits have exactly this table?
+
+<PickCircuit client:visible options={T.manyOptions.map((c) => ({ circuit: c }))} answer={T.manyAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={10} title="Two winning rows">
+A lock with four switches opens on two settings only.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+  <span><SwitchRow values="1110" labels="abcd" /> opens it</span>
+  <span><SwitchRow values="1111" labels="abcd" /> opens it</span>
+</p>
+
+How many gates does the recipe use for this lock? Each switch gets at most one
+NOT, shared. Each detector joins its four pieces with two-input ANDs. The
+detectors are joined with two-input ORs.
+
+<PickCircuit client:visible options={T.twoRowsOptions.map((k) => ({ caption: `${k} gates` }))} answer={T.twoRowsAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="The same lock, smaller">
+The lock opens on these two settings, and on no others.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+  <span><SwitchRow values="1110" labels="abcd" /> opens it</span>
+  <span><SwitchRow values="1111" labels="abcd" /> opens it</span>
+</p>
+
+Build it with at most two gates.
+
+<CircuitBuilder client:visible id="two-rows" inputs={T.twoRowsBuild.inputs} target={T.twoRowsBuild.target} gates={T.twoRowsBuild.gates} maxGates={T.twoRowsBuild.maxGates} />
+</CircuitProblem>
+
+## Fewer kinds of gate
+
+<CircuitProblem n={12} title="No AND allowed">
+<div>
+{T.noAndSightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="ab" />)}
+</div>
+
+Build this table from <GateIcon type="OR" /> and <GateIcon type="NOT" /> gates
+only, with at most three gates.
+
+<CircuitBuilder client:visible id="no-and" inputs={T.noAnd.inputs} target={T.noAnd.target} gates={T.noAnd.gates} maxGates={T.noAnd.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="A detector without AND">
+Build the spike detector of <SwitchRow values="101" labels="abc" /> from
+<GateIcon type="OR" /> and <GateIcon type="NOT" /> gates only, with at most five gates.
+
+<CircuitBuilder client:visible id="spike-101-or-not" inputs={T.spike101On.inputs} target={T.spike101On.target} gates={T.spike101On.gates} maxGates={T.spike101On.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="No NOT at all">
+Which of these tables can be built from <GateIcon type="AND" /> and
+<GateIcon type="OR" /> gates alone, with no NOT anywhere?
+
+<PickCircuit client:visible options={T.noNotOptions} answer={T.noNotAnswer} columns={3} />
+</CircuitProblem>
+
+## Votes
+
+<CircuitProblem n={15} title="Two of four">
+Four judges each press a button, up for yes. The lamp is lit when at least two
+of the four say yes.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+{T.twoOfFourSightings.map(([sw, lit]) => <span><SwitchRow values={sw} labels="abcd" /> gives <Bulb lit={lit === 1} /></span>)}
+</p>
+
+Build it from <GateIcon type="AND" /> and <GateIcon type="OR" /> only, with at most seven gates.
+
+<CircuitBuilder client:visible id="two-of-four" inputs={T.twoOfFour.inputs} target={T.twoOfFour.target} gates={T.twoOfFour.gates} maxGates={T.twoOfFour.maxGates} height={360} />
+</CircuitProblem>
+
+<CircuitProblem n={16} title="Three of four">
+Now the lamp is lit when at least three of the four judges say yes.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+{T.threeOfFourSightings.map(([sw, lit]) => <span><SwitchRow values={sw} labels="abcd" /> gives <Bulb lit={lit === 1} /></span>)}
+</p>
+
+Build it from <GateIcon type="AND" /> and <GateIcon type="OR" /> only, with at most seven gates.
+
+<CircuitBuilder client:visible id="three-of-four" inputs={T.threeOfFour.inputs} target={T.threeOfFour.target} gates={T.threeOfFour.gates} maxGates={T.threeOfFour.maxGates} height={360} />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="The chair and the members">
+A committee has a chair, $a$, and three members, $b$, $c$ and $d$. A motion
+passes when the chair and at least one member vote yes, or when all three
+members vote yes.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+{T.chairSightings.map(([sw, lit]) => <span><SwitchRow values={sw} labels="abcd" /> {lit ? "passes" : "fails"} <Bulb lit={lit === 1} /></span>)}
+</p>
+
+Build it from <GateIcon type="AND" /> and <GateIcon type="OR" /> only, with at most six gates.
+
+<CircuitBuilder client:visible id="chair" inputs={T.chair.inputs} target={T.chair.target} gates={T.chair.gates} maxGates={T.chair.maxGates} height={360} />
+</CircuitProblem>
+
+## Beating the recipe
+
+<CircuitProblem n={18} title="Majority in four gates" hard>
+Three friends vote, and the lamp is lit when at least two of them say yes. The
+recipe uses fourteen gates for this. The book's smaller circuit uses five: three
+ANDs and two ORs. Build it with at most four gates.
+
+<CircuitBuilder client:visible id="majority-four" inputs={T.majority.inputs} target={T.majority.target} gates={T.majority.gates} maxGates={T.majority.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="Exactly one of three" hard>
+A ballot has three boxes, $a$, $b$ and $c$, each up when ticked. The ballot is
+valid when exactly one box is ticked.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 18px'}}>
+{T.exactlyOneSightings.map(([sw, lit]) => <span><SwitchRow values={sw} labels="abc" /> gives <Bulb lit={lit === 1} /></span>)}
+</p>
+
+Build it with at most four gates.
+
+<CircuitBuilder client:visible id="exactly-one" inputs={T.exactlyOne.inputs} target={T.exactlyOne.target} gates={T.exactlyOne.gates} maxGates={T.exactlyOne.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="A friend's table in two gates" hard>
+<TruthTable inputs={T.friendSmall.inputs} outputs={{ bulb: T.friendSmall.target }} />
+
+The recipe needs fourteen gates for this table. Build it with at most two.
+
+<CircuitBuilder client:visible id="friend-small" inputs={T.friendSmall.inputs} target={T.friendSmall.target} gates={T.friendSmall.gates} maxGates={T.friendSmall.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="One row of four, one gate saved" hard>
+The bulb is lit for <SwitchRow values="0110" labels="abcd" /> and dark for each
+of the other fifteen settings. The recipe uses five gates: two NOTs and three
+ANDs. Build it with at most four.
+
+<CircuitBuilder client:visible id="spike-0110" inputs={T.spike0110.inputs} target={T.spike0110.target} gates={T.spike0110.gates} maxGates={T.spike0110.maxGates} />
+</CircuitProblem>

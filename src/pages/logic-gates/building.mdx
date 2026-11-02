@@ -1,0 +1,273 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Building One Gate From Others
+order: 2
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Build gates when some are missing, read circuits in disguise, and find what a set of gates can never make. Twenty-three problems.
+description: Practice problems on building one gate from others, De Morgan circuits, and the gates that AND, OR and XOR cannot build.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FillTable,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  SealedBox,
+  TruthTable,
+  GateIcon,
+  CircuitPicture,
+} from "../../components/games/circuits/problems/index.ts";
+import * as G from "../../components/games/circuits/problems/banks/building.ts";
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+## Circuits in disguise
+
+<CircuitProblem n={1} title="No OR inside">
+This circuit is built from three <GateIcon type="NOT" /> gates and one
+<GateIcon type="AND" /> gate. Fill in its table. Column $p$ is the wire coming
+out of the AND gate. Then compare the bulb column with the four gates you know.
+
+<FillTable client:visible id="no-or-inside" circuit={G.noOrInside} wires={G.noOrInsideTags} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Which gate is this?">
+<CircuitPicture circuit={G.twoFlips} />
+
+The circuit above flips $a$, sends it with $b$ into an XOR, and flips the
+result. Which of these has the same table?
+
+<PickCircuit client:visible options={G.twoFlipsOptions.map((c) => ({ circuit: c }))} answer={G.twoFlipsAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="Read the wires">
+This circuit uses only <GateIcon type="OR" /> and <GateIcon type="NOT" /> gates.
+The switches are set as shown and cannot be moved. What do the wires $p$ and $q$
+carry, and is the bulb lit? Tap each tag, and the bulb, to give your answer.
+
+<PredictOutput client:visible id="read-or-not" circuit={G.readOrNot} switches={G.readOrNotSwitches} wires={G.readOrNotTags} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="A box of ORs and NOTs">
+<CircuitPicture circuit={G.orNotBox} />
+
+Which table belongs to the circuit above?
+
+<PickCircuit client:visible options={G.orNotBoxOptions} answer={G.orNotBoxAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="Every setting">
+List every setting of the three switches that lights the bulb. The bulb stays
+hidden, so work from the gates. Flip the switches to a setting, then press
+*Add this setting*. When the list is complete, press *Check my list*.
+
+<FindSetting client:visible id="every-or-not" circuit={G.everyOrNot} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="Always lit">
+Each gadget below has a single switch. Which of them keep the bulb lit with the
+switch up and with the switch down?
+
+<PickCircuit client:visible options={G.alwaysLitOptions.map((c) => ({ circuit: c }))} answer={G.alwaysLitAnswer} columns={2} />
+</CircuitProblem>
+
+## Building with fewer kinds of gate
+
+In each problem the palette holds only the gates shown, and the gate limit is
+the fewest that can do the job.
+
+<CircuitProblem n={7} title="Always dark, without AND">
+Build a gadget with one switch whose bulb is dark whichever way the switch is set.
+
+<div>
+<SealedBox switches="0" bulbs="0" inputs="a" />
+<SealedBox switches="1" bulbs="0" inputs="a" />
+</div>
+
+You have only <GateIcon type="NOT" /> and <GateIcon type="OR" />, and at most
+three gates.
+
+<CircuitBuilder client:visible id="always-dark" inputs={G.alwaysDark.inputs} target={G.alwaysDark.target} gates={G.alwaysDark.gates} maxGates={G.alwaysDark.maxGates} width={480} />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="Not both">
+The bulb is lit unless both switches are up.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.notBoth.target }} />
+
+Use only <GateIcon type="NOT" /> and <GateIcon type="OR" />, at most three gates.
+
+<CircuitBuilder client:visible id="not-both" inputs={G.notBoth.inputs} target={G.notBoth.target} gates={G.notBoth.gates} maxGates={G.notBoth.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="Up and down">
+Light the bulb exactly when $a$ is up and $b$ is down.
+
+<p>
+<SwitchRow values="10" labels="ab" /> gives <Bulb lit />, but <SwitchRow values="11" labels="ab" /> gives <Bulb />.
+</p>
+
+You have only <GateIcon type="XOR" /> and <GateIcon type="AND" />, and at most
+two gates.
+
+<CircuitBuilder client:visible id="up-and-down" inputs={G.upAndDown.inputs} target={G.upAndDown.target} gates={G.upAndDown.gates} maxGates={G.upAndDown.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={10} title="OR without OR">
+Build an OR gate from <GateIcon type="XOR" /> and <GateIcon type="AND" /> gates,
+at most three of them.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.orFromXorAnd.target }} />
+
+Hint: the book writes the output of OR as $a + b + ab$, where $+$ is XOR and
+$ab$ is AND.
+
+<CircuitBuilder client:visible id="or-from-xor-and" inputs={G.orFromXorAnd.inputs} target={G.orFromXorAnd.target} gates={G.orFromXorAnd.gates} maxGates={G.orFromXorAnd.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="AND without AND">
+Build an AND gate from <GateIcon type="XOR" /> and <GateIcon type="OR" /> gates,
+at most three of them.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.andFromXorOr.target }} />
+
+<CircuitBuilder client:visible id="and-from-xor-or" inputs={G.andFromXorOr.inputs} target={G.andFromXorOr.target} gates={G.andFromXorOr.gates} maxGates={G.andFromXorOr.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="Agree, the short way">
+Light the bulb exactly when the two switches agree: both up or both down.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.agreeXorNot.target }} />
+
+Use only <GateIcon type="XOR" /> and <GateIcon type="NOT" />, at most two gates.
+
+<CircuitBuilder client:visible id="agree-xor-not" inputs={G.agreeXorNot.inputs} target={G.agreeXorNot.target} gates={G.agreeXorNot.gates} maxGates={G.agreeXorNot.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="Agree, without XOR">
+Light the bulb exactly when the two switches agree: both up or both down.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.agreeAndOrNot.target }} />
+
+This time there is no XOR. Use <GateIcon type="NOT" />, <GateIcon type="AND" />
+and <GateIcon type="OR" />, at most four gates.
+
+<CircuitBuilder client:visible id="agree-and-or-not" inputs={G.agreeAndOrNot.inputs} target={G.agreeAndOrNot.target} gates={G.agreeAndOrNot.gates} maxGates={G.agreeAndOrNot.maxGates} width={560} />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="XOR in four gates">
+The book builds XOR from two NOTs, two ANDs and an OR, five gates in all. Build
+XOR from <GateIcon type="NOT" />, <GateIcon type="AND" /> and
+<GateIcon type="OR" /> with at most four gates.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.xorInFour.target }} />
+
+<CircuitBuilder client:visible id="xor-in-four" inputs={G.xorInFour.inputs} target={G.xorInFour.target} gates={G.xorInFour.gates} maxGates={G.xorInFour.maxGates} width={560} />
+</CircuitProblem>
+
+<CircuitProblem n={15} title="All three down">
+Three switches. The bulb is lit exactly when all three are down.
+
+<p>
+<SwitchRow values="000" labels="abc" /> gives <Bulb lit />, but <SwitchRow values="010" labels="abc" /> gives <Bulb />.
+</p>
+
+Use only <GateIcon type="NOT" /> and <GateIcon type="AND" />, at most five gates.
+
+<CircuitBuilder client:visible id="all-down" inputs={G.allDown.inputs} target={G.allDown.target} gates={G.allDown.gates} maxGates={G.allDown.maxGates} />
+</CircuitProblem>
+
+## What a palette cannot build
+
+These problems are about what no circuit can do, however many gates it uses.
+
+<CircuitProblem n={16} title="A box of ANDs and ORs">
+A sealed box holds only AND and OR gates, as many as you like, wired in any way.
+It has two switches, $a$ and $b$, and one bulb. Which of these tables could it
+have?
+
+<PickCircuit client:visible options={G.andOrTableOptions} answer={G.andOrTableAnswer} columns={3} />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="Catch the claim">
+Kai says his sealed box holds only ANDs and ORs, and that its bulb is lit exactly
+when the two switches disagree.
+
+<TruthTable inputs={["a", "b"]} outputs={{ "Kai's claim": G.catchXorClaim }} />
+
+You may try one setting. Which setting is sure to catch him out, whatever is
+inside the box?
+
+<PickCircuit client:visible options={G.catchXorOptions} answer={G.catchXorAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={18} title="Catch the claim, three switches">
+Mira says her sealed box holds only ANDs and ORs, and that its bulb is lit
+exactly when all three switches are down.
+
+<TruthTable inputs={["a", "b", "c"]} outputs={{ "Mira's claim": G.catchNoneClaim }} />
+
+Which of these settings would each catch her out on its own, whatever is inside
+the box?
+
+<PickCircuit client:visible options={G.catchNoneOptions} answer={G.catchNoneAnswer} columns={3} />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="XORs and NOTs">
+Three sealed boxes, each built only from XOR and NOT gates, have these tables.
+
+<TruthTable inputs={["a", "b"]} outputs={G.xorNotSeen} />
+
+Which of the tables below could also come from a box of XORs and NOTs?
+
+<PickCircuit client:visible options={G.xorNotTableOptions} answer={G.xorNotTableAnswer} columns={3} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="Which palettes make OR?">
+Each palette below may be used as many times as you like. Which of them can
+build an OR gate?
+
+<PickCircuit client:visible options={G.orPaletteOptions} answer={G.orPaletteAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="Which palettes make NOT?">
+Each palette below may be used as many times as you like. Which of them can
+build a NOT gate?
+
+<PickCircuit client:visible options={G.notPaletteOptions} answer={G.notPaletteAnswer} columns={3} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={22} title="XOR from ORs and NOTs" hard>
+Build XOR using only <GateIcon type="OR" /> and <GateIcon type="NOT" /> gates,
+at most seven of them.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.xorOrNot.target }} />
+
+<CircuitBuilder client:visible id="xor-or-not" inputs={G.xorOrNot.inputs} target={G.xorOrNot.target} gates={G.xorOrNot.gates} maxGates={G.xorOrNot.maxGates} width={640} height={320} />
+</CircuitProblem>
+
+<CircuitProblem n={23} title="Three keys, no AND" hard>
+A vault door has three key switches. The bulb, which opens the door, must light
+when all three switches are up, and only then.
+
+<p>
+<SwitchRow values="111" labels="abc" /> gives <Bulb lit />, but <SwitchRow values="101" labels="abc" /> gives <Bulb />.
+</p>
+
+There is no AND gate. Use only <GateIcon type="OR" /> and <GateIcon type="NOT" />,
+at most six gates.
+
+<CircuitBuilder client:visible id="three-keys-no-and" inputs={G.allUpOrNot.inputs} target={G.allUpOrNot.target} gates={G.allUpOrNot.gates} maxGates={G.allUpOrNot.maxGates} width={640} height={360} />
+</CircuitProblem>

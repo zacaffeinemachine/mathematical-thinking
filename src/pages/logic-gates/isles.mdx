@@ -1,0 +1,441 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Puzzles in Wires
+order: 7
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Oracles, chimeras, a ruby and some radios. Twenty puzzles turned into circuits whose bulb lights exactly on the settings that fit everything.
+description: Practice problems on solving oracle and chimera puzzles with circuits, one switch per islander, one agreement box per claim, and every setting tried.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  FillTable,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  GateIcon,
+} from "../../components/games/circuits/problems/index.ts";
+import * as B from "../../components/games/circuits/problems/banks/isles.ts";
+
+export const ROBES = ["var(--gate-and)", "var(--gate-or)", "var(--gate-xor)", "var(--gate-nand)"];
+
+export const Figure = ({ x = 0, y = 0, robe, s = 1 }) => (
+  <g transform={`translate(${x} ${y}) scale(${s})`}>
+    <path d="M-17 40 L-11 6 Q0 -2 11 6 L17 40 Z" fill={robe} stroke="var(--gate-ink)" stroke-width="1.4" stroke-linejoin="round" />
+    <circle cx="0" cy="-8" r="10" fill="var(--surface)" stroke="var(--gate-ink)" stroke-width="1.4" />
+    <text x="0" y="29" font-size="15" font-weight="700" text-anchor="middle" fill="var(--gate-ink)" font-family="ui-monospace, monospace">?</text>
+  </g>
+);
+
+export const Islanders = ({ people }) => (
+  <div className="not-prose isles-row">
+    {people.map((p, k) => (
+      <figure className="isles-person">
+        {p.says && <div className="isles-bubble">&ldquo;{p.says}&rdquo;</div>}
+        <svg viewBox="-22 -22 44 66" width="52" height="78" role="img" aria-label={`${p.name}, an oracle or a chimera`}>
+          <Figure robe={ROBES[k % ROBES.length]} />
+        </svg>
+        <figcaption><strong>{p.name}</strong>{p.sw && <span className="isles-sw">switch <code>{p.sw}</code></span>}</figcaption>
+      </figure>
+    ))}
+  </div>
+);
+
+export const Ring = ({ people }) => {
+  const n = people.length, R = n === 3 ? 104 : 118, cx = 170, cy = n === 3 ? 142 : 156;
+  const pos = people.map((_, k) => {
+    const t = -Math.PI / 2 + (2 * Math.PI * k) / n;
+    return [cx + R * Math.cos(t), cy + R * Math.sin(t)];
+  });
+  return (
+    <svg className="isles-ring" viewBox={`0 0 340 ${n === 3 ? 278 : 330}`} width="340" role="img" aria-label={`${n} islanders in a circle, each speaking about the next`}>
+      <defs>
+        <marker id={`isles-arrow-${n}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+      {pos.map(([x1, y1], k) => {
+        const [x2, y2] = pos[(k + 1) % n];
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        const ml = Math.hypot(mx - cx, my - cy), ox = (mx - cx) / ml, oy = (my - cy) / ml;
+        const c1 = [x1, y1 - 6], c2 = [x2, y2 - 6];
+        const sx = c1[0] + (c2[0] - c1[0]) * 0.28, sy = c1[1] + (c2[1] - c1[1]) * 0.28;
+        const ex = c1[0] + (c2[0] - c1[0]) * 0.72, ey = c1[1] + (c2[1] - c1[1]) * 0.72;
+        return (
+          <g>
+            <path d={`M${sx} ${sy} Q${mx + ox * 16} ${my - 6 + oy * 16} ${ex} ${ey}`} fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end={`url(#isles-arrow-${n})`} />
+            <text x={mx + ox * 36} y={my - 6 + oy * 36 + 4} font-size="12" text-anchor="middle" fill="var(--accent)" font-style="italic">chimera</text>
+          </g>
+        );
+      })}
+      {pos.map(([x, y], k) => (
+        <g>
+          <Figure x={x} y={y - 16} robe={ROBES[k % ROBES.length]} s={0.8} />
+          <text x={x} y={y + 31} font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--ink)">{people[k].name}</text>
+          <text x={x} y={y + 45} font-size="11" text-anchor="middle" fill="var(--muted)">switch <tspan font-family="ui-monospace, monospace" fill="var(--ink)">{people[k].sw}</tspan></text>
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+export const Radio = ({ x, y, name }) => (
+  <g transform={`translate(${x} ${y})`}>
+    <line x1="10" y1="-16" x2="20" y2="-34" stroke="var(--gate-ink)" stroke-width="1.6" />
+    <circle cx="20" cy="-34" r="2.4" fill="var(--gate-ink)" />
+    <rect x="-24" y="-16" width="48" height="32" rx="6" fill="var(--gate-nand)" stroke="var(--gate-ink)" stroke-width="1.4" />
+    <circle cx="-10" cy="0" r="8" fill="var(--surface)" stroke="var(--gate-ink)" stroke-width="1.2" />
+    <line x1="-10" y1="0" x2="-10" y2="-6" stroke="var(--gate-ink)" stroke-width="1.6" />
+    <text x="11" y="5" font-size="15" font-weight="700" text-anchor="middle" fill="var(--gate-ink)" font-family="ui-monospace, monospace">{name}</text>
+  </g>
+);
+
+export const Radios = ({ names }) => {
+  const n = names.length;
+  const pos = n === 3 ? [[150, 50], [240, 190], [60, 190]] : [[70, 50], [230, 50], [230, 190], [70, 190]];
+  return (
+    <svg className="isles-ring" viewBox="0 0 300 240" width="300" role="img" aria-label={`${n} radios, a report for each pair next to each other`}>
+      {pos.map(([x1, y1], k) => {
+        const [x2, y2] = pos[(k + 1) % n];
+        const lab = names[k] + names[(k + 1) % n];
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        return (
+          <g>
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" />
+            <rect x={mx - 19} y={my - 11} width="38" height="22" rx="5" fill="var(--surface)" stroke="var(--muted)" />
+            <text x={mx} y={my + 5} font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)" font-family="ui-monospace, monospace">{lab}</text>
+          </g>
+        );
+      })}
+      {pos.map(([x, y], k) => <Radio x={x} y={y} name={names[k]} />)}
+    </svg>
+  );
+};
+
+export const RubyBoxes = () => (
+  <svg viewBox="0 0 230 74" width="230" role="img" aria-label="the Coral box and the Amber box">
+    {[["Coral", "#f08a7a", 20], ["Amber", "#f5b82e", 130]].map(([name, fill, x]) => (
+      <g>
+        <rect x={x} y="22" width="80" height="34" rx="4" fill={fill} stroke="var(--gate-ink)" stroke-width="1.4" />
+        <path d={`M${x} 22 Q${x + 40} 2 ${x + 80} 22`} fill={fill} stroke="var(--gate-ink)" stroke-width="1.4" />
+        <rect x={x + 34} y="30" width="12" height="10" rx="2" fill="var(--surface)" stroke="var(--gate-ink)" />
+        <text x={x + 40} y="70" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--ink)">{name}</text>
+      </g>
+    ))}
+  </svg>
+);
+
+<style>{`
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  .isles-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    align-items: flex-end;
+    margin: 14px 0 10px;
+  }
+  .isles-person {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    max-width: 210px;
+  }
+  .isles-bubble {
+    position: relative;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 7px 11px;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 9px;
+  }
+  .isles-bubble::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 12px;
+    height: 12px;
+    background: var(--surface);
+    border-right: 1.5px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .isles-person figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.9rem;
+    line-height: 1.25;
+    margin-top: 2px;
+  }
+  .isles-sw {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 520px) {
+    .isles-row { gap: 12px 10px; }
+    .isles-person { max-width: calc(50% - 5px); }
+    .isles-bubble { font-size: 0.84rem; padding: 6px 8px; }
+  }
+  .isles-ring {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 8px 0;
+  }
+`}</style>
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is an oracle</span>
+  <span><Switch label="down" /> is a chimera</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+Every islander is an **oracle**, whose every sentence is true, or a **chimera**,
+whose every sentence is false. An islander *fits* when her type agrees with the
+truth of what she says.
+
+## Claims as wires
+
+<CircuitProblem n={1} title="At least one of them">
+<Islanders people={[{ name: "Selene", says: "At least one of Ariadne and Thalia is a chimera." }]} />
+
+Switch $a$ is up when Ariadne is an oracle, and switch $t$ is up when Thalia is.
+Which boxes light the bulb exactly when Selene's claim is true?
+
+<PickCircuit client:visible options={B.atLeastOneOptions.map((c) => ({ circuit: c }))} answer={B.atLeastOneAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Exactly one chimera">
+<Islanders people={[
+  { name: "Daphne", sw: "d", says: "Exactly one of us three is a chimera." },
+  { name: "Electra", sw: "e" },
+  { name: "Hebe", sw: "h" },
+]} />
+
+Which table shows when Daphne's claim is true?
+
+<PickCircuit client:visible options={B.exactlyOneTableOptions} answer={B.exactlyOneTableAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="An if-then claim">
+<Islanders people={[{ name: "Thalia", says: "If Phoebe is an oracle, then so is Selene." }]} />
+
+An if-then claim is false only when its if-part holds and its then-part fails.
+Switch $p$ is up when Phoebe is an oracle, and switch $s$ is up when Selene is.
+Which boxes light the bulb exactly when Thalia's claim is true?
+
+<PickCircuit client:visible options={B.ifThenOptions.map((c) => ({ circuit: c }))} answer={B.ifThenAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="Does Phoebe fit?">
+<Islanders people={[
+  { name: "Phoebe", sw: "p", says: "Selene is a chimera." },
+  { name: "Selene", sw: "s" },
+]} />
+
+Build a box whose bulb is lit exactly when Phoebe fits: an oracle with a true
+claim, or a chimera with a false one. Use at most one gate.
+
+<CircuitBuilder client:visible id="phoebe-fits" inputs={B.phoebeFits.inputs} target={B.phoebeFits.target} gates={B.phoebeFits.gates} maxGates={B.phoebeFits.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="Does Thalia fit?">
+<Islanders people={[
+  { name: "Ariadne", sw: "a" },
+  { name: "Thalia", sw: "t", says: "Ariadne and I are both oracles." },
+]} />
+
+Build a box whose bulb is lit exactly when Thalia fits. Use at most two gates.
+
+<CircuitBuilder client:visible id="thalia-fits" inputs={B.thaliaFits.inputs} target={B.thaliaFits.target} gates={B.thaliaFits.gates} maxGates={B.thaliaFits.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="Exactly one oracle">
+<Islanders people={[
+  { name: "Ariadne", sw: "a", says: "Exactly one of us three is an oracle." },
+  { name: "Clio", sw: "c" },
+  { name: "Doris", sw: "d" },
+]} />
+
+Build a box whose bulb is lit exactly when Ariadne's claim is true. Use at most
+four gates.
+
+<CircuitBuilder client:visible id="exactly-one-oracle" inputs={B.exactlyOneOracle.inputs} target={B.exactlyOneOracle.target} gates={B.exactlyOneOracle.gates} maxGates={B.exactlyOneOracle.maxGates} />
+</CircuitProblem>
+
+## The bash
+
+<CircuitProblem n={7} title="Fill in the bash">
+<Islanders people={B.bashPeople} />
+
+This is their checking circuit. Fill in the table: Doris's claim, whether each
+of them fits, and the bulb. Tap a cell to change it.
+
+<FillTable client:visible id="bash" circuit={B.bash} wires={B.bashTags} />
+</CircuitProblem>
+
+## Find the islanders
+
+<CircuitProblem n={8} title="The ruby">
+<Islanders people={B.rubyPeople} />
+
+<RubyBoxes />
+
+A ruby is in one of the two boxes, and both islanders know which. Switch $c$ is
+up when it is in the Coral box. An if-then claim is false only when its if-part
+holds and its then-part fails. Find the only setting that lights the bulb of
+this checking circuit.
+
+<FindSetting client:visible id="ruby" circuit={B.ruby} reveal="all" />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="At least one chimera">
+<Islanders people={B.countPeople} />
+
+We are told that at least one of the three is a chimera. This circuit checks the
+three claims and that count. Find the only setting that lights the bulb. The
+bulb stays hidden until you press Check.
+
+<FindSetting client:visible id="count" circuit={B.countCircuit} reveal="none" />
+</CircuitProblem>
+
+<CircuitProblem n={10} title="Three speakers">
+<Islanders people={B.threePeople} />
+
+Nothing is said about how many chimeras there are. Find the only setting that
+lights the bulb of this checking circuit. The bulb stays hidden until you press
+Check.
+
+<FindSetting client:visible id="three" circuit={B.threeCircuit} reveal="none" />
+</CircuitProblem>
+
+## Every setting that fits
+
+<CircuitProblem n={11} title="Two islanders">
+<Islanders people={B.twoPeople} />
+
+List every setting that lights the bulb of this checking circuit. A list may
+hold several settings, one, or none. Flip the switches to a setting and press
+*Add this setting*. When the list is complete, press *Check my list*.
+
+<FindSetting client:visible id="two" circuit={B.twoCircuit} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="A circle of three">
+Three islanders stand in a circle. Each one says that the next one round is a
+chimera.
+
+<Ring people={B.circle3People} />
+
+List every setting that lights the bulb of this checking circuit. A list may
+hold several settings, one, or none.
+
+<FindSetting client:visible id="circle-three" circuit={B.circle3} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="A circle of four">
+Four islanders stand in a circle. Each one says that the next one round is a
+chimera.
+
+<Ring people={B.circle4People} />
+
+List every setting that lights the bulb of this checking circuit. A list may
+hold several settings, one, or none.
+
+<FindSetting client:visible id="circle-four" circuit={B.circle4} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="More than one answer">
+<Islanders people={B.manyPeople} />
+
+An if-then claim is false only when its if-part holds and its then-part fails.
+List every setting that lights the bulb of this checking circuit. A list may
+hold several settings, one, or none.
+
+<FindSetting client:visible id="many" circuit={B.manyCircuit} mode="all" />
+</CircuitProblem>
+
+## Build the checking circuit
+
+<CircuitProblem n={15} title="Three bulbs">
+<Islanders people={B.threeBulbsPeople} />
+
+Build a circuit with three bulbs. Bulb *Ariadne* is lit exactly when Ariadne fits, bulb
+*Thalia* when Thalia fits, and bulb *both* when both of them fit.
+
+<CircuitBuilder client:visible id="three-bulbs" inputs={B.threeBulbs.inputs} outputs={B.threeBulbs.outputs} target={B.threeBulbs.target} gates={B.threeBulbs.gates} />
+</CircuitProblem>
+
+<CircuitProblem n={16} title="Which circuit checks it?">
+<Islanders people={B.pickPeople} />
+
+We are told that exactly one of the two is a chimera. Which circuit lights its
+bulb exactly on the settings that fit both claims and the count?
+
+<PickCircuit client:visible options={B.pickOptions.map((c) => ({ circuit: c }))} answer={B.pickAnswer} columns={1} />
+</CircuitProblem>
+
+## Radios at the camp
+
+<CircuitProblem n={17} title="Three radios">
+Three radios A, B and C are each tuned to one of two channels. For each pair, a
+camper reports whether the two radios are on the same channel.
+
+<Radios names="ABC" />
+
+Switch *AB* is up for a report that A and B are on the same channel, and down for
+a report that they are on different channels. The same goes for *BC* and *CA*.
+Build a circuit whose bulb is lit exactly when the three reports could all be
+true at once. Use at most two gates.
+
+<CircuitBuilder client:visible id="radios-three" inputs={B.radios3.inputs} target={B.radios3.target} gates={B.radios3.gates} maxGates={B.radios3.maxGates} width={520} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={18} title="Four on the beach" hard>
+<Islanders people={B.fourPeople} />
+
+An if-then claim is false only when its if-part holds and its then-part fails.
+List every setting that lights the bulb of this checking circuit. A list may
+hold several settings, one, or none.
+
+<FindSetting client:visible id="four" circuit={B.fourCircuit} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="Four radios in a ring" hard>
+Four radios A, B, C and D are each tuned to one of two channels. They stand in a
+ring, and for each pair of neighbours a camper reports whether the two are on
+the same channel.
+
+<Radios names="ABCD" />
+
+Switch *AB* is up for a report that A and B are on the same channel, and so on
+round the ring. Build a circuit whose bulb is lit exactly when the four reports
+could all be true at once. Use at most four gates.
+
+<CircuitBuilder client:visible id="radios-four" inputs={B.radios4.inputs} target={B.radios4.target} gates={B.radios4.gates} maxGates={B.radios4.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="One gate is enough" hard>
+<Islanders people={B.oneGatePeople} />
+
+Build a checking circuit for these three: its bulb must be lit exactly on the
+settings in which all three of them fit. Use a single gate.
+
+<CircuitBuilder client:visible id="one-gate" inputs={B.oneGate.inputs} target={B.oneGate.target} gates={B.oneGate.gates} maxGates={B.oneGate.maxGates} width={520} />
+</CircuitProblem>

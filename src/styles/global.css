@@ -29,6 +29,9 @@
   --gate-ink:  #1A1008;
   --gate-wire-on:  #b91c1c;
   --gate-wire-off: #71717a;
+  /* A lit bulb on the circuit problem pages (components/games/circuits/problems). */
+  --bulb-lit:  #facc15;
+  --bulb-glow: rgba(250, 204, 21, 0.38);
 
   /* MCQ verdict states. --mcq-pick is the deliberately NEUTRAL colour of an
      option you have selected but not yet submitted. It must not be --accent:
@@ -115,6 +118,8 @@
   --gate-ink:  #f4f4f5;
   --gate-wire-on:  #fb923c;  /* warm orange — pops against dark surface */
   --gate-wire-off: #6b7280;
+  --bulb-lit:  #fde047;
+  --bulb-glow: rgba(253, 224, 71, 0.30);
 
   /* MCQ verdict states. Lightened for a dark surface, and matched on
      luminance to each other so neither verdict shouts louder than the other

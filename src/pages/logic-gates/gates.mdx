@@ -1,0 +1,150 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Gates
+order: 1
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: NOT, AND, OR and XOR, their tables, and two-input gates handling three switches. Twelve problems to read, fill in and build.
+description: Practice problems on the four basic gates, their truth tables, and chaining two-input gates.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FillTable,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  LampRow,
+  SealedBox,
+  TruthTable,
+  GateIcon,
+  CircuitPicture,
+} from "../../components/games/circuits/problems/index.ts";
+import * as G from "../../components/games/circuits/problems/banks/gates.ts";
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+<CircuitProblem n={1} title="What is in the box?">
+A sealed box has two switches, $a$ and $b$, and one bulb. Inside it is a single
+gate. Here is what the bulb did for three settings of the switches.
+
+<div>
+{G.boxSightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="ab" />)}
+</div>
+
+Which of these could be inside the box?
+
+<PickCircuit client:visible options={G.boxOptions.map((c) => ({ circuit: c }))} answer={G.boxAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Read the wires">
+The switches are set as shown and cannot be moved. What do the wires $p$ and
+$q$ carry, and is the bulb lit? Tap each tag, and the bulb, to give your answer.
+
+<PredictOutput client:visible id="read-wires" circuit={G.readWires} switches={G.readWiresSwitches} wires={G.readWiresTags} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="A gate in disguise">
+Fill in the table for this circuit. Column $p$ is the wire coming out of the
+<GateIcon type="NOT" /> gate. Tap a cell to change it.
+
+<FillTable client:visible id="disguised" circuit={G.disguised} wires={G.disguisedTags} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="Which table?">
+<CircuitPicture circuit={G.whichTableCircuit} />
+
+Which table belongs to the circuit above?
+
+<PickCircuit client:visible options={G.whichTableOptions} answer={G.whichTableAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="One lit, one dark">
+Flip the switches until the left bulb is lit and the right bulb is dark.
+
+<FindSetting client:visible id="lit-and-dark" circuit={G.litAndDark} goal={G.litAndDarkGoal} />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="Three keys">
+A vault door has three key switches. The bulb, which opens the door, must light
+when all three switches are up, and only then.
+
+<p>
+<SwitchRow values="111" labels="abc" /> gives <Bulb lit />, but <SwitchRow values="110" labels="abc" /> gives <Bulb />.
+</p>
+
+Build it from <GateIcon type="AND" /> gates. Each one takes only two wires, and
+you may use at most two of them.
+
+<CircuitBuilder client:visible id="three-keys" inputs={G.threeKeys.inputs} target={G.threeKeys.target} gates={G.threeKeys.gates} maxGates={G.threeKeys.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={7} title="A stuck switch">
+Switch $b$ is stuck down. Set the other two switches so that the bulb is lit.
+The bulb stays hidden until you press Check, so work it out from the gates.
+
+<FindSetting client:visible id="stuck" circuit={G.stuck} fixed={G.stuckFixed} reveal="none" />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="Both down">
+Build a circuit whose bulb is lit exactly when both switches are down.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: G.bothDown.target }} />
+
+You may use <GateIcon type="NOT" />, <GateIcon type="AND" /> and <GateIcon type="OR" />,
+and at most two gates in all.
+
+<CircuitBuilder client:visible id="both-down" inputs={G.bothDown.inputs} target={G.bothDown.target} gates={G.bothDown.gates} maxGates={G.bothDown.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="Every setting">
+List every setting of the three switches that lights the bulb. The bulb stays
+hidden, so work from the gates. Flip the switches to a setting, then press
+*Add this setting*. When the list is complete, press *Check my list*.
+
+<FindSetting client:visible id="every-setting" circuit={G.everySetting} mode="all" />
+</CircuitProblem>
+
+<CircuitProblem n={10} title="Agree and disagree">
+Two switches and two bulbs. Bulb *same* is lit when the switches agree, and bulb
+*differ* is lit when they disagree.
+
+<div style={{display:'flex', flexDirection:'column', gap:4, margin:'12px 0'}}>
+<span><SwitchRow values="00" labels="ab" /> gives <LampRow lamps="10" labels={["same", "differ"]} /></span>
+<span><SwitchRow values="01" labels="ab" /> gives <LampRow lamps="01" labels={["same", "differ"]} /></span>
+</div>
+
+Use at most two gates.
+
+<CircuitBuilder client:visible id="agree-disagree" inputs={G.agreeDisagree.inputs} outputs={G.agreeDisagree.outputs} target={G.agreeDisagree.target} gates={G.agreeDisagree.gates} maxGates={G.agreeDisagree.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="At least one, three ways">
+Which of these circuits light the bulb exactly when at least one of the three
+switches is up?
+
+<PickCircuit client:visible options={G.atLeastOneOptions.map((c) => ({ circuit: c }))} answer={G.atLeastOneAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="A staircase with four switches" hard>
+A long staircase has four switches, one on each landing. Flipping any one switch,
+at any time, changes the bulb. With all four switches down the bulb is dark.
+
+<div>
+<SealedBox switches="0000" bulbs="0" inputs="abcd" />
+<SealedBox switches="0100" bulbs="1" inputs="abcd" />
+<SealedBox switches="0110" bulbs="0" inputs="abcd" />
+</div>
+
+Build it from <GateIcon type="XOR" /> gates, at most three of them.
+
+<CircuitBuilder client:visible id="four-stairs" inputs={G.fourStairs.inputs} target={G.fourStairs.target} gates={G.fourStairs.gates} maxGates={G.fourStairs.maxGates} />
+</CircuitProblem>

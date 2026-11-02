@@ -2,57 +2,22 @@ import { useMemo, useState } from "react";
 import type { Bit, Circuit, Gate, GateType } from "./model";
 import { evaluateUpTo } from "./model";
 
-// Standard gate dimensions, tuned to look reasonable at typical zoom.
-const GW = 56;   // gate body width
-const GH = 36;   // gate body height
-const NOT_W = 36;
-const NOT_H = 28;
+import {
+  GW,
+  GH,
+  NOT_W,
+  GATE_FILL,
+  GATE_INK,
+  WIRE_ON,
+  WIRE_OFF,
+  gatePath,
+  hasBubble,
+  xorBackPath,
+} from "./gateShapes";
+
+// Shapes, sizes and colours live in gateShapes.ts so the problem
+// components in problems/ draw exactly the same gates.
 const PIN = 6;   // pin stub length sticking out of inputs / outputs
-
-// Gate fills come from CSS variables so they swap on dark/light theme.
-const GATE_FILL: Record<GateType, string> = {
-  NOT:  "var(--gate-not)",
-  AND:  "var(--gate-and)",
-  OR:   "var(--gate-or)",
-  XOR:  "var(--gate-xor)",
-  NAND: "var(--gate-nand)",
-  NOR:  "var(--gate-nor)",
-};
-const GATE_INK = "var(--gate-ink)";
-const WIRE_ON = "var(--gate-wire-on)";
-const WIRE_OFF = "var(--gate-wire-off)";
-
-// ---- Gate shape generators (return SVG <path d="…"> strings) ----------
-
-function gatePath(type: GateType): string {
-  switch (type) {
-    case "NOT":
-      // triangle pointing right; bubble drawn separately
-      return `M 0 ${-NOT_H / 2} L ${NOT_W} 0 L 0 ${NOT_H / 2} Z`;
-    case "AND":
-    case "NAND": {
-      // Flat-back D: rectangle on left, semicircle on right
-      const r = GH / 2;
-      const flatW = GW - r;
-      return `M 0 ${-r} L ${flatW} ${-r} A ${r} ${r} 0 0 1 ${flatW} ${r} L 0 ${r} Z`;
-    }
-    case "OR":
-    case "NOR":
-    case "XOR": {
-      // Shield with a curved back and a pointed nose
-      const w = GW;
-      const h = GH;
-      // Back curve (concave), then two arcs converging at the tip.
-      return `
-        M 0 ${-h / 2}
-        Q ${w * 0.25} 0 0 ${h / 2}
-        Q ${w * 0.55} ${h / 2} ${w} 0
-        Q ${w * 0.55} ${-h / 2} 0 ${-h / 2}
-        Z
-      `;
-    }
-  }
-}
 
 // Locations (relative to gate's anchor at left edge / horizontal centre):
 function inputPin(type: GateType, idx: 0 | 1): { x: number; y: number } {
@@ -63,15 +28,6 @@ function inputPin(type: GateType, idx: 0 | 1): { x: number; y: number } {
 function outputPin(type: GateType): { x: number; y: number } {
   return { x: type === "NOT" ? NOT_W : GW, y: 0 };
 }
-function hasBubble(type: GateType): boolean {
-  return type === "NOT" || type === "NAND" || type === "NOR";
-}
-
-// XOR gets an extra back-curve drawn behind the OR shield
-function xorBackPath(): string {
-  return `M -8 ${-GH / 2} Q ${GW * 0.25 - 8} 0 -8 ${GH / 2}`;
-}
-
 // ---- Main component ---------------------------------------------------
 
 export interface CircuitDiagramProps {

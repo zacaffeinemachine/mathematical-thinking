@@ -1,0 +1,311 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Only NAND
+order: 6
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Circuits made of one kind of gate. Read NAND circuits, rebuild the old gates from NAND, then do it all again with NOR. Twenty-four problems.
+description: Practice problems on NAND and NOR, the gates that can build every circuit on their own.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FillTable,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  LampRow,
+  SealedBox,
+  TruthTable,
+  GateIcon,
+} from "../../components/games/circuits/problems/index.ts";
+import * as N from "../../components/games/circuits/problems/banks/nand.ts";
+
+export const base = import.meta.env.BASE_URL;
+
+Every circuit on this page uses one kind of gate, and every gate limit on this
+page is the fewest possible.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+  <span><GateIcon type="NAND" /> outputs $\texttt{0}$ only when both inputs are $\texttt{1}$</span>
+</p>
+
+<figure style={{margin:'16px 0'}}>
+  <img src={`${base}/images/circuits/nand/nand-chip.jpg`} alt="A small black chip with fourteen metal legs" style={{maxWidth: '280px', width: '100%'}} />
+  <figcaption style={{fontSize:'0.85em', color:'var(--muted)'}}>A chip holding four NAND gates. Public domain, photo by Stefan Riepl, via Wikimedia Commons.</figcaption>
+</figure>
+
+## Reading NAND circuits
+
+<CircuitProblem n={1} title="Two NANDs, one table">
+Fill in the table for this circuit. Column $p$ is the wire coming out of the
+first NAND. Tap a cell to change it.
+
+<FillTable client:visible id="two-nands" circuit={N.twoNands} wires={N.twoNandsTags} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Read the wires">
+The switches are set as shown and cannot be moved. What do the wires $p$ and
+$q$ carry, and is the bulb lit? Tap each tag, and the bulb, to give your answer.
+
+<PredictOutput client:visible id="read-wires" circuit={N.readWires} switches={N.readWiresSwitches} wires={N.readWiresTags} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="Which one is an OR?">
+Each circuit below is made of NAND gates only. Which one lights the bulb
+exactly when at least one switch is up?
+
+<PickCircuit client:visible options={N.whichOrOptions.map((c) => ({ circuit: c }))} answer={N.whichOrAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="The one dark setting">
+This circuit lights its bulb for every setting of the switches but one. Find
+that setting. The bulb stays hidden until you press Check, so work it out from
+the gates.
+
+<FindSetting client:visible id="one-dark" circuit={N.oneDark} goal={N.oneDarkGoal} reveal="none" />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="Lit no matter what">
+Which of these circuits keep the bulb lit for every setting of the switches?
+Pick all that do.
+
+<PickCircuit client:visible options={N.alwaysLitOptions.map((c) => ({ circuit: c }))} answer={N.alwaysLitAnswer} />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="What is in the box?">
+A sealed box has two switches, $a$ and $b$, and one bulb, with nothing but NAND
+gates inside. Here is what the bulb did for three settings of the switches.
+
+<div>
+{N.boxSightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="ab" />)}
+</div>
+
+Which of these could be inside the box?
+
+<PickCircuit client:visible options={N.boxOptions.map((c) => ({ circuit: c }))} answer={N.boxAnswer} />
+</CircuitProblem>
+
+## The old gates, from NAND
+
+<CircuitProblem n={7} title="A flipper">
+Build a circuit whose bulb is lit exactly when switch $a$ is down.
+
+<p><SwitchRow values="0" labels="a" /> gives <Bulb lit />, and <SwitchRow values="1" labels="a" /> gives <Bulb />.</p>
+
+Use NAND gates only, at most one of them.
+
+<CircuitBuilder client:visible id="nand-not" inputs={N.buildNot.inputs} target={N.buildNot.target} gates={N.buildNot.gates} maxGates={N.buildNot.maxGates} width={460} />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="Both up">
+Build a circuit whose bulb is lit exactly when both switches are up.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.buildAnd.target }} />
+
+Use NAND gates only, at most two of them.
+
+<CircuitBuilder client:visible id="nand-and" inputs={N.buildAnd.inputs} target={N.buildAnd.target} gates={N.buildAnd.gates} maxGates={N.buildAnd.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="At least one up">
+Build a circuit whose bulb is lit exactly when at least one of the two switches
+is up.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.buildOr.target }} />
+
+Use NAND gates only, at most three of them.
+
+<CircuitBuilder client:visible id="nand-or" inputs={N.buildOr.inputs} target={N.buildOr.target} gates={N.buildOr.gates} maxGates={N.buildOr.maxGates} width={540} />
+</CircuitProblem>
+
+## Small jobs, NAND only
+
+<CircuitProblem n={10} title="Always dark">
+Build a circuit with one switch whose bulb stays dark whatever the switch does.
+
+<p><SwitchRow values="0" labels="a" /> gives <Bulb />, and <SwitchRow values="1" labels="a" /> gives <Bulb />.</p>
+
+Use NAND gates only, at most three of them.
+
+<CircuitBuilder client:visible id="always-dark" inputs={N.alwaysDark.inputs} target={N.alwaysDark.target} gates={N.alwaysDark.gates} maxGates={N.alwaysDark.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="An if-then box">
+Build a box whose bulb is lit exactly when the claim *if $a$ is up, then $b$ is
+up* holds. The claim fails on one setting only.
+
+<p><SwitchRow values="10" labels="ab" /> gives <Bulb />, and every other setting gives <Bulb lit />.</p>
+
+Use NAND gates only, at most two of them.
+
+<CircuitBuilder client:visible id="nand-if-then" inputs={N.ifThen.inputs} target={N.ifThen.target} gates={N.ifThen.gates} maxGates={N.ifThen.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="Up, then down">
+A cupboard lock has two switches. It opens for one setting only: $a$ up and $b$
+down.
+
+<p><SwitchRow values="10" labels="ab" /> gives <Bulb lit />, and every other setting gives <Bulb />.</p>
+
+Use NAND gates only, at most three of them.
+
+<CircuitBuilder client:visible id="up-down-lock" inputs={N.upDownLock.inputs} target={N.upDownLock.target} gates={N.upDownLock.gates} maxGates={N.upDownLock.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="Three keys">
+A vault door has three key switches. The bulb, which opens the door, must light
+when all three switches are up, and only then.
+
+<p>
+<SwitchRow values="111" labels="abc" /> gives <Bulb lit />, but <SwitchRow values="110" labels="abc" /> gives <Bulb />.
+</p>
+
+Use NAND gates only, each with two inputs, at most four of them.
+
+<CircuitBuilder client:visible id="nand-three-keys" inputs={N.threeKeys.inputs} target={N.threeKeys.target} gates={N.threeKeys.gates} maxGates={N.threeKeys.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="The chooser">
+Switch $c$ decides which switch the bulb listens to. With $c$ up, the bulb
+copies $a$. With $c$ down, the bulb copies $b$.
+
+<div>
+{N.chooserSightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="abc" />)}
+</div>
+
+Use NAND gates only, at most four of them.
+
+<CircuitBuilder client:visible id="chooser" inputs={N.chooser.inputs} target={N.chooser.target} gates={N.chooser.gates} maxGates={N.chooser.maxGates} />
+</CircuitProblem>
+
+## NOR only
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><GateIcon type="NOR" /> is OR followed by NOT. It outputs $\texttt{1}$ only when both inputs are $\texttt{0}$.</span>
+</p>
+
+<figure style={{margin:'16px 0'}}>
+  <img src={`${base}/images/circuits/nand/apollo-computer.jpg`} alt="A flat metal case beside a small keypad with a display" style={{maxWidth: '340px', width: '100%'}} />
+  <figcaption style={{fontSize:'0.85em', color:'var(--muted)'}}>The computer that guided the Apollo missions to the Moon (left) and its keypad (right). Its logic was built from one kind of gate, a NOR with three inputs. Public domain, via Wikimedia Commons.</figcaption>
+</figure>
+
+<CircuitProblem n={15} title="A NOR table">
+Fill in the table for this circuit. Column $p$ is the wire coming out of the
+first NOR. Tap a cell to change it.
+
+<FillTable client:visible id="nor-fill" circuit={N.norFill} wires={N.norFillTags} />
+</CircuitProblem>
+
+<CircuitProblem n={16} title="At least one up, from NOR">
+Build a circuit whose bulb is lit exactly when at least one of the two switches
+is up.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.norOr.target }} />
+
+Use NOR gates only, at most two of them.
+
+<CircuitBuilder client:visible id="nor-or" inputs={N.norOr.inputs} target={N.norOr.target} gates={N.norOr.gates} maxGates={N.norOr.maxGates} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="Both up, from NOR">
+Build a circuit whose bulb is lit exactly when both switches are up.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.norAnd.target }} />
+
+Use NOR gates only, at most three of them.
+
+<CircuitBuilder client:visible id="nor-and" inputs={N.norAnd.inputs} target={N.norAnd.target} gates={N.norAnd.gates} maxGates={N.norAnd.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={18} title="An if-then box, from NOR">
+Build a box whose bulb is lit exactly when the claim *if $a$ is up, then $b$ is
+up* holds.
+
+<p><SwitchRow values="10" labels="ab" /> gives <Bulb />, and every other setting gives <Bulb lit />.</p>
+
+Use NOR gates only, at most three of them.
+
+<CircuitBuilder client:visible id="nor-if-then" inputs={N.norIfThen.inputs} target={N.norIfThen.target} gates={N.norIfThen.gates} maxGates={N.norIfThen.maxGates} width={540} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={19} title="The disagreement detector" hard>
+Build a circuit whose bulb is lit exactly when the two switches disagree.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.nandXor.target }} />
+
+Use NAND gates only, at most four of them.
+
+<CircuitBuilder client:visible id="nand-xor" inputs={N.nandXor.inputs} target={N.nandXor.target} gates={N.nandXor.gates} maxGates={N.nandXor.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="Agree and differ" hard>
+Two switches and two bulbs. Bulb *same* is lit when the switches agree, and
+bulb *differ* is lit when they disagree.
+
+<div style={{display:'flex', flexDirection:'column', gap:'4px', margin:'12px 0'}}>
+<span><SwitchRow values="00" labels="ab" /> gives <LampRow lamps="10" labels={["same", "differ"]} /></span>
+<span><SwitchRow values="01" labels="ab" /> gives <LampRow lamps="01" labels={["same", "differ"]} /></span>
+</div>
+
+Use NAND gates only, at most five of them.
+
+<CircuitBuilder client:visible id="nand-agree-differ" inputs={N.agreeDiffer.inputs} outputs={N.agreeDiffer.outputs} target={N.agreeDiffer.target} gates={N.agreeDiffer.gates} maxGates={N.agreeDiffer.maxGates} width={620} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="The NAND factory" hard>
+A factory stocks only NAND gates, each with two inputs. Build the fire alarm
+for three smoke detectors, $a$, $b$ and $c$: the bell rings when at least one
+detector sees smoke.
+
+<p>
+<SwitchRow values="000" labels="abc" /> gives <Bulb label="bell" />, and every other setting gives <Bulb lit label="bell" />.
+</p>
+
+Use at most six gates.
+
+<CircuitBuilder client:visible id="nand-fire-alarm" inputs={N.fireAlarm.inputs} outputs={N.fireAlarm.outputs} target={N.fireAlarm.target} gates={N.fireAlarm.gates} maxGates={N.fireAlarm.maxGates} width={640} height={300} />
+</CircuitProblem>
+
+<CircuitProblem n={22} title="Majority of three" hard>
+Three judges each have a switch. The bulb is lit when at least two of the
+three switches are up.
+
+<div>
+{N.majoritySightings.map((s) => <SealedBox switches={s.switches} bulbs={s.bulb} inputs="abc" />)}
+</div>
+
+Use NAND gates only, each with two inputs, at most six of them.
+
+<CircuitBuilder client:visible id="nand-majority" inputs={N.majority.inputs} target={N.majority.target} gates={N.majority.gates} maxGates={N.majority.maxGates} width={640} height={300} />
+</CircuitProblem>
+
+<CircuitProblem n={23} title="Disagreement, from NOR" hard>
+Build a circuit whose bulb is lit exactly when the two switches disagree.
+
+<TruthTable inputs={["a", "b"]} outputs={{ bulb: N.norXor.target }} />
+
+Use NOR gates only, at most five of them.
+
+<CircuitBuilder client:visible id="nor-xor" inputs={N.norXor.inputs} target={N.norXor.target} gates={N.norXor.gates} maxGates={N.norXor.maxGates} width={620} />
+</CircuitProblem>
+
+<CircuitProblem n={24} title="Three-input NANDs" hard>
+A NAND with three inputs outputs $\texttt{0}$ only when all three of its inputs
+are $\texttt{1}$. To give a gate a third input, tap it and press *More inputs*.
+
+Build the majority of three: the bulb is lit when at least two of the three
+switches are up. Use NAND gates only, with two or three inputs each, at most
+four of them.
+
+<CircuitBuilder client:visible id="wide-majority" inputs={N.wideMajority.inputs} target={N.wideMajority.target} gates={N.wideMajority.gates} maxGates={N.wideMajority.maxGates} maxFanIn={N.wideMajority.maxFanIn} width={620} height={300} />
+</CircuitProblem>

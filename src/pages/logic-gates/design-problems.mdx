@@ -1,0 +1,450 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Design Problems
+order: 4
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Wishes from ordinary life, from car seats and safes to footbridges and committees, wired as circuits and checked on every row. Twenty-one problems, some with several bulbs and some against the clock.
+description: Practice problems on designing circuits for real situations, circuits with several bulbs, and the size and depth of a circuit.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  PredictOutput,
+  FindSetting,
+  PickCircuit,
+  Switch,
+  Bulb,
+  SwitchRow,
+  LampRow,
+  SealedBox,
+  TruthTable,
+  GateIcon,
+} from "../../components/games/circuits/problems/index.ts";
+import * as B from "../../components/games/circuits/problems/banks/design-problems.ts";
+
+export const base = import.meta.env.BASE_URL;
+
+export const Photo = ({ src, alt, credit, w = 420 }) => (
+  <figure class="not-prose" style={{ margin: "12px 0", textAlign: "center" }}>
+    <img src={`${base}/images/circuits/design-problems/${src}`} alt={alt} loading="lazy" style={{ maxWidth: `min(${w}px, 100%)`, height: "auto", borderRadius: 4, display: "inline-block" }} />
+    <figcaption style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>{credit}</figcaption>
+  </figure>
+);
+
+export const Scene = ({ w, h, label, children }) => (
+  <figure class="not-prose" style={{ margin: "12px 0", textAlign: "center" }}>
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={label} style={{ maxWidth: "100%", height: "auto", display: "inline-block", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
+      {children}
+    </svg>
+  </figure>
+);
+
+export const Tag = ({ x, y, children, size = 14, fill = "var(--ink)", weight = 700 }) => (
+  <text x={x} y={y} font-size={size} font-weight={weight} text-anchor="middle" dominant-baseline="middle" fill={fill}>{children}</text>
+);
+
+export const StageScene = () => (
+  <Scene w={340} h={190} label="A stage with a left and a right spotlight, and a desk with switches a, b and s">
+    <polygon points="30,150 310,150 280,110 60,110" fill="var(--rule)" stroke="var(--muted)" />
+    <polygon points="70,22 58,30 95,140 175,140" fill="var(--bulb-glow)" opacity="0.55" />
+    <polygon points="270,22 282,30 245,140 165,140" fill="var(--bulb-glow)" opacity="0.55" />
+    <rect x="50" y="12" width="40" height="20" rx="5" fill="var(--ink)" />
+    <rect x="250" y="12" width="40" height="20" rx="5" fill="var(--ink)" />
+    <Tag x={70} y={6} size={12}>left</Tag>
+    <Tag x={270} y={6} size={12}>right</Tag>
+    <rect x="120" y="160" width="100" height="26" rx="4" fill="var(--surface)" stroke="var(--muted)" />
+    <Tag x={140} y={173} size={13}>a</Tag>
+    <Tag x={170} y={173} size={13}>b</Tag>
+    <Tag x={200} y={173} size={13} fill="var(--accent)">s</Tag>
+  </Scene>
+);
+
+export const MapScene = () => (
+  <Scene w={380} h={220} label="A map: campsite S on the left, refuge T on the right, islands U above and V below, joined by bridges a to e">
+    <rect x="0" y="0" width="380" height="220" fill="rgba(70, 140, 220, 0.22)" rx="6" />
+    <rect x="0" y="0" width="58" height="220" fill="var(--surface)" stroke="var(--muted)" />
+    <rect x="322" y="0" width="58" height="220" fill="var(--surface)" stroke="var(--muted)" />
+    <ellipse cx="190" cy="48" rx="44" ry="26" fill="var(--surface)" stroke="var(--muted)" />
+    <ellipse cx="190" cy="172" rx="44" ry="26" fill="var(--surface)" stroke="var(--muted)" />
+    <g stroke="var(--ink)" stroke-width="5" stroke-linecap="round">
+      <line x1="58" y1="95" x2="148" y2="56" />
+      <line x1="232" y1="56" x2="322" y2="95" />
+      <line x1="58" y1="125" x2="148" y2="164" />
+      <line x1="232" y1="164" x2="322" y2="125" />
+      <line x1="190" y1="74" x2="190" y2="146" />
+    </g>
+    <Tag x={29} y={110} size={18}>S</Tag>
+    <Tag x={351} y={110} size={18}>T</Tag>
+    <Tag x={190} y={46} size={16}>U</Tag>
+    <Tag x={190} y={176} size={16}>V</Tag>
+    <Tag x={95} y={64} fill="var(--accent)">a</Tag>
+    <Tag x={285} y={64} fill="var(--accent)">b</Tag>
+    <Tag x={95} y={158} fill="var(--accent)">c</Tag>
+    <Tag x={285} y={158} fill="var(--accent)">d</Tag>
+    <Tag x={204} y={110} fill="var(--accent)">e</Tag>
+    <Tag x={29} y={206} size={10} weight={400} fill="var(--muted)">campsite</Tag>
+    <Tag x={351} y={206} size={10} weight={400} fill="var(--muted)">refuge</Tag>
+  </Scene>
+);
+
+export const PairsScene = () => (
+  <Scene w={300} h={220} label="Four children Alex, Bea, Cleo and Dan at the corners of a square, joined by six lines a to f">
+    <g stroke="var(--muted)" stroke-width="2.5">
+      <line x1="60" y1="40" x2="240" y2="40" />
+      <line x1="60" y1="40" x2="240" y2="180" />
+      <line x1="60" y1="40" x2="60" y2="180" />
+      <line x1="240" y1="40" x2="240" y2="180" />
+      <line x1="240" y1="40" x2="60" y2="180" />
+      <line x1="60" y1="180" x2="240" y2="180" />
+    </g>
+    <Tag x={150} y={30} fill="var(--accent)">a</Tag>
+    <Tag x={106} y={86} fill="var(--accent)">b</Tag>
+    <Tag x={48} y={110} fill="var(--accent)">c</Tag>
+    <Tag x={194} y={86} fill="var(--accent)">e</Tag>
+    <Tag x={252} y={110} fill="var(--accent)">d</Tag>
+    <Tag x={150} y={192} fill="var(--accent)">f</Tag>
+    {[[60, 40, "A", "Alex", -1], [240, 40, "B", "Bea", -1], [240, 180, "C", "Cleo", 1], [60, 180, "D", "Dan", 1]].map(([x, y, k, name, side]) => (
+      <g key={k}>
+        <circle cx={x} cy={y} r="15" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
+        <Tag x={x} y={y + 1} size={13}>{k}</Tag>
+        <Tag x={x} y={y + side * 26} size={11} weight={400} fill="var(--muted)">{name}</Tag>
+      </g>
+    ))}
+  </Scene>
+);
+
+export const CrossScene = () => (
+  <Scene w={240} h={240} label="A crossroads with car lights n, s, e and w and a walk sign">
+    <rect x="90" y="0" width="60" height="240" fill="var(--rule)" />
+    <rect x="0" y="90" width="240" height="60" fill="var(--rule)" />
+    <g stroke="var(--surface)" stroke-width="2" stroke-dasharray="8 7">
+      <line x1="120" y1="0" x2="120" y2="88" /><line x1="120" y1="152" x2="120" y2="240" />
+      <line x1="0" y1="120" x2="88" y2="120" /><line x1="152" y1="120" x2="240" y2="120" />
+    </g>
+    {[[165, 45, "n"], [75, 195, "s"], [195, 165, "e"], [45, 75, "w"]].map(([x, y, k]) => (
+      <g key={k}>
+        <rect x={x - 11} y={y - 11} width="22" height="22" rx="5" fill="var(--ink)" />
+        <circle cx={x} cy={y} r="7" fill="var(--surface)" />
+        <Tag x={x + (k === "e" || k === "n" ? 24 : -24)} y={y} fill="var(--accent)">{k}</Tag>
+      </g>
+    ))}
+    <rect x="170" y="200" width="60" height="30" rx="4" fill="var(--surface)" stroke="var(--muted)" />
+    <Tag x={200} y={215} size={12}>walk</Tag>
+  </Scene>
+);
+
+export const TileGrid = ({ x, y, black = "", labels = true }) => (
+  <g>
+    {["a", "b", "c", "d"].map((k, i) => (
+      <g key={k}>
+        <rect x={x + (i % 2) * 46} y={y + Math.floor(i / 2) * 46} width="44" height="44" rx="3" fill={black.includes(k) ? "var(--ink)" : "var(--surface)"} stroke="var(--muted)" stroke-width="1.5" />
+        {labels && <Tag x={x + (i % 2) * 46 + 22} y={y + Math.floor(i / 2) * 46 + 23} fill={black.includes(k) ? "var(--surface)" : "var(--ink)"}>{k}</Tag>}
+      </g>
+    ))}
+  </g>
+);
+
+export const TilesScene = () => (
+  <Scene w={330} h={120} label="Four white tiles a b c d. Flipping the top row makes a and b black">
+    <TileGrid x={10} y={14} />
+    <line x1="124" y1="60" x2="196" y2="60" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrowT)" />
+    <defs><marker id="arrowT" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)" /></marker></defs>
+    <Tag x={160} y={46} size={11} weight={400} fill="var(--muted)">flip the</Tag>
+    <Tag x={160} y={76} size={11} weight={400} fill="var(--muted)">top row</Tag>
+    <TileGrid x={214} y={14} black="ab" />
+  </Scene>
+);
+
+Every problem here starts from a wish in an ordinary situation. Say the wish as a sentence, wire it, and the page checks your circuit on every row of its table.
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+## Say it, then wire it
+
+<CircuitProblem n={1} title="The garage door">
+A garage door has two safety strips, $s$ and $t$. A strip is $\texttt{1}$ when
+something presses on it. The door may keep closing only when both strips are
+clear. An apprentice read this as "keep closing when a strip is clear" and wired
+the circuit below. Bulb *close* lit means the door keeps closing.
+
+Strip $s$ is pressed and strip $t$ is clear. What do the wires $p$ and $q$ carry,
+and is the bulb lit? Tap each tag, and the bulb, to answer.
+
+<PredictOutput client:visible id="garage" circuit={B.garage} switches={B.garageSwitches} wires={B.garageTags} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="Two codes, one door">
+A cupboard lock has four switches, and the bulb is the door. The door opens for
+two settings only.
+
+<p style={{display:'flex', flexWrap:'wrap', gap:'8px 28px'}}>
+  <SwitchRow values="1100" labels="abcd" />
+  <SwitchRow values="1000" labels="abcd" />
+</p>
+
+Build the lock from <GateIcon type="NOT" />, <GateIcon type="AND" /> and <GateIcon type="OR" />,
+with at most three gates.
+
+<CircuitBuilder client:visible id="two-codes" inputs={B.twoCodes.inputs} target={B.twoCodes.target} gates={B.twoCodes.gates} maxGates={B.twoCodes.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="Buckle up">
+A car has two seats. Switch $a$ is $\texttt{1}$ when someone sits in the
+driver's seat, and $b$ is $\texttt{1}$ when the driver's belt is buckled.
+Switches $c$ and $d$ do the same for the passenger seat.
+
+The warning light comes on exactly when someone is sitting without a buckled
+belt. A belt buckled on an empty seat is no reason to warn. Use at most five gates.
+
+<CircuitBuilder client:visible id="buckle-up" inputs={B.buckle.inputs} target={B.buckle.target} gates={B.buckle.gates} maxGates={B.buckle.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="The apprentice's override">
+A model railway has a maintenance panel. Switch $p$ is $\texttt{1}$ when a run
+is requested, $e$ when the emergency stop is pressed, $g$ when the safety cover
+is closed, and $k$ when the maintenance key is turned. The wish: the train runs
+exactly when a run is requested, the emergency stop is not pressed, and the
+cover is closed or the key is turned.
+
+The apprentice wired the circuit below. The emergency stop is pressed and
+stuck. Find a setting of the other switches on which this circuit still runs
+the train.
+
+<FindSetting client:visible id="apprentice" circuit={B.apprentice} fixed={B.apprenticeFixed} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="The override, done right">
+The same panel: $p$ is a run request, $e$ the emergency stop, $g$ the safety
+cover closed, $k$ the maintenance key turned. Bulb *run* should light exactly
+when a run is requested, the emergency stop is not pressed, and the cover is
+closed or the key is turned. Use at most four gates.
+
+<CircuitBuilder client:visible id="override" inputs={B.override.inputs} outputs={B.override.outputs} target={B.override.target} gates={B.override.gates} maxGates={B.override.maxGates} />
+</CircuitProblem>
+
+## Several bulbs, shared work
+
+<CircuitProblem n={6} title="A safe with a siren">
+A safe has three code switches $a$, $b$, $c$ and an enter button $e$, which is
+$\texttt{1}$ while it is held down. The right code is <SwitchRow values="101" labels="abc" />.
+
+While the button is held, the *door* opens if the code is right and the *siren*
+sounds if it is wrong. While the button is up, both stay off, so the owner can
+set the code in peace. Use at most five gates.
+
+<CircuitBuilder client:visible id="safe-siren" inputs={B.safe.inputs} outputs={B.safe.outputs} target={B.safe.target} gates={B.safe.gates} maxGates={B.safe.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={7} title="Crossroads">
+<CrossScene />
+
+Each of the four car lights has a switch, $\texttt{1}$ when that light is green.
+Bulb *walk* is the walk sign for people on foot. It lights exactly when no car
+light is green. Bulb *clash* is an alarm. It rings exactly when $n$ or $s$ is
+green at the same time as $e$ or $w$. Use at most five gates for both bulbs.
+
+<CircuitBuilder client:visible id="crossroads" inputs={B.crossroads.inputs} outputs={B.crossroads.outputs} target={B.crossroads.target} gates={B.crossroads.gates} maxGates={B.crossroads.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={8} title="One microphone, three requests">
+A radio studio has one live microphone and three request buttons: $a$ for the
+host, $b$ for the guest and $c$ for the audience. The host comes first, then
+the guest, then the audience.
+
+So bulb *host* lights whenever the host asks. Bulb *guest* lights when the
+guest asks and the host does not. Bulb *crowd* lights when the audience asks
+and nobody else does. A bulb may be wired straight to a switch. Use
+<GateIcon type="NOT" />, <GateIcon type="AND" /> and <GateIcon type="OR" />,
+at most five gates.
+
+<CircuitBuilder client:visible id="microphone" inputs={B.microphone.inputs} outputs={B.microphone.outputs} target={B.microphone.target} gates={B.microphone.gates} maxGates={B.microphone.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="The toy-packing inspector">
+A robot checks toys against orders. Switches $a$ and $b$ say whether the order
+asks for a hat and for a flag. Switches $c$ and $d$ say whether the packed toy
+has a hat and a flag. A mistake is a part that is asked for and missing, or
+not asked for and there.
+
+<div style={{display:'flex', flexDirection:'column', gap:4, margin:'10px 0'}}>
+<span>no mistakes: <LampRow lamps="100" labels={["green", "amber", "red"]} /></span>
+<span>one mistake: <LampRow lamps="010" labels={["green", "amber", "red"]} /></span>
+<span>two mistakes: <LampRow lamps="001" labels={["green", "amber", "red"]} /></span>
+</div>
+
+Use at most six gates.
+
+<CircuitBuilder client:visible id="inspector" inputs={B.inspector.inputs} outputs={B.inspector.outputs} target={B.inspector.target} gates={B.inspector.gates} maxGates={B.inspector.maxGates} />
+</CircuitProblem>
+
+## Puzzles in disguise
+
+<CircuitProblem n={10} title="Can everybody find a partner?">
+<Photo src="race.jpg" alt="A line of pairs, each pair with legs tied together, ready to start a three-legged race on a village street" credit="Start of the three-legged race, Albany, Vermont, 1936. Photo by Carl Mydans. Public domain, via Wikimedia Commons." w={460} />
+
+Four children pair up for a three-legged race. Each line in the picture is a
+switch, $\texttt{1}$ when those two are happy to race together.
+
+<PairsScene />
+
+The sign should light exactly when all four children can be split into two
+happy pairs. Two sightings:
+
+<div>
+<SealedBox switches="111000" bulbs="0" inputs="abcdef" caption="everyone has someone, but not as two pairs" />
+<SealedBox switches="100001" bulbs="1" inputs="abcdef" caption="Alex with Bea, Cleo with Dan" />
+</div>
+
+Use <GateIcon type="AND" /> and <GateIcon type="OR" />, at most five gates.
+
+<CircuitBuilder client:visible id="partners" inputs={B.partners.inputs} target={B.partners.target} gates={B.partners.gates} maxGates={B.partners.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="The four-tile puzzle">
+Four tiles sit in a square, all white at the start. A move flips both tiles of
+one row, or both tiles of one column.
+
+<TilesScene />
+
+Switches $a$, $b$, $c$, $d$ are $\texttt{1}$ for a black tile, placed as in the
+picture. Bulb *can* should light exactly when the pattern on the switches can
+be made by moves. Use at most four gates.
+
+<CircuitBuilder client:visible id="four-tiles" inputs={B.tiles.inputs} outputs={B.tiles.outputs} target={B.tiles.target} gates={B.tiles.gates} maxGates={B.tiles.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="The bargain box">
+A shop sells only <GateIcon type="XOR" /> and <GateIcon type="NOT" /> gates,
+as many as you like. Which of these tables, for two switches $a$ and $b$, can
+be built from them?
+
+<PickCircuit client:visible options={B.bargainOptions} answer={B.bargainAnswer} columns={3} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="One borrowed AND">
+With <GateIcon type="XOR" /> and <GateIcon type="NOT" /> gates alone, no circuit
+lights a bulb exactly when at least one of two switches is up. Borrow a single
+<GateIcon type="AND" /> gate and build that bulb, with at most three gates in all.
+
+<TruthTable inputs={["a", "b"]} outputs={{ out: B.borrowed.target }} />
+
+<CircuitBuilder client:visible id="borrowed-and" inputs={B.borrowed.inputs} target={B.borrowed.target} gates={B.borrowed.gates} maxGates={B.borrowed.maxGates} maxPerType={B.borrowed.maxPerType} width={520} />
+</CircuitProblem>
+
+## Against the clock
+
+Each gate takes a beat to settle. The depth of a circuit is the largest number
+of gates one behind another on a path from a switch to a bulb, so it counts the
+beats before the answer can be trusted.
+
+<CircuitProblem n={14} title="Six detectors, three beats">
+An office has six smoke detectors, and the alarm sounds when at least one of
+them sees smoke. A chain of five <GateIcon type="OR" /> gates does it with depth
+5. Build the alarm from five OR gates with depth at most 3.
+
+<CircuitBuilder client:visible id="six-detectors" inputs={B.sixDetectors.inputs} target={B.sixDetectors.target} gates={B.sixDetectors.gates} maxGates={B.sixDetectors.maxGates} maxDepth={B.sixDetectors.maxDepth} />
+</CircuitProblem>
+
+<CircuitProblem n={15} title="Eight detectors">
+Each circuit below is meant to ring the *bell* when at least one of eight
+detectors $a$ to $h$ sees smoke. Which of them are correct and have depth at
+most 3?
+
+<PickCircuit client:visible options={B.eightOptions.map((c) => ({ circuit: c }))} answer={B.eightAnswer} columns={2} />
+</CircuitProblem>
+
+<CircuitProblem n={16} title="Sixteen switches">
+A panel has sixteen switches. A lamp should light exactly when an odd number of
+them are up.
+
+<div style={{display:'flex', flexDirection:'column', gap:2, margin:'8px 0'}}>
+<SwitchRow values="1001" />
+<SwitchRow values="0110" />
+<SwitchRow values="0010" />
+<SwitchRow values="1100" />
+</div>
+
+A chain of fifteen <GateIcon type="XOR" /> gates does it with depth 15. What is
+the smallest depth that any circuit of two-input gates can have for this lamp?
+
+<PickCircuit client:visible options={B.sixteenOptions} answer={B.sixteenAnswer} columns={4} />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="Has anything been tampered with?">
+A museum keeps a record panel with switches $a$, $b$, $c$ and copies it onto a
+display panel with switches $x$, $y$, $z$. A warning light should come on
+exactly when the two panels differ anywhere: $a$ differs from $x$, or $b$ from
+$y$, or $c$ from $z$. Use at most five gates and depth at most 3.
+
+<CircuitBuilder client:visible id="tamper" inputs={B.tamper.inputs} target={B.tamper.target} gates={B.tamper.gates} maxGates={B.tamper.maxGates} maxDepth={B.tamper.maxDepth} />
+
+Now each panel has four switches, eight in all. What is the smallest depth the
+warning light can have, with two-input gates?
+
+<PickCircuit client:visible options={B.tamperFourOptions} answer={B.tamperFourAnswer} columns={4} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={18} title="Three friends, one tandem" hard>
+<Photo src="tandem.jpg" alt="A man and a woman sitting on a tandem bicycle in front of a hedge" credit="A couple on a tandem bicycle, St. Louis County, 1897. Public domain, via Wikimedia Commons." w={400} />
+
+Three friends share a tandem bicycle, which has two seats. Switches $a$, $b$,
+$c$ are $\texttt{1}$ when that friend wants to ride. Bulb *book* lights exactly
+when exactly two friends want to ride, so both seats are filled and nobody is
+left out. Use at most four gates.
+
+<CircuitBuilder client:visible id="tandem" inputs={B.tandem.inputs} outputs={B.tandem.outputs} target={B.tandem.target} gates={B.tandem.gates} maxGates={B.tandem.maxGates} width={540} />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="Swap the spotlights" hard>
+<Photo src="degas.jpg" alt="A painting of dancers rehearsing on a theatre stage" credit="Ballet Rehearsal on Stage, by Edgar Degas, 1874. Public domain, via Wikimedia Commons." w={400} />
+
+A stage has a *left* and a *right* spotlight. Switch $a$ is the command meant
+for the left lamp and $b$ the command meant for the right lamp. When the swap
+switch $s$ is down, $a$ goes to the left lamp and $b$ to the right. When $s$ is
+up, the two commands trade places.
+
+<StageScene />
+
+Use at most four gates.
+
+<CircuitBuilder client:visible id="spotlights" inputs={B.spotlights.inputs} outputs={B.spotlights.outputs} target={B.spotlights.target} gates={B.spotlights.gates} maxGates={B.spotlights.maxGates} width={560} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="The chair breaks the tie" hard>
+A committee has three members, $a$, $b$ and $c$, and a chair, $t$. Each switch
+is $\texttt{1}$ for a yes vote. The proposal passes when more vote yes than no.
+On a two-two tie, the chair's vote decides.
+
+<div>
+<SealedBox switches="1100" bulbs="0" inputs="abct" outputs={["pass"]} caption="tie, chair says no" />
+<SealedBox switches="1001" bulbs="1" inputs="abct" outputs={["pass"]} caption="tie, chair says yes" />
+<SealedBox switches="1110" bulbs="1" inputs="abct" outputs={["pass"]} caption="three to one" />
+</div>
+
+Use at most six gates.
+
+<CircuitBuilder client:visible id="chair" inputs={B.chair.inputs} outputs={B.chair.outputs} target={B.chair.target} gates={B.chair.gates} maxGates={B.chair.maxGates} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="The extra footbridge" hard>
+<Photo src="footbridge.jpg" alt="A stone footbridge over a rocky mountain river" credit="A footbridge in Seoraksan National Park. Photo by Bernard Gagnon. CC0, via Wikimedia Commons." w={440} />
+
+A campsite $S$ and a refuge $T$ are joined through two islands, $U$ and $V$,
+by five footbridges. Each bridge has a switch, $\texttt{1}$ when it is open.
+
+<MapScene />
+
+Bulb *safe* should light exactly when a walker can get from the campsite to the
+refuge on open bridges. Use <GateIcon type="AND" /> and <GateIcon type="OR" />,
+at most seven gates.
+
+<CircuitBuilder client:visible id="footbridge" inputs={B.footbridge.inputs} outputs={B.footbridge.outputs} target={B.footbridge.target} gates={B.footbridge.gates} maxGates={B.footbridge.maxGates} />
+</CircuitProblem>
