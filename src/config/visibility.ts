@@ -25,7 +25,7 @@ export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
   "logical-thinking",
   "machines",
-  // "logic-gates",
+  "logic-gates",
   "boolean-algebra",
   "infinity",
   // "permutations",
@@ -76,11 +76,18 @@ export const VISIBLE_PAGES: readonly string[] = [
   "machines/deep-end",
   "machines/beyond-reach",
 
-  // Logic Gates is open, but only the dominoes page is released. The rest
-  // of the chapter stays hidden until its material is taught.
+  // Circuits (slug logic-gates): one problem page per book section, 6.1 to 6.7.
+  // The old lesson pages stay hidden. Dominoes is an extra; the sandbox stays hidden.
+  "logic-gates/gates",
+  "logic-gates/building",
+  "logic-gates/if-then",
+  "logic-gates/design-problems",
+  "logic-gates/any-table",
+  "logic-gates/nand",
+  "logic-gates/isles",
+  "logic-gates/dominoes",
   // "logic-gates/gate-zoo",
   // "logic-gates/building-from-others",
-  "logic-gates/dominoes",
   // "logic-gates/design-challenge",
   // "logic-gates/majority-and-staircase",
   // "logic-gates/nand-universal",
