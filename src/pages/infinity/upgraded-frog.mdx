@@ -4,15 +4,18 @@ title: The frog gets an upgrade
 order: 3
 chapter: infinity
 chapterTitle: Infinity
-blurb: Now the frog picks a starting offset and a jump size. Two infinities, one list — Cantor's dovetail.
-description: The two-dimensional frog puzzle, dovetailing along diagonals, and an explicit enumeration of pairs of natural numbers.
+blurb: Now the frog picks a starting offset and a jump size. Two infinities, one list, and Cantor's dovetail.
+description: The two-dimensional frog puzzle, dovetailing along diagonals, a second listing by square corners, and an explicit enumeration of pairs of natural numbers.
 ---
+import UpgradedFrogExplainer from "../../components/games/infinity/frog/UpgradedFrogExplainer.tsx";
+import TwoListsExplainer from "../../components/games/infinity/frog/TwoListsExplainer.tsx";
 
 ## Upgraded frog
 
-Let us raise the stakes. The frog is now more sophisticated: at the
-buzzer it secretly picks *two* natural numbers, a starting offset
-$d$ and a jump size $k$. At time $t$ its position is
+We now make the frog harder to hit. The frog is now more
+sophisticated. At the buzzer it secretly picks *two* natural
+numbers, a starting offset $d$ and a jump size $k$. At time $t$ its
+position is
 
 $$
 d + tk.
@@ -20,9 +23,8 @@ $$
 
 As before, the shooter with a water gun wants to guarantee a
 splash, and the entire plan must be written down before the frog
-makes its choice. The question becomes: *can the shooter devise a
-single plan that guarantees a hit, no matter which pair $(d, k)$
-the frog chooses?*
+makes its choice. *Can the shooter devise a single plan that
+guarantees a hit, no matter which pair $(d, k)$ the frog chooses?*
 
 ## Taming the two-dimensional infinity
 
@@ -36,14 +38,14 @@ Instead of a single infinite set of choices, the frog now has an
 infinite family of infinite choices. Can the pairs of natural
 numbers even be arranged into a single list?
 
-Remarkably, they can. The set $\mathbb{N} \times \mathbb{N}$ is
-also listable. The trick is not to march straight across or
-straight down — either sweep would leave entire rows or columns
-untouched forever — but to sweep along the *diagonals*, where each
-diagonal contains only finitely many pairs and is therefore
-exhausted in finitely many steps before we move on to the next.
-This method is often called **dovetailing**, and it is due to
-Cantor.
+They can. The set $\mathbb{N} \times \mathbb{N}$ is also listable.
+The list must not run straight along a row or straight down a
+column. Either sweep would leave entire rows or columns untouched
+forever. Instead we sweep along the *diagonals*. Each diagonal
+contains only finitely many pairs, so it is exhausted in finitely
+many steps before we move on to the next. This method is often
+called **dovetailing**, and it is due to Cantor. The picture below
+draws the grid with the diagonal path laid through it.
 
 <div style={{display:'flex', justifyContent:'center', margin:'24px 0'}}>
 <svg viewBox="0 0 360 320" style={{width:'100%', maxWidth:360, height:'auto', background:'var(--surface)', border:'1px solid var(--rule)', borderRadius:6}}>
@@ -103,9 +105,9 @@ Cantor.
 </div>
 
 <div style={{textAlign:'center', color:'var(--muted)', fontSize:12, marginTop:-8, marginBottom:24}}>
-The diagonal enumeration of $\mathbb{N} \times \mathbb{N}$. Position
-$n$ in the list is shown inside each circle; the underlying pair
-$(d, k)$ sits below.
+The diagonal path through the grid of pairs $\mathbb{N} \times \mathbb{N}$.
+Position $n$ in the list is shown inside each circle, and the pair
+$(d, k)$ sits below it.
 </div>
 
 The resulting list begins
@@ -118,27 +120,92 @@ and every pair $(d, k)$ eventually appears somewhere in it. Let us
 write $(d_n, k_n)$ for the $n$-th pair in the list.
 
 The shooter's strategy now writes itself. At time $n$, target the
-frog corresponding to the $n$-th pair in the list:
+frog corresponding to the $n$-th pair in the list.
 
 <div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
 at time $n$, shoot at pad $d_n + n k_n$.
 </div>
 
 Suppose the frog chose the pair $(d, k)$. This pair sits somewhere
-in our list — say at position $m$, so $(d, k) = (d_m, k_m)$.
+in our list, say at position $m$, so $(d, k) = (d_m, k_m)$.
 
-- *shooter's action at time $m$*: shoots at pad $d_m + m k_m$;
-- *frog's position at time $m$*: pad $d + m k = d_m + m k_m$.
+- At time $m$ the shooter shoots at pad $d_m + m k_m$.
+- At time $m$ the frog sits on pad $d + m k = d_m + m k_m$.
 
 Another direct hit.
 
-The victory rests entirely on the fact that *every* pair of natural
-numbers could be lined up in a single list. This hints at a deep
-fact: the "amount" of infinity in $\mathbb{N} \times \mathbb{N}$ is
-no greater than the "amount" of infinity in $\mathbb{N}$. Both sets
-are countably infinite.
+Watch it happen below. Give the frog a secret pair and press play.
+The grid shows the shooter walking the list, one pair per time, and
+the pond underneath shows where that pair says the frog would be
+now, which is where the shot goes. Tap any pair in the grid to find
+the time at which the shooter tests it.
 
-## The explicit strategy
+<UpgradedFrogExplainer client:visible />
+
+The victory rests entirely on the fact that *every* pair of natural
+numbers could be lined up in a single list. So the "amount" of
+infinity in $\mathbb{N} \times \mathbb{N}$ is no greater than the
+"amount" of infinity in $\mathbb{N}$. Both sets are infinite, and
+both are listable.
+
+## A second way to make the list
+
+The diagonals are not the only route through the grid. A second
+route turns square corners instead. Start at $(1,1)$. Step right to
+$(2,1)$, up to $(2,2)$, and left to $(1,2)$. Now step up to $(1,3)$,
+right along to $(2,3)$ and $(3,3)$, and down through $(3,2)$ to
+$(3,1)$. Now step right to $(4,1)$, up the column to $(4,4)$, and
+left along the row back to $(1,4)$. Continue in this fashion, each
+turn around the corner one size larger than the last. The list
+begins
+
+$$
+(1,1), \quad (2,1), \quad (2,2), \quad (1,2), \quad (1,3), \quad (2,3), \quad (3,3), \quad (3,2), \quad (3,1), \quad \ldots
+$$
+
+Below, the two walks run side by side on the same grid, one pair
+per time. The shaded pairs are the diagonal, or the corner, that
+each walk is working through.
+
+<TwoListsExplainer client:visible />
+
+What is swept here is not a diagonal but an L-shaped shell. The
+$s$-th shell consists of those pairs whose larger entry is $s$. It
+is the column of pairs $(s,1), (s,2), \ldots, (s,s)$ together with
+the row $(1,s), (2,s), \ldots, (s,s)$. It holds $2s - 1$ pairs in
+all. Every pair belongs to exactly one shell, namely the one
+numbered by the larger of its two entries. Every shell holds only
+finitely many pairs, so the walk finishes each shell in finitely
+many steps and moves on to the next. Nothing is missed and nothing
+is listed twice.
+
+The direction alternates from one shell to the next, and this keeps
+the walk continuous. Each shell begins on the spot next to the one
+where the previous shell ended. The diagonal sweep of the previous
+section has no such property. At the end of each diagonal it leaps
+back across the grid to start the next one.
+
+The first $s$ shells hold
+
+$$
+1 + 3 + 5 + \cdots + (2s - 1) = s^2
+$$
+
+pairs between them, so the $s$-th shell is finished exactly at
+position $s^2$. A frog that chose the pair $(d,k)$ therefore appears
+in the list at some position no later than $s^2$, where $s$ is the
+larger of $d$ and $k$.
+
+The shooter's plan reads off the new list as it read off the old
+one. Write $(d_n, k_n)$ for the $n$-th pair of this listing. The
+plan is to shoot at pad $d_n + n k_n$ at time $n$. The frog that
+chose $(d,k)$ is soaked at the time at which its pair appears in the
+list. The argument of the previous section used nothing about the
+diagonals beyond the fact that they exhausted the grid. The argument
+applies without change. Any listing of the pairs at all would have
+done, and there are many.
+
+## The explicit strategy (optional)
 
 The diagonal enumeration above can be written down as an explicit
 formula. To do so, we first identify which diagonal the $n$-th
@@ -158,8 +225,8 @@ $$
 s_n = \left\lfloor \frac{\sqrt{8n - 7} + 3}{2} \right\rfloor.
 $$
 
-Once $s_n$ is known, the position of $n$ within its diagonal pins
-down the two coordinates:
+Once $s_n$ is known, the position of $n$ within its diagonal
+determines the two coordinates.
 
 $$
 d_n = \frac{s_n(s_n - 1)}{2} - n + 1,
@@ -214,7 +281,7 @@ hits $t = g(d, k)$.
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 1 — Hopper on a two-way pond</div>
+}}>Exercise 1: Hopper on a two-way pond</div>
 
 Picture an infinite, icy-cold pond. Stretching out in both
 directions are lilypads, conveniently numbered by all the
@@ -231,8 +298,8 @@ position at any future time $t$ is $d + tk$. Note that he could be
 jumping forwards (if $k > 0$), backwards (if $k < 0$), or sitting
 on pad $d$ (if $k = 0$).
 
-The shooter must write down the entire plan in advance — a list of
-shots of the form (pad number, time). Can the shooter devise one
+The shooter must write down the entire plan in advance. A plan is a
+list of shots of the form (pad number, time). Can the shooter devise one
 single, universal plan that guarantees Hopper gets wet, no matter
 what secret integers $d$ and $k$ Hopper chooses?
 </div>
@@ -252,15 +319,15 @@ what secret integers $d$ and $k$ Hopper chooses?
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 2 — Two splashes for Leapy</div>
+}}>Exercise 2: Two splashes for Leapy</div>
 
 A different frog, *Leapy*, is on a *semi*-infinite pond. The pads
 are $0, 1, 2, 3, \ldots$ in one direction. Leapy starts at pad
 $0$ and secretly chooses two natural numbers $d$ and $k$. His
 position at time $t$ is $d + tk$.
 
-The shooter's challenge is the same — one pre-determined plan of
-(pad, time) shots — except: a single splash just annoys Leapy. To
+The shooter's challenge is the same, one pre-determined plan of
+(pad, time) shots, except that a single splash just annoys Leapy. To
 win, the shooter must hit him at *least two different times*.
 
 Can the shooter devise one single, universal plan that guarantees
@@ -283,7 +350,7 @@ and $k$ he chooses?
   color:'var(--muted)',
   fontWeight:600,
   marginBottom:6,
-}}>Exercise 3 — Fool me twice, shame on… frog?</div>
+}}>Exercise 3: Fool me twice, shame on… frog?</div>
 
 A frog named *Ribbit* sits on the centre of a 2-dimensional grid
 of lilypads, indexed by two integers, currently at pad $(0, 0)$.

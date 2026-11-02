@@ -101,7 +101,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   "infinity/friendly-fire",
   "infinity/upgraded-frog",
   "infinity/hilbert-hotel",
-  "infinity/hotel-animated",
+  // "infinity/hotel-animated",
   "infinity/unwritable-book",
   "infinity/cantor-animated",
   "infinity/yes-no-game-revisited",

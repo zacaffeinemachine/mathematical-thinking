@@ -4,42 +4,267 @@ title: Hilbert's grand hotel
 order: 4
 chapter: infinity
 chapterTitle: Infinity
-blurb: A hotel with infinitely many rooms, all full — and the manager who can always find space for one more.
-description: Hilbert's hotel illustrates how countably infinite sets can be re-shifted to make room for more.
+blurb: A hotel with infinitely many rooms, all full, and a manager who can always find space for more.
+description: Hilbert's hotel, with an animation for each part of the night. One more guest, a bus of infinitely many guests, and a fleet of infinitely many buses, each seated by a single announcement.
 ---
+import HotelNoLastRoom from "../../components/games/infinity/hotel/HotelNoLastRoom.tsx";
+import HotelOneMoreGuest from "../../components/games/infinity/hotel/HotelOneMoreGuest.tsx";
+import HotelBusload from "../../components/games/infinity/hotel/HotelBusload.tsx";
+import HotelFleet from "../../components/games/infinity/hotel/HotelFleet.tsx";
+import HotelReduction from "../../components/games/infinity/hotel/HotelReduction.tsx";
 
-This idea of countability is famously illustrated by **Hilbert's
-Hotel**. It's a hotel with an infinite number of rooms, numbered
-$1, 2, 3, \ldots$. On a particular night, the hotel is completely
-full — every room has a guest.
+Every puzzle in this chapter so far has been the same puzzle about
+different objects. A crowd arrives that looks far too large to
+handle. We find a way to line its members up in a single list. Once
+they are in a list, we can deal with them one at a time. David
+Hilbert, in a popular lecture of the 1920s, found a way of telling
+that story with no formulas in it at all, and it has been the
+standard way of telling it ever since. The whole of it takes place
+in a hotel.
 
-- *A new guest arrives.* The manager isn't worried. He asks every
-  guest in room $n$ to please move to room $n + 1$. Room $1$ is
-  now free for the new arrival. Everyone still has a room.
+Each part of the story below comes with an animation. Press **Play**
+to watch it, or go one step at a time with **Next** and **Back**.
+Under each animation there is a box where you can ask a question of
+your own, such as where the guest of room $1000$ ends up.
 
-- *An infinite bus arrives.* A bus with a countably infinite
-  number of new passengers arrives. Now what? The manager has a
-  clever solution. He asks every guest in room $n$ to move to
-  room $2n$. This clears out all the odd-numbered rooms
-  ($1, 3, 5, \ldots$). He then places the passenger from seat $k$
-  on the bus into room $2k - 1$. Again, everyone is accommodated.
+## A hotel with no last room
 
-- *Infinitely many infinite buses arrive.* This is the ultimate
-  challenge. We have buses $B_1, B_2, B_3, \ldots$, each with
-  passengers $P_1, P_2, P_3, \ldots$. To deal with passenger
-  $P_j$ from bus $B_i$ we need to give the pair $(i, j)$ a single
-  place in a queue. But we just solved this with our second frog
-  puzzle! The diagonal enumeration of $\mathbb{N} \times \mathbb{N}$
-  turns all the passengers from all the buses into one list, so the
-  entire fleet can be emptied into a *single* bus, with the passenger
-  at position $n$ of that list taking seat $n$. And a single full bus
-  outside a full hotel is exactly the situation we have just dealt
-  with: the guest in room $n$ moves to room $2n$, and the passenger
-  in seat $k$ takes room $2k-1$.
+The Grand Hotel has one room for every counting number, room $1$,
+room $2$, room $3$, and so on without end. The point to hold on to
+is the last clause. There is no final room, no room at the end of
+the corridor. Whatever room number we name, there is another one
+past it.
 
-The lesson of Hilbert's Hotel is that if a set is countably
-infinite, it can always be "shifted around" to make room for
-another countably infinite set.
+Tonight the hotel is full. Every room has a guest in it, one guest
+to a room, and the manager has hung out the *No Vacancies* sign. In
+an ordinary hotel, that sign means that nobody else can be given a
+room. There, "every room is occupied" and "nobody else can be taken
+in" are two ways of saying the same thing. In the Grand Hotel they
+come apart, and the whole of this page is about how far apart they
+come. So the sign outside is not quite honest, and an honest one
+would have to read
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+No vacancies, rooms available.
+</div>
+
+That reads as a joke now. By the end of the page it will read as a
+description.
+
+<HotelNoLastRoom client:visible />
+
+## One more guest
+
+At midnight a traveller walks in and asks for a room. The manager is
+unconcerned. She picks up the intercom and makes a single
+announcement to the whole hotel.
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+Would every guest please step out into the corridor, and then go back in to the room one door along.
+</div>
+
+The guest of room $1$ moves into room $2$, the guest of room $2$
+into room $3$, and in general the guest of room $n$ into room
+$n + 1$. Room $1$ is now empty, the traveller takes it, and
+everybody sleeps.
+
+<HotelOneMoreGuest client:visible />
+
+A reader is entitled to object in two places. The first objection
+concerns *the guest in the last room, who has no next door to move
+into*. There is no last room. The objection is a fact about hotels
+we have stayed in being smuggled into a hotel we have not. Every
+room number $n$ has a room number $n + 1$ sitting after it, so every
+guest has somewhere to go.
+
+The second objection is that *all that shuffling must take forever*.
+It does not, because it is not a sequence of moves at all. It is one
+instruction, issued once, obeyed by everybody simultaneously. Nobody
+waits for anybody, and when the announcement is over the hotel is in
+its new arrangement.
+
+That is the story. What makes it a piece of mathematics rather than
+a piece of whimsy is that we can check it, and the check comes in
+two halves.
+
+1. *Nobody is left without a room.* The guest who was in room $n$ is
+   now in room $n + 1$, which is a room of the hotel.
+2. *No room is asked to hold two people.* Suppose the guests from
+   rooms $m$ and $n$ end up in the same room. Then $m + 1 = n + 1$,
+   so $m = n$, and they were the same guest all along.
+
+And room $1$ really is free. A guest arrives in room $1$ only if
+$n + 1 = 1$ for some room number $n$, which is to say only if there
+is a room $0$, and there is not.
+
+## A bus full of guests
+
+At one in the morning a coach pulls up outside. It is a coach of the
+same generous design as the hotel. It has a seat for every counting
+number, seat $1$, seat $2$, seat $3$, and so on for ever, and every
+seat is taken. The hotel is still full, and now there is an entire
+infinite busload on the pavement.
+
+The obvious idea is to do the midnight trick over and over. Shift
+everybody one door along and put the passenger from seat $1$ into
+room $1$. Then shift everybody one door along again and put the
+passenger from seat $2$ into room $1$. Keep going in the same way.
+This does not work. The trouble is not that the passengers wait too
+long, since the passenger in seat $k$ is admitted after $k$ rounds,
+which is a finite wait. The trouble is that the original guests
+never come to rest. The guest who started in room $1$ is asked to
+move at every single round, and so there is no room that we can
+point to and say "this is where that guest spent the night." A
+rooming plan has to say where everybody *is*, and this one never
+gets around to it.
+
+So the manager must free up infinitely many rooms at once, in a
+single announcement. Here is one.
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+Would the guest in room $n$ please move to room $2n$.
+</div>
+
+The guest of room $1$ goes to room $2$, the guest of room $2$ to
+room $4$, the guest of room $3$ to room $6$. Everybody ends up in an
+even-numbered room, and every odd-numbered room is now standing
+empty. That is not one spare room or a hundred spare rooms. It is a
+spare room for every counting number, which is exactly as many as
+the coach has passengers. The manager turns to the pavement and
+calls out.
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+Would the passenger in seat $k$ please take room $2k - 1$.
+</div>
+
+Seat $1$ takes room $1$, seat $2$ takes room $3$, seat $3$ takes
+room $5$, and so on up the odd numbers. The two crowds interleave,
+one from the coach, one from the corridor, all the way along.
+
+<HotelBusload client:visible />
+
+Now the check, which has the same two halves as before, run over
+both crowds at once.
+
+1. *Nobody is left without a room.* The guest from room $n$ has room
+   $2n$, and the passenger from seat $k$ has room $2k - 1$.
+2. *No room is asked to hold two people.* Two old guests cannot
+   collide, since $2m = 2n$ forces $m = n$. Two passengers cannot
+   collide, since $2k - 1 = 2\ell - 1$ forces $k = \ell$. And a guest
+   cannot collide with a passenger, since $2n$ is even and $2k - 1$
+   is odd.
+
+The hotel is exactly full again, with no room wasted. An even room
+$r$ is $2n$ for $n = r/2$ and holds an old guest. An odd room $r$ is
+$2k - 1$ for $k = (r + 1)/2$ and holds a passenger.
+
+From here on, those two halves are all that a check requires. A
+rooming plan is acceptable exactly when
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+everybody named in it is given a room, and no room is given to two people.
+</div>
+
+Everything else on this page is the business of *finding* such a
+plan. Once we have one, checking it is two short paragraphs.
+
+## A fleet of buses
+
+At two in the morning it gets worse. A whole fleet arrives, bus $1$,
+bus $2$, bus $3$, one for every counting number. Each bus is of the
+design we met at one o'clock, with a seat for every counting number,
+and on every bus every seat is taken.
+
+The plan from one o'clock deals with one bus and leaves the hotel
+full. So we could run it on bus $1$, then run it again on bus $2$,
+then again on bus $3$. That fails for the same reason the midnight
+trick failed at one o'clock. A guest who is moved at every round is
+never anywhere in particular, and we would have no arrangement to
+report in the morning.
+
+The move that works is to stop looking at the hotel. The hotel is
+not the difficulty. The difficulty is that the crowd outside comes
+in an awkward shape, sorted into infinitely many separate buses. So
+we ask a smaller question first, whether the whole fleet could be
+got into a single bus. It can, and we have already done it.
+
+A passenger of the fleet is identified by two numbers, the number of
+their bus and the number of their seat. Let us write $(i, j)$ for
+the passenger in seat $j$ of bus $i$. The passengers of the fleet
+are therefore laid out in a grid, one column for each bus and one
+row for each seat. This is the grid of pairs from
+[the frog gets an upgrade](../upgraded-frog/). There we listed the
+pairs by going along the diagonals of the grid, so that the list
+reaches every pair. The thread visits every pair exactly once. Let
+the manager send an empty coach round to the fleet with the
+following instruction.
+
+<div style={{textAlign:'center', fontStyle:'italic', margin:'12px 0'}}>
+The passenger at position $n$ of the thread takes seat $n$.
+</div>
+
+Every passenger gets a seat, because every pair is somewhere on the
+thread. No seat gets two passengers, because no pair is on the
+thread twice.
+
+The fleet drives away empty, and the manager looks out of the window
+at one full coach standing outside one full hotel. That is the one
+o'clock problem, word for word. She makes the two announcements of
+one o'clock, and by half past two everybody in the fleet is asleep
+in a room of their own.
+
+<HotelFleet client:visible />
+
+## Reducing to a problem already solved
+
+A mathematician and a physicist are each shown an empty kettle
+standing on the floor and asked to boil some water. Both fill the
+kettle at the tap, set it on the stove, and light the stove. Then
+each is shown a kettle that is already full and already standing on
+the stove, and asked again. The physicist lights the stove. The
+mathematician takes the kettle off the stove, empties it into the
+sink, sets it back down on the floor, and remarks that the problem
+has been reduced to one already solved.
+
+We have just done what the joke describes. Faced with the fleet, we
+did not look for a rooming plan for the fleet. We emptied the fleet
+into one coach, which left us facing the problem of one o'clock, and
+then we made the two announcements of one o'clock word for word. The
+one difference from the joke is that the emptying was not a detour.
+Before any rooming plan can be written, the crowd outside has to be
+arranged in a single list, and the coach is that list. When a new
+problem arrives, then, the question to ask before "how do I solve
+this?" is "can I turn this into something I have already solved?"
+
+The whole night's arrangement can be written in one line. On
+[the frog gets an upgrade](../upgraded-frog/) we worked out where the
+diagonal thread puts a given pair. The pair $(d, k)$ sits at
+position
+
+$$
+g(d, k) = \frac{(d + k - 2)(d + k - 1)}{2} + k .
+$$
+
+So the passenger in seat $j$ of bus $i$ boards the single coach at
+seat $g(i, j)$. A passenger in seat $m$ of that coach ends up in
+room $2m - 1$. Putting the two together, the passenger in seat $j$
+of bus $i$ spends the night in room
+
+$$
+2\,g(i, j) - 1 = (i + j - 2)(i + j - 1) + 2j - 1,
+$$
+
+while the guest who was already in room $n$ at two in the morning
+spends it in room $2n$. The passenger from seat $1$ of bus $1$ gets
+room $1$, the passenger from seat $1$ of bus $2$ gets room $3$, and
+the passenger from seat $2$ of bus $1$ gets room $5$. The manager
+can print the whole register from a formula.
+
+<HotelReduction client:visible />
+
+The lesson of Hilbert's Hotel is that a full hotel can always be
+shifted around to make room for a crowd that can be listed, even a
+crowd made of infinitely many lists.
 
 ---
 
