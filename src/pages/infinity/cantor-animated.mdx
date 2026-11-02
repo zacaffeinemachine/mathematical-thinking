@@ -1,0 +1,18 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Cantor's book, animated
+order: 5.5
+chapter: infinity
+chapterTitle: Infinity
+blurb: The class slides on Cantor's book, the codes and the tree, played as one animation.
+description: An animated replay of the class slides on Cantor's book, Cantor's code and Cantor's tree, including the diagonal being read off, flipped and stood up as a new row.
+---
+import CantorAnimation from "../../components/games/infinity/CantorAnimation.tsx";
+
+This replays the class slides on Cantor's book, the codes and the tree, with each change drawn as a movement.
+Press play to watch it run, or step through it with the arrow buttons or the arrow keys.
+The buttons under the picture jump to any of the three scenes and change the speed.
+
+<CantorAnimation client:visible />
+
+The reasoning behind these pictures is written out on [the unwritable book](../unwritable-book/).

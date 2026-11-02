@@ -1,0 +1,18 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Hilbert's hotel, animated
+order: 4.5
+chapter: infinity
+chapterTitle: Infinity
+blurb: The class slides on Hilbert's hotel, played as a moving picture.
+description: An animated replay of the Hilbert's hotel slides, with guests walking between rooms, buses arriving, and the fleet emptied into one bus along a thread.
+---
+import HilbertHotelAnimation from "../../components/games/infinity/HilbertHotelAnimation.tsx";
+
+This page replays the Hilbert's hotel slides from class, with the guests and buses moving instead of jumping.
+Press Play to watch it run, or use Next and Back to go one step at a time.
+The scene buttons jump to the start of each part, and the arrow keys and the space bar work once you click on the picture.
+
+<HilbertHotelAnimation client:visible />
+
+For the reasoning behind each move, read [Hilbert's grand hotel](../hilbert-hotel/).
