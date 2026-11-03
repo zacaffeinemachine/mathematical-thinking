@@ -4,7 +4,8 @@
 // Every puzzle is encoded again here, straight from the sentences the page
 // prints, and its consistent settings are found by trying every row. Each
 // circuit, target and key in banks/isles.ts is then checked against that,
-// row by row. Each gate limit is checked to be exactly the fewest possible
+// row by row. Each "fewest" count (the builder has no gate limit, but tells a right
+// answer with more gates that fewer will do) is checked to be exactly the fewest possible
 // with fewestGates from circuit-search.ts, which tries every circuit up to
 // the limit; no solution circuit is written down anywhere.
 
@@ -102,7 +103,7 @@ test("isles 3: the keyed boxes are exactly those for 'if Phoebe is an oracle, th
   assert.deepEqual(hits, B.ifThenAnswer);
 });
 
-test("isles 4-6: each fits or claim target is the stated rule, and its gate limit is the fewest possible", () => {
+test("isles 4-6: each fits or claim target is the stated rule, and its fewest count is right", () => {
   // 4. Phoebe: "Selene is a chimera." Lit when Phoebe's type agrees with her claim.
   assert.equal(B.phoebeFits.target, tableOf(B.phoebeFits.inputs, (w) => (w.p === 1) === (w.s === 0)));
   // 5. Thalia: "Ariadne and I are both oracles."
@@ -110,7 +111,7 @@ test("isles 4-6: each fits or claim target is the stated rule, and its gate limi
   // 6. Ariadne: "Exactly one of us three is an oracle."
   assert.equal(B.exactlyOneOracle.target, tableOf(B.exactlyOneOracle.inputs, (w) => oracles(w, ["a", "c", "d"]) === 1));
   for (const p of [B.phoebeFits, B.thaliaFits, B.exactlyOneOracle]) {
-    assert.equal(fewestGates(p.inputs, [p.target], p.gates, p.maxGates), p.maxGates, p.target);
+    assert.equal(fewestGates(p.inputs, [p.target], p.gates, p.fewest), p.fewest, p.target);
   }
 });
 
@@ -264,8 +265,8 @@ test("isles 17 and 19: the radio targets are 'the reports could all be true', wi
   // The pattern behind them: an odd number of "same" reports for three radios, an even number for four.
   assert.equal(B.radios3.target, tableOf(B.radios3.ids, (w) => (w.ab + w.bc + w.ca) % 2 === 1));
   assert.equal(B.radios4.target, tableOf(B.radios4.ids, (w) => (w.ab + w.bc + w.cd + w.da) % 2 === 0));
-  assert.equal(fewestGates(B.radios3.ids, [B.radios3.target], B.radios3.gates, B.radios3.maxGates + 1), B.radios3.maxGates);
-  assert.equal(fewestGates(B.radios4.ids, [B.radios4.target], B.radios4.gates, B.radios4.maxGates), B.radios4.maxGates);
+  assert.equal(fewestGates(B.radios3.ids, [B.radios3.target], B.radios3.gates, B.radios3.fewest + 1), B.radios3.fewest);
+  assert.equal(fewestGates(B.radios4.ids, [B.radios4.target], B.radios4.gates, B.radios4.fewest), B.radios4.fewest);
 });
 
 // ---------------------------------------------------------------------------
@@ -301,5 +302,5 @@ test("isles 20: the one-gate puzzle's consistency needs exactly one gate", () =>
   });
   assert.equal(B.oneGate.target, want);
   assert.deepEqual(rowsOf(want).map((r) => bitsOfRow(sw, r)), ["110", "111"]);
-  assert.equal(fewestGates(sw, [B.oneGate.target], B.oneGate.gates, 2), B.oneGate.maxGates);
+  assert.equal(fewestGates(sw, [B.oneGate.target], B.oneGate.gates, 2), B.oneGate.fewest);
 });

@@ -91,7 +91,7 @@ export const phoebeFits = {
   inputs: ["p", "s"],
   target: "0110",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 1,
+  fewest: 1,
 };
 
 // ---- 5. Thalia fits (build) ---------------------------------------------------
@@ -100,7 +100,7 @@ export const thaliaFits = {
   inputs: ["a", "t"],
   target: "1011",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 2,
+  fewest: 2,
 };
 
 // ---- 6. Exactly one oracle (build) ----------------------------------------------
@@ -109,7 +109,7 @@ export const exactlyOneOracle = {
   inputs: ["a", "c", "d"],
   target: "01101000",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 4,
+  fewest: 4,
 };
 
 // ===========================================================================
@@ -359,7 +359,7 @@ export const radios3 = {
   ids: ["ab", "bc", "ca"],
   target: "01101001",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 2,
+  fewest: 2,
 };
 
 // ===========================================================================
@@ -405,7 +405,7 @@ export const radios4 = {
   ids: ["ab", "bc", "cd", "da"],
   target: "1001011001101001",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 4,
+  fewest: 4,
 };
 
 // ---- 20. One gate is enough (build) ------------------------------------------------------
@@ -421,5 +421,5 @@ export const oneGate = {
   inputs: ["a", "p", "t"],
   target: "00000011",
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
-  maxGates: 1,
+  fewest: 1,
 };

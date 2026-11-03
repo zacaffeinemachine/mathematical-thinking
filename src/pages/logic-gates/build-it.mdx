@@ -1,0 +1,242 @@
+---
+layout: ../../layouts/Chapter.astro
+title: Build It Yourself
+order: 7.5
+chapter: logic-gates
+chapterTitle: Circuits
+blurb: Twenty-one circuits to build by hand, from a porch light and a cat flap to a die, a clock digit and the wolf, the goat and the cabbage. Use as many gates as you like.
+description: Build-it-yourself circuit problems from everyday life, games, numbers and the islanders, with no gate limit and the fewest gates proven for each.
+---
+import {
+  CircuitProblem,
+  CircuitBuilder,
+  Switch,
+  Bulb,
+} from "../../components/games/circuits/problems/index.ts";
+import * as B from "../../components/games/circuits/problems/banks/build-it.ts";
+import { DieGroupsPicture, DieFaces, DigitsPicture } from "../../components/games/circuits/problems/BuildPictures.tsx";
+import { Islanders } from "../../components/games/circuits/problems/IslesPictures.tsx";
+
+<style>{`
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+`}</style>
+
+<p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
+  <span><Switch on label="up" /> is $\texttt{1}$</span>
+  <span><Switch label="down" /> is $\texttt{0}$</span>
+  <span><Bulb lit /> lit is $\texttt{1}$</span>
+  <span><Bulb /> dark is $\texttt{0}$</span>
+</p>
+
+Every problem on this page is a circuit to build. Use as many gates as you like.
+When your circuit is right, the check also says whether it can be done with
+fewer gates.
+
+## At home and in town
+
+<CircuitProblem n={1} title="The porch light">
+A porch lamp has a light sensor and a motion sensor. Switch $d$ is up when it is
+dark, and switch $m$ is up when something moves. The lamp should come on exactly
+when it is dark and something moves.
+
+<CircuitBuilder client:visible id="porch" inputs={B.porch.inputs} outputs={B.porch.outputs} target={B.porch.target} gates={B.porch.gates} fewest={B.porch.fewest} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={2} title="The fridge alarm">
+Switch $o$ is up when the fridge door is open, $t$ when it has been open for a
+minute, and $w$ when the inside has grown warm. The fridge should beep exactly
+when the door is open and at least one of the other two holds.
+
+<CircuitBuilder client:visible id="fridge" inputs={B.fridge.inputs} outputs={B.fridge.outputs} target={B.fridge.target} gates={B.fridge.gates} fewest={B.fridge.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={3} title="The bathroom fan">
+Switch $l$ is up when the light is on, $d$ when the air is damp, and $w$ when
+the window is open. The fan should run when the light is on or the air is damp,
+but never while the window is open.
+
+<CircuitBuilder client:visible id="fan" inputs={B.fan.inputs} outputs={B.fan.outputs} target={B.fan.target} gates={B.fan.gates} fewest={B.fan.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={4} title="The sprinkler">
+Switch $d$ is up when the soil is dry, $r$ when it is raining, and $t$ when the
+gardener holds down the test button. The sprinkler should water when the soil is
+dry and it is not raining, and also whenever the test button is held down.
+
+<CircuitBuilder client:visible id="sprinkler" inputs={B.sprinkler.inputs} outputs={B.sprinkler.outputs} target={B.sprinkler.target} gates={B.sprinkler.gates} fewest={B.sprinkler.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={5} title="The lift">
+A lift serves two floors. Switch $d$ is up when its doors are shut, $f$ when the
+lift is at the upper floor, and $r$ when someone has asked for the upper floor
+(down means the lower floor). The motor should run exactly when the doors are
+shut and the lift is not already at the floor asked for.
+
+<CircuitBuilder client:visible id="lift" inputs={B.lift.inputs} outputs={B.lift.outputs} target={B.lift.target} gates={B.lift.gates} fewest={B.lift.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={6} title="The cat flap">
+A cat flap reads the chip on the cat's collar. Switch $c$ is up when the cat is
+at the flap, $d$ when the dog is nearby, and $n$ at night. Bulb *in* unlocks the
+flap inwards: exactly when the cat is there and the dog is not. Bulb *out*
+unlocks it outwards: in the same case, but never at night.
+
+<CircuitBuilder client:visible id="cat-flap" inputs={B.catFlap.inputs} outputs={B.catFlap.outputs} target={B.catFlap.target} gates={B.catFlap.gates} fewest={B.catFlap.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={7} title="The traffic light">
+A traffic light counts 0, 1, 2, 3 and starts again. The count is on two
+switches: $a$ is worth 2 and $b$ is worth 1, and the count is the total of the
+switches that are up. At 0 the light shows red, at 1 red and amber together, at
+2 green, and at 3 amber. Build the three lamps.
+
+<CircuitBuilder client:visible id="traffic" inputs={B.traffic.inputs} outputs={B.traffic.outputs} target={B.traffic.target} gates={B.traffic.gates} fewest={B.traffic.fewest} width={520} />
+</CircuitProblem>
+
+## Games
+
+<CircuitProblem n={8} title="The die">
+The seven dots of this die are wired in four groups. Each group lights up
+together.
+
+<DieGroupsPicture />
+
+Three switches give a number: $x$ is worth 4, $y$ is worth 2 and $z$ is worth 1,
+and the number is the total of the switches that are up. Light the groups so
+that the die shows that many dots.
+
+<DieFaces />
+
+<CircuitBuilder client:visible id="die" inputs={B.die.inputs} outputs={B.die.outputs} target={B.die.target} gates={B.die.gates} fewest={B.die.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={9} title="Odd one out">
+Ruth, Sam and Tom each show a thumb, up or down, on switches $r$, $s$ and $t$.
+When two of them agree and the third does not, the third is out. When all three
+agree, nobody is out. Build three bulbs, one for each friend, lit exactly when
+that friend is out.
+
+<CircuitBuilder client:visible id="odd-one" inputs={B.oddOne.inputs} outputs={B.oddOne.outputs} target={B.oddOne.target} gates={B.oddOne.gates} fewest={B.oddOne.fewest} />
+</CircuitProblem>
+
+## Numbers
+
+<CircuitProblem n={10} title="The next number">
+Switches $x$, $y$ and $z$ are worth 4, 2 and 1, so they show a number from 0 to
+7. Build three bulbs $X$, $Y$ and $Z$, worth 4, 2 and 1 in the same way, that
+show the next number. After 7 comes 0.
+
+<CircuitBuilder client:visible id="next-number" inputs={B.nextNumber.inputs} outputs={B.nextNumber.outputs} target={B.nextNumber.target} gates={B.nextNumber.gates} fewest={B.nextNumber.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={11} title="Thirty-one days">
+A month is set by its number, from 1 for January to 12 for December, on four
+switches worth 8, 4, 2 and 1: $p$, $q$, $r$ and $s$. The bulb should be lit
+exactly for the months with 31 days: January, March, May, July, August, October
+and December. The numbers 0, 13, 14 and 15 are not months, and for them the bulb
+stays dark.
+
+<CircuitBuilder client:visible id="long-months" inputs={B.longMonths.inputs} outputs={B.longMonths.outputs} target={B.longMonths.target} gates={B.longMonths.gates} fewest={B.longMonths.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={12} title="How many are up?">
+Build two bulbs, one worth 2 and one worth 1, that together show how many of
+the three switches are up.
+
+<CircuitBuilder client:visible id="count-up" inputs={B.countUp.inputs} outputs={B.countUp.outputs} target={B.countUp.target} gates={B.countUp.gates} fewest={B.countUp.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={13} title="Threes">
+Switches $x$, $y$ and $z$ are worth 4, 2 and 1. The bulb should be lit exactly
+when the number they show splits into threes with nothing left over: for 0, 3
+and 6.
+
+<CircuitBuilder client:visible id="threes" inputs={B.threes.inputs} target={B.threes.target} gates={B.threes.gates} fewest={B.threes.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={14} title="One bar of a clock">
+A digital clock draws each digit with seven bars. Here are the ten digits, with
+the bottom left bar picked out wherever it is lit.
+
+<DigitsPicture mark="e" />
+
+A digit is set on four switches worth 8, 4, 2 and 1: $p$, $q$, $r$ and $s$.
+Build the circuit for the bottom left bar alone. For 10 to 15, which are not
+digits, the bar stays dark.
+
+<CircuitBuilder client:visible id="clock-bar" inputs={B.bar.inputs} outputs={B.bar.outputs} target={B.bar.target} gates={B.bar.gates} fewest={B.bar.fewest} />
+</CircuitProblem>
+
+## Islanders
+
+Every islander is an **oracle**, whose every sentence is true, or a **chimera**,
+whose every sentence is false. Her switch is up when she is an oracle. She
+*fits* when her type agrees with the truth of what she says.
+
+<CircuitProblem n={15} title="I am a chimera">
+<Islanders people={B.chimeraPeople} />
+
+Build a box whose bulb is lit exactly when Daphne fits.
+
+<CircuitBuilder client:visible id="i-am-chimera" inputs={B.iAmChimera.inputs} target={B.iAmChimera.target} gates={B.iAmChimera.gates} fewest={B.iAmChimera.fewest} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={16} title="Same kind">
+<Islanders people={B.sameKindPeople} />
+
+Build a box whose bulb is lit exactly when Electra fits.
+
+<CircuitBuilder client:visible id="same-kind" inputs={B.sameKind.inputs} target={B.sameKind.target} gates={B.sameKind.gates} fewest={B.sameKind.fewest} width={520} />
+</CircuitProblem>
+
+<CircuitProblem n={17} title="An even number">
+<Islanders people={B.evenPeople} />
+
+Zero counts as an even number. Build a box whose bulb is lit exactly when
+Ariadne fits.
+
+<CircuitBuilder client:visible id="even-fits" inputs={B.evenFits.inputs} target={B.evenFits.target} gates={B.evenFits.gates} fewest={B.evenFits.fewest} />
+</CircuitProblem>
+
+## Harder
+
+<CircuitProblem n={18} title="Line them up" hard>
+Build three bulbs that light from the top down, one for each switch that is up:
+*top* is lit when at least one switch is up, *middle* when at least two are, and
+*bottom* when all three are.
+
+<CircuitBuilder client:visible id="line-up" inputs={B.lineUp.inputs} outputs={B.lineUp.outputs} target={B.lineUp.target} gates={B.lineUp.gates} fewest={B.lineUp.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={19} title="Which is bigger?" hard>
+Ann sets a number from 0 to 3 on switches $a$ (worth 2) and $b$ (worth 1). Ben
+sets one on $c$ (worth 2) and $d$ (worth 1). The bulb should be lit exactly when
+Ann's number is bigger than Ben's.
+
+<CircuitBuilder client:visible id="bigger" inputs={B.bigger.inputs} outputs={B.bigger.outputs} target={B.bigger.target} gates={B.bigger.gates} fewest={B.bigger.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={20} title="Rock, paper, scissors" hard>
+Ann shows her hand on switches $a$ and $b$, and Ben on $c$ and $d$. Both down is
+rock, down then up is paper, and up then down is scissors. Both up is not a
+hand at all. Paper beats rock, scissors beats paper, and rock beats scissors.
+The bulb should be lit exactly when Ann wins. If either player sets both
+switches up, the bulb stays dark.
+
+<CircuitBuilder client:visible id="rps" inputs={B.rps.inputs} outputs={B.rps.outputs} target={B.rps.target} gates={B.rps.gates} fewest={B.rps.fewest} />
+</CircuitProblem>
+
+<CircuitProblem n={21} title="The wolf, the goat and the cabbage" hard>
+A farmer is taking a wolf, a goat and a cabbage across a river. Each switch is
+up when its traveller is on the far bank: $f$ the farmer, $w$ the wolf, $g$ the
+goat and $c$ the cabbage. Left on a bank without the farmer, the wolf eats the
+goat, and the goat eats the cabbage. The bulb should be lit exactly when nothing
+gets eaten.
+
+<CircuitBuilder client:visible id="river" inputs={B.river.inputs} outputs={B.river.outputs} target={B.river.target} gates={B.river.gates} fewest={B.river.fewest} />
+</CircuitProblem>

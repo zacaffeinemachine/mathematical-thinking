@@ -64,6 +64,7 @@ export default function PredictOutput({ id, circuit, switches, wires = [], askBu
   return (
     <div className="not-prose" style={{ margin: "12px 0" }}>
       <FixedCircuit
+        movable
         circuit={P.laid}
         switches={switchesShown}
         values={solved ? values : null}

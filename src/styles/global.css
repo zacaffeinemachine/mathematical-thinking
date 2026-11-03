@@ -186,3 +186,66 @@ body {
 :root[data-theme="dark"]  .theme-icon-light { display: none; }
 
 /* KaTeX dark-mode contrast: its default uses body color, which is already themed */
+
+/* Oracle and chimera pictures (circuits/problems/IslesPictures.tsx), used on logic-gates/isles and isles-build. */
+.isles-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: flex-end;
+  margin: 14px 0 10px;
+}
+.isles-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  max-width: 210px;
+}
+.isles-bubble {
+  position: relative;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  padding: 7px 11px;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 9px;
+}
+.isles-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-right: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  transform: translateX(-50%) rotate(45deg);
+}
+.isles-person figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+.isles-sw {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+@media (max-width: 520px) {
+  .isles-row { gap: 12px 10px; }
+  .isles-person { max-width: calc(50% - 5px); }
+  .isles-bubble { font-size: 0.84rem; padding: 6px 8px; }
+}
+.isles-ring {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 8px 0;
+}

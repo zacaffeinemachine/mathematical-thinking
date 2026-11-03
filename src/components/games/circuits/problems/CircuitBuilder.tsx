@@ -62,6 +62,8 @@ export interface CircuitBuilderProps {
   target: TargetSpec;                          // see engine.ts; in MDX use a string, an object of strings, or tableOf(...)
   gates?: GateType[];                          // the palette (default NOT, AND, OR, XOR)
   maxGates?: number;
+  fewest?: number;                             // the proven smallest gate count; no limit, but a right answer
+                                               // with more gates is told that fewer will do
   maxDepth?: number;
   maxPerType?: Partial<Record<GateType, number>>;
   maxFanIn?: number;                           // default 2; above 2 a selected gate can grow more inputs
@@ -101,7 +103,7 @@ const sameEnd = (a: End | null, b: End | null) =>
 
 export default function CircuitBuilder(props: CircuitBuilderProps) {
   const {
-    id, target, gates: palette = DEFAULT_PALETTE, maxGates, maxDepth, maxPerType, maxFanIn = 2,
+    id, target, gates: palette = DEFAULT_PALETTE, maxGates, fewest, maxDepth, maxPerType, maxFanIn = 2,
     showDepth = false, showTarget = false, start,
   } = props;
   const ins = useMemo(() => (props.inputs ?? []).map(named), [props.inputs]);
@@ -502,7 +504,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const labelOf = (x: string) => ins.find((i) => i.id === x)?.label ?? outs.find((o) => o.id === x)?.label ?? x;
   const statusText = (r: CheckResult): { tone: "right" | "wrong"; text: string } => {
     switch (r.status) {
-      case "ok": return { tone: "right", text: MSG.builderRight(r.rows) };
+      case "ok": return { tone: "right", text: MSG.builderRight(r.rows) + (fewest === undefined ? "" : r.gates > fewest ? ` ${MSG.fewerPossible}` : ` ${MSG.fewestReached}`) };
       case "unwired-output": return { tone: "wrong", text: MSG.unwired(r.outputs.map(labelOf)) };
       case "empty-pin": return { tone: "wrong", text: MSG.emptyPin };
       case "loop": return { tone: "wrong", text: MSG.loop };

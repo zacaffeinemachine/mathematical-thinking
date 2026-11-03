@@ -101,6 +101,7 @@ export default function FindSetting({ id, circuit, goal, mode = "one", fixed = {
         })}
       </div>
       <FixedCircuit
+        movable
         circuit={P.laid}
         switches={setting}
         values={show === "all" ? values : null}

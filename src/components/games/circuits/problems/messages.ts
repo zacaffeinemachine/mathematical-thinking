@@ -5,6 +5,8 @@
 export const MSG = {
   // Builder.
   builderRight: (rows: number) => `Correct. Your circuit matches the table on all ${rows} rows.`,
+  fewerPossible: "It can also be done with fewer gates.",
+  fewestReached: "No circuit does it with fewer gates.",
   unwired: (labels: string[]) =>
     labels.length === 1 ? `The bulb ${labels[0]} is not wired to anything yet.` : `The bulbs ${labels.join(", ")} are not wired to anything yet.`,
   emptyPin: "A gate has an empty input. It is marked in red.",
@@ -20,6 +22,9 @@ export const MSG = {
   wireHint: "Now tap a pin to connect to, or tap empty space to cancel.",
   builderHint: "Drag a gate to move it. Drag from pin to pin to draw a wire. Tap a gate or wire, then the x, to delete it.",
   emptyCanvas: "Tap a gate above the canvas to add it. Then drag from a pin to a pin to draw a wire.",
+  // Drawn circuits whose gates can be moved.
+  dragGates: "Drag a gate to move it, if the wires are hard to follow.",
+  dragReset: "Put the gates back.",
   // Predict.
   predictRight: "Correct. The wires now show their values.",
   predictWrong: "Not quite. At least one answer is wrong.",

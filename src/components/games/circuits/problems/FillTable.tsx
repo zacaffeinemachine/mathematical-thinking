@@ -99,6 +99,7 @@ export default function FillTable({ id, circuit, wires = [], bulbs, given = [], 
   return (
     <div className="not-prose" style={{ margin: "12px 0" }}>
       <FixedCircuit
+        movable
         circuit={P.laid}
         switches={solved ? setting : Object.fromEntries(P.inputIds.map((i) => [i, null]))}
         values={values}
