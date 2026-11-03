@@ -85,7 +85,7 @@ export const VISIBLE_PAGES: readonly string[] = [
   "logic-gates/any-table",
   "logic-gates/nand",
   "logic-gates/isles",
-  "logic-gates/dominoes",
+  // "logic-gates/dominoes",
   // "logic-gates/gate-zoo",
   // "logic-gates/building-from-others",
   // "logic-gates/design-challenge",
