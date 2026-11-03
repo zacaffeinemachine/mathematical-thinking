@@ -70,14 +70,6 @@
   --fsm-sym-a: #0f766e;
   --fsm-sym-b: #6d28d9;
 
-  /* Dominoes — wood tones. Standing tiles must read darker than fallen
-     ones so a toppled run is legible as a lighter trail across the board. */
-  --dom-standing: #6b4a2f;
-  --dom-fallen:   #c8a67d;
-  --dom-front:    #b91c1c;  /* the tile toppling on this very tick */
-  --dom-gap:      #d4d4d8;  /* outline of a tile that has been ejected */
-  --dom-grid:     #ececef;
-  --dom-board:    #fbfaf8;
 }
 
 :root[data-theme="dark"] {
@@ -141,14 +133,6 @@
   --fsm-sym-a: #2dd4bf;
   --fsm-sym-b: #a78bfa;
 
-  /* Dominoes. The light/dark relationship inverts here: on a dark board a
-     standing tile is the dim one and a fallen tile catches the light. */
-  --dom-standing: #8a6a4a;
-  --dom-fallen:   #e8c9a0;
-  --dom-front:    #fb923c;
-  --dom-gap:      #52525b;
-  --dom-grid:     #232327;
-  --dom-board:    #141416;
 }
 
 html {

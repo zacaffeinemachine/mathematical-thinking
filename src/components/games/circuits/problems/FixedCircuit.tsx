@@ -6,7 +6,7 @@
 
 import { useRef, useState } from "react";
 import type { Bit, Circuit } from "../model";
-import { BULB_PIN, gateInputPin, gateSize, sourcePin } from "./layout";
+import { BULB_PIN, gateBox, gateInputPin, gateSize, routeSegments, segmentsPath, sourcePin } from "./layout";
 import { MSG } from "./messages";
 import { BulbGlyph, GateGlyph, SwitchGlyph, ValueDigit, Wire, WireTag, type BulbMark, type TagPlace } from "./glyphs";
 import { svgBox } from "./ui";
@@ -106,22 +106,28 @@ export default function FixedCircuit({
         }
       : {};
 
+  const boxes = c.gates.map((g) => ({ id: g.id, box: gateBox(g) }));
+  const route = (from: string, to: string | null, x1: number, y1: number, x2: number, y2: number) =>
+    segmentsPath(routeSegments(x1, y1, x2, y2, boxes.filter((b) => b.id !== from && b.id !== to).map((b) => b.box), 4, c.height - 4));
+
   const picture = (
     <svg ref={svgRef} viewBox={vb} style={svgBox(c.width, scale)} role="group" aria-label={label}>
-      {/* wires into gates */}
+      {/* wires into gates, each routed round the gates it does not touch */}
       {c.gates.map((g) =>
         g.inputs.map((src, i) => {
           const s = sourcePin(c, src);
           if (!s) return null;
           const p = gateInputPin(g.type, g.inputs.length, i);
-          return <Wire key={`${g.id}-${i}`} x1={s.x} y1={s.y} x2={g.x + p.x} y2={g.y + p.y} value={wireVal(src)} />;
+          const path = route(src, g.id, s.x, s.y, g.x + p.x, g.y + p.y);
+          return <Wire key={`${g.id}-${i}`} x1={s.x} y1={s.y} x2={g.x + p.x} y2={g.y + p.y} value={wireVal(src)} path={path} />;
         }),
       )}
       {/* wires into bulbs */}
       {c.outputs.map((o) => {
         const s = sourcePin(c, o.source);
         if (!s) return null;
-        return <Wire key={`o-${o.id}`} x1={s.x} y1={s.y} x2={o.x - BULB_PIN} y2={o.y} value={wireVal(o.source)} />;
+        const path = route(o.source, null, s.x, s.y, o.x - BULB_PIN, o.y);
+        return <Wire key={`o-${o.id}`} x1={s.x} y1={s.y} x2={o.x - BULB_PIN} y2={o.y} value={wireVal(o.source)} path={path} />;
       })}
 
       {c.gates.map((g) => {

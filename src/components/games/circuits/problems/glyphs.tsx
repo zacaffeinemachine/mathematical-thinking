@@ -36,14 +36,15 @@ export const HILITE = "var(--accent)";
 // value: 1 / 0 colours the wire, undefined draws it dashed (nothing reaches
 // it yet), null draws it neutral (the value is being kept secret).
 export function Wire({
-  x1, y1, x2, y2, value, selected = false, faint = false,
+  x1, y1, x2, y2, value, selected = false, faint = false, path,
 }: {
   x1: number; y1: number; x2: number; y2: number;
   value: Bit | undefined | null;
   selected?: boolean;
   faint?: boolean;
+  path?: string;          // a routed path (layout.ts, routeSegments); default the plain S-curve
 }) {
-  const d = wirePath(x1, y1, x2, y2);
+  const d = path ?? wirePath(x1, y1, x2, y2);
   const stroke =
     value === 1 ? WIRE_ON : value === 0 ? WIRE_OFF : "var(--muted)";
   return (

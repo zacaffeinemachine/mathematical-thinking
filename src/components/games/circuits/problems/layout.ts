@@ -67,7 +67,87 @@ export function distToWire(px: number, py: number, x1: number, y1: number, x2: n
   return best;
 }
 
-// ---- pins of a laid-out fixed circuit -------------------------------------
+// ---- wires that go round gates ------------------------------------------------
+//
+// A wire in a drawn circuit is a single S-curve, and nothing stopped it
+// passing behind a gate it has nothing to do with: a switch wire skipping a
+// column ran straight through the NOT fed by the same switch, and looked like
+// that NOT's input or output. routeWire keeps the S-curve when it is clear,
+// and otherwise sends the wire through a free lane above or below each gate in
+// its way, as a straight run past the gate, joined by S-curves.
+
+export interface Box { x0: number; x1: number; y0: number; y1: number }
+
+// The body of a gate, bubble included, as an obstacle.
+export function gateBox(g: { type: GateType; inputs: unknown[]; x: number; y: number }): Box {
+  const { w, h } = gateSize(g.type, g.inputs.length);
+  const bubble = g.type === "NOT" || g.type === "NAND" || g.type === "NOR" ? 7 : 0;
+  return { x0: g.x - (g.type === "XOR" ? 7 : 1), x1: g.x + w + bubble, y0: g.y - h / 2, y1: g.y + h / 2 };
+}
+
+type Seg = { kind: "curve" | "line"; x1: number; y1: number; x2: number; y2: number };
+const curveAt = (q: Seg, t: number) => {
+  if (q.kind === "line") return { x: q.x1 + (q.x2 - q.x1) * t, y: q.y1 + (q.y2 - q.y1) * t };
+  return wirePoint(q.x1, q.y1, q.x2, q.y2, t);
+};
+const hits = (segs: Seg[], boxes: Box[], pad: number) => {
+  for (const q of segs) for (let k = 1; k < 32; k++) {
+    const p = curveAt(q, k / 32);
+    for (const b of boxes) if (p.x > b.x0 - pad && p.x < b.x1 + pad && p.y > b.y0 - pad && p.y < b.y1 + pad) return b;
+  }
+  return null;
+};
+
+// The pieces of a wire from (x1, y1) to (x2, y2) that keeps out of `boxes`
+// (the gates other than its own two ends), staying between `top` and `bottom`.
+export function routeSegments(x1: number, y1: number, x2: number, y2: number, boxes: Box[], top = -Infinity, bottom = Infinity): Seg[] {
+  const straight: Seg[] = [{ kind: "curve", x1, y1, x2, y2 }];
+  if (x2 < x1 + 30 || !hits(straight, boxes, 1)) return straight;
+  const LANE = 9, GAP = 7;
+  const segs: Seg[] = [];
+  let cx = x1, cy = y1;
+  for (let guard = 0; guard < 12; guard++) {
+    const rest: Seg[] = [{ kind: "curve", x1: cx, y1: cy, x2, y2 }];
+    const hit = hits(rest, boxes.filter((b) => b.x0 > cx - 1), 1);
+    if (!hit) { segs.push(...rest); return segs; }
+    // Every gate that overlaps the hit gate left to right is passed together.
+    let x0 = hit.x0, x1b = hit.x1;
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const b of boxes) if (b.x1 > x0 - GAP && b.x0 < x1b + GAP && (b.x0 < x0 || b.x1 > x1b)) { x0 = Math.min(x0, b.x0); x1b = Math.max(x1b, b.x1); grew = true; }
+    }
+    const group = boxes.filter((b) => b.x1 > x0 - GAP && b.x0 < x1b + GAP);
+    const mid = (x0 + x1b) / 2;
+    const ideal = cy + ((y2 - cy) * (mid - cx)) / Math.max(1, x2 - cx);
+    const free = (y: number) => y > top && y < bottom && group.every((b) => y <= b.y0 - LANE + 0.5 || y >= b.y1 + LANE - 0.5);
+    const lanes = [ideal, ...group.flatMap((b) => [b.y0 - LANE, b.y1 + LANE])].filter(free);
+    if (!lanes.length || x0 - GAP <= cx) { segs.push(...rest); return segs; }
+    const lane = lanes.reduce((a, b) => (Math.abs(b - ideal) < Math.abs(a - ideal) ? b : a));
+    const ex = Math.min(x1b + GAP, x2 - 12);
+    segs.push({ kind: "curve", x1: cx, y1: cy, x2: x0 - GAP, y2: lane });
+    segs.push({ kind: "line", x1: x0 - GAP, y1: lane, x2: ex, y2: lane });
+    cx = ex; cy = lane;
+    if (cx >= x2 - 12) break;
+  }
+  segs.push({ kind: "curve", x1: cx, y1: cy, x2, y2 });
+  return segs;
+}
+
+export function segmentsPath(segs: Seg[]): string {
+  return segs.map((q, k) => {
+    const head = k === 0 ? `M ${q.x1} ${q.y1} ` : "";
+    if (q.kind === "line") return `${head}L ${q.x2} ${q.y2}`;
+    const dx = Math.max(18, Math.abs(q.x2 - q.x1) * 0.45);
+    return `${head}C ${q.x1 + dx} ${q.y1}, ${q.x2 - dx} ${q.y2}, ${q.x2} ${q.y2}`;
+  }).join(" ");
+}
+
+// Points along a routed wire, for tests.
+export function segmentsPoints(segs: Seg[], per = 32): { x: number; y: number }[] {
+  return segs.flatMap((q) => Array.from({ length: per + 1 }, (_, k) => curveAt(q, k / per)));
+}
+
+
 
 export function sourcePin(c: Circuit, id: string): { x: number; y: number } | null {
   const inp = c.inputs.find((i) => i.id === id);
