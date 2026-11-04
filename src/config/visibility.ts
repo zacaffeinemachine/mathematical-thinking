@@ -25,7 +25,7 @@ export const VISIBLE_CHAPTERS: readonly string[] = [
   "guarini",
   "logical-thinking",
   "machines",
-  // "logic-gates",
+  "logic-gates",
   "boolean-algebra",
   "infinity",
   // "permutations",
