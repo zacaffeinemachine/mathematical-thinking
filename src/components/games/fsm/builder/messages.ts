@@ -34,10 +34,10 @@ export const MSG = {
 
   // Hints under the canvas.
   emptyCanvas: "Press Add start state to begin.",
-  hint: "Click a state and then another to draw an arrow. Double-click a state to rename it, or an arrow to label it. Drag a state to move it.",
+  hint: "Click a state and then another to draw an arrow. Double-click a state to rename it, or an arrow to label it. Drag a state to move it, or an arrow to bend it.",
   stateSelected: (n: string) =>
     `${n} is selected. Click another state to draw an arrow from ${n}, or click ${n} again for an arrow back to itself. Click empty space to cancel.`,
-  edgeSelected: "Double-click the arrow to label it, or press Delete to remove it.",
+  edgeSelected: "Drag the arrow to bend it. Double-click it to label it, or press Delete to remove it.",
   resize: "Drag to make the canvas taller or shorter",
 
   // The tape.

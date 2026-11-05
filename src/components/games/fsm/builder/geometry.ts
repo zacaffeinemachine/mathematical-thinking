@@ -11,7 +11,11 @@ export const START_LEN = 34;   // length of the start arrow
 
 export interface Pt { x: number; y: number }
 export interface StatePos { id: string; x: number; y: number }
-export interface Edge { from: string; to: string; label: string[] }
+// `bend` (an arrow between two states) is how far its middle sits to the left
+// of the straight line, in canvas units. `angle` (a loop) is the direction it
+// sticks out in, in radians. Both are set by the student dragging the arrow,
+// and an arrow that has never been dragged is placed automatically.
+export interface Edge { from: string; to: string; label: string[]; bend?: number; angle?: number }
 
 export interface EdgeDraw extends Edge {
   index: number;        // position in the edge list
@@ -102,14 +106,22 @@ export function layoutEdges(states: StatePos[], edges: Edge[], start: string | n
     if (e.from === e.to) return;
     const P = pos.get(e.from), Q = pos.get(e.to);
     if (!P || !Q) return;
-    const g = curvedArrow(P, Q, has(e.to, e.from) ? 16 : 0);
+    const g = curvedArrow(P, Q, Number.isFinite(e.bend) ? e.bend! : has(e.to, e.from) ? 16 : 0);
     out.push({ ...e, index, d: g.d, head: g.head, mid: g.mid, samples: g.samples });
     occupied.get(e.from)!.push(g.tailAngle);
     occupied.get(e.to)!.push(g.tipAngle);
   });
 
+  // Loops placed by hand first, so automatic ones keep out of their way.
   edges.forEach((e, index) => {
-    if (e.from !== e.to) return;
+    if (e.from !== e.to || !Number.isFinite(e.angle)) return;
+    const P = pos.get(e.from);
+    if (!P) return;
+    out.push({ ...e, index, ...loopArrow(P, e.angle!) });
+    occupied.get(e.from)!.push(e.angle! - 0.42, e.angle!, e.angle! + 0.42);
+  });
+  edges.forEach((e, index) => {
+    if (e.from !== e.to || Number.isFinite(e.angle)) return;
     const P = pos.get(e.from);
     if (!P) return;
     const taken = occupied.get(e.from)!;
@@ -136,4 +148,20 @@ export function distToSamples(p: Pt, samples: Pt[]): number {
     best = Math.min(best, Math.hypot(p.x - (a.x + t * ab.x), p.y - (a.y + t * ab.y)));
   }
   return best;
+}
+
+// The bend that puts the middle of the arrow from P to Q under the pointer.
+// The middle of the curve sits at the midpoint plus h times the left normal.
+export function bendThrough(P: Pt, Q: Pt, at: Pt): number {
+  let dir = sub(Q, P);
+  if (len(dir) < 1) dir = { x: 1, y: 0 };
+  const u = norm(dir);
+  const n = { x: u.y, y: -u.x };
+  const M = { x: (P.x + Q.x) / 2, y: (P.y + Q.y) / 2 };
+  const h = (at.x - M.x) * n.x + (at.y - M.y) * n.y;
+  return Math.abs(h) < 7 ? 0 : Math.round(h);     // snaps straight near the line
+}
+
+export function angleThrough(P: Pt, at: Pt): number {
+  return Math.atan2(at.y - P.y, at.x - P.x);
 }

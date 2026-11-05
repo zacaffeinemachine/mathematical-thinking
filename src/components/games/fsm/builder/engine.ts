@@ -163,7 +163,7 @@ export function checkMachine(m: MachineSpec, alphabet: Sym[], target: Dfa): Chec
 // and reports both. An arrow for a symbol is entered in the machine only when
 // it is the one arrow leaving its state with that symbol.
 
-export interface DrawnEdge { from: string; to: string; label: string[] }
+export interface DrawnEdge { from: string; to: string; label: string[]; bend?: number; angle?: number }
 
 export function specFromEdges(
   states: string[],

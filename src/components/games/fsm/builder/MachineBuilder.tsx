@@ -7,6 +7,7 @@
 //   double-click an arrow         label it with the symbols it reads, e.g. "0, 1"
 //   click a state, then Accepting make it accepting, or not
 //   drag a state                  move it
+//   drag an arrow                 bend it (a loop swings round its state)
 //   click a state or an arrow     select it, then Delete removes it
 //   drag the bar under the canvas make the canvas taller or shorter
 //
@@ -22,7 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePersistent } from "../../circuits/problems/storage";
 import { AuthorError, Button, Row, Status } from "../../circuits/problems/ui";
 import { compare, minimalDfa, missingArrows, parseLabel, runMachine, specFromEdges, type DrawnEdge } from "./engine";
-import { R, START_LEN, distToSamples, layoutEdges, type Pt } from "./geometry";
+import { R, START_LEN, angleThrough, bendThrough, distToSamples, layoutEdges, type Pt } from "./geometry";
 import { LANGUAGES } from "./languages";
 import { MSG } from "./messages";
 
@@ -56,7 +57,7 @@ interface Saved { design: Design; word: string; solved: boolean; height: number 
 type Target = { kind: "state"; id: string } | { kind: "edge"; index: number };
 type Drag =
   | { kind: "move"; id: string; offX: number; offY: number; cx: number; cy: number; moved: boolean; before: Design }
-  | { kind: "edge"; index: number }
+  | { kind: "edge"; index: number; cx: number; cy: number; moved: boolean; before: Design }
   | { kind: "empty" };
 type Editor = { kind: "name"; id: string; value: string } | { kind: "label"; index: number; value: string };
 
@@ -91,7 +92,11 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     const edges = v.design.edges
       .filter((e) => e && ids.has(e.from) && ids.has(e.to) && Array.isArray(e.label))
       .filter((e) => { const k = `${e.from}>${e.to}`; if (seen.has(k)) return false; seen.add(k); return true; })
-      .map((e) => ({ from: e.from, to: e.to, label: alphabet.filter((a) => e.label.includes(a)) }));
+      .map((e) => ({
+        from: e.from, to: e.to, label: alphabet.filter((a) => e.label.includes(a)),
+        ...(Number.isFinite(e.bend) ? { bend: e.bend } : {}),
+        ...(Number.isFinite(e.angle) ? { angle: e.angle } : {}),
+      }));
     const start = v.design.start && ids.has(v.design.start) ? v.design.start : null;
     const word = typeof v.word === "string" ? [...v.word].filter((c) => alphabet.includes(c)).join("").slice(0, MAX_WORD) : "";
     const height = Number.isFinite(v.height) ? Math.min(H_MAX, Math.max(H_MIN, v.height as number)) : null;
@@ -129,15 +134,14 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [pos, setPos] = useState<number>(0);
   const [playing, setPlaying] = useState(false);
-  const [fired, setFired] = useState<Target | null>(null);     // a single click on a state, once it is known not to be a double
   const undo = useRef<Design[]>([]);
-  const lastTap = useRef<{ target: Target; t: number } | null>(null);
-  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The last click, and the drawing before it if that click drew an arrow,
+  // so the second click of a double-click can take the arrow back.
+  const lastTap = useRef<{ target: Target; t: number; undoTo?: Design } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setPos(word.length); setPlaying(false); }, [word]);
-  useEffect(() => () => { if (tapTimer.current) clearTimeout(tapTimer.current); }, []);
 
   // ---- the machine and its drawing ----
   const stateById = useMemo(() => new Map(design.states.map((q) => [q.id, q])), [design]);
@@ -190,11 +194,12 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     commit({ ...design, states: [...design.states, q], start: asStart ? q.id : design.start });
     setSel(null); setEditor(null);
   };
-  const connect = (from: string, to: string) => {
+  const connect = (from: string, to: string): boolean => {
     const at = design.edges.findIndex((e) => e.from === from && e.to === to);
-    if (at >= 0) { setSel({ kind: "edge", index: at }); setNotice(MSG.edgeExists(nameOf(from), nameOf(to))); return; }
+    if (at >= 0) { setSel({ kind: "edge", index: at }); setNotice(MSG.edgeExists(nameOf(from), nameOf(to))); return false; }
     commit({ ...design, edges: [...design.edges, { from, to, label: [] }] });
     setSel({ kind: "edge", index: design.edges.length });
+    return true;
   };
   const toggleAccepting = (sid: string) =>
     commit({ ...design, states: design.states.map((q) => (q.id === sid ? { ...q, accepting: !q.accepting } : q)) });
@@ -259,27 +264,27 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     return best?.index ?? null;
   };
 
-  // A click is held back briefly, so a double-click is not also two clicks.
+  // A click acts at once. If it turns out to be the first half of a
+  // double-click and it drew an arrow, the second half takes the arrow back
+  // before opening the editor, so a double-click is never also two clicks.
   const tap = (t: Target) => {
     const now = Date.now();
-    if (lastTap.current && sameTarget(lastTap.current.target, t) && now - lastTap.current.t < DOUBLE_MS) {
-      if (tapTimer.current) clearTimeout(tapTimer.current);
+    const prev = lastTap.current;
+    if (prev && sameTarget(prev.target, t) && now - prev.t < DOUBLE_MS) {
       lastTap.current = null;
+      if (prev.undoTo) { undo.current.pop(); setSaved((s) => ({ ...s, design: prev.undoTo! })); }
       openEditor(t);
       return;
     }
+    if (t.kind === "state" && sel?.kind === "state" && stateById.has(sel.id)) {
+      const before = design;
+      const made = connect(sel.id, t.id);
+      lastTap.current = { target: t, t: now, undoTo: made ? before : undefined };
+      return;
+    }
     lastTap.current = { target: t, t: now };
-    if (t.kind === "edge") { setSel(t); return; }        // selecting an arrow is harmless, do it at once
-    if (tapTimer.current) clearTimeout(tapTimer.current);
-    tapTimer.current = setTimeout(() => setFired(t), DOUBLE_MS);
+    setSel(t);
   };
-  useEffect(() => {
-    if (!fired || fired.kind !== "state") return;
-    setFired(null);
-    if (!stateById.has(fired.id)) return;
-    if (sel?.kind === "state" && stateById.has(sel.id)) connect(sel.id, fired.id);
-    else setSel(fired);
-  }, [fired]);
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -291,10 +296,21 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     if (q) { setDrag({ kind: "move", id: q.id, offX: x - q.x, offY: y - q.y, cx: e.clientX, cy: e.clientY, moved: false, before: design }); return; }
     const slack = (e.pointerType === "touch" ? 14 : 7) / s;
     const ei = edgeAt(x, y, slack);
-    if (ei !== null) { setDrag({ kind: "edge", index: ei }); return; }
+    if (ei !== null) { setDrag({ kind: "edge", index: ei, cx: e.clientX, cy: e.clientY, moved: false, before: design }); return; }
     setDrag({ kind: "empty" });
   };
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (drag?.kind === "edge") {
+      if (!drag.moved && Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) <= TAP_PX) return;
+      const ed = design.edges[drag.index];
+      const P = ed && stateById.get(ed.from), Q = ed && stateById.get(ed.to);
+      if (!ed || !P || !Q) return;
+      const at = toLocal(e);
+      const next = ed.from === ed.to ? { ...ed, angle: angleThrough(P, at) } : { ...ed, bend: bendThrough(P, Q, at) };
+      setSaved((st) => ({ ...st, design: { ...st.design, edges: st.design.edges.map((x, i) => (i === drag.index ? next : x)) } }));
+      if (!drag.moved) { setDrag({ ...drag, moved: true }); setSel({ kind: "edge", index: drag.index }); lastTap.current = null; }
+      return;
+    }
     if (drag?.kind !== "move") return;
     const { x, y } = toLocal(e);
     if (!drag.moved && Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) <= TAP_PX) return;
@@ -314,7 +330,11 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       tap({ kind: "state", id: d.id });
       return;
     }
-    if (d.kind === "edge") { tap({ kind: "edge", index: d.index }); return; }
+    if (d.kind === "edge") {
+      if (d.moved) { undo.current.push(d.before); return; }
+      tap({ kind: "edge", index: d.index });
+      return;
+    }
     lastTap.current = null;
     setSel(null);
   };
@@ -488,7 +508,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             userSelect: "none",
             WebkitUserSelect: "none",
             outline: "none",
-            cursor: drag?.kind === "move" && drag.moved ? "grabbing" : "default",
+            cursor: (drag?.kind === "move" || drag?.kind === "edge") && drag.moved ? "grabbing" : "default",
           }}
         >
           <defs>
