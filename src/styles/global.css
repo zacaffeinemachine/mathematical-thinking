@@ -70,6 +70,13 @@
   --fsm-sym-a: #0f766e;
   --fsm-sym-b: #6d28d9;
 
+  /* State fills on the machine builder canvas (fsm/builder), pastel like
+     the gate fills of the circuit builder. An accepting state is tinted
+     the blue of --fsm-accept, and also gets its double ring. The state
+     the machine is in is lit with --bulb-lit, like a bulb. */
+  --fsm-state: #ece6d8;
+  --fsm-state-accept: #b7d3ee;
+
 }
 
 :root[data-theme="dark"] {
@@ -132,6 +139,9 @@
   /* Lifted for the dark canvas, same two hues. */
   --fsm-sym-a: #2dd4bf;
   --fsm-sym-b: #a78bfa;
+
+  --fsm-state: #2e2c33;
+  --fsm-state-accept: #1d4a73;
 
 }
 
