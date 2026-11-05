@@ -80,6 +80,10 @@
      pair that survives every common colour blindness. */
   --fsm-sym0: #2563a8;
   --fsm-sym1: #d9730d;
+  --fsm-c2: #7b4fb0;
+  --fsm-c3: #2e8b57;
+  --fsm-c4: #c2387a;
+  --fsm-c5: #8a6d3b;
 
 }
 
@@ -149,6 +153,10 @@
   --fsm-select: rgba(244, 244, 245, 0.10);
   --fsm-sym0: #6aa6e6;
   --fsm-sym1: #f0954a;
+  --fsm-c2: #b48ae6;
+  --fsm-c3: #5cc08a;
+  --fsm-c4: #ec7bb0;
+  --fsm-c5: #c9a874;
 
 }
 

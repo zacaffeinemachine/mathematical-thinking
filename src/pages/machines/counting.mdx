@@ -8,42 +8,50 @@ blurb: The count can run to a million, and the machine has six circles. Problems
 description: "Design-a-machine problems on parity, thresholds and counting modulo a number."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="Parity">
 Design a machine that accepts exactly the strings with an even number of `1`s.
 <Tests accept={["", "0", "11", "0110", "1001"]} reject={["1", "10", "111", "0100"]} />
+<MachineBuilder client:visible language="counting/parity" />
 </Problem>
 
 <Problem n={2} title="The other parity">
 Design a machine that accepts exactly the strings with an odd number of `0`s.
 <Tests accept={["0", "01", "10", "0001"]} reject={["", "1", "00", "0110", "11"]} />
+<MachineBuilder client:visible language="counting/other-parity" />
 </Problem>
 
 <Problem n={3} title="A threshold">
 Design a machine that accepts exactly the strings containing at least three
 `1`s.
 <Tests accept={["111", "1110", "010101", "1111"]} reject={["", "11", "0110", "1010"]} />
+<MachineBuilder client:visible language="counting/threshold" />
 </Problem>
 
 <Problem n={4} title="Exactly two">
 Design a machine that accepts exactly the strings containing exactly two `1`s.
 <Tests accept={["11", "0110", "1001", "0101"]} reject={["", "1", "111", "0111", "1011"]} />
+<MachineBuilder client:visible language="counting/exactly-two" />
 </Problem>
 
 <Problem n={5} title="A ceiling">
 Design a machine that accepts exactly the strings containing at most two `0`s.
 <Tests accept={["", "1", "0", "00", "0110", "1010"]} reject={["000", "0001", "01010", "0000"]} />
+<MachineBuilder client:visible language="counting/ceiling" />
 </Problem>
 
 <Problem n={6} title="A remainder">
 Design a machine that accepts exactly the strings in which the number of `0`s is divisible by 4.
 <Tests accept={["", "1", "0000", "010010"]} reject={["0", "00", "000", "00000"]} />
+<MachineBuilder client:visible language="counting/remainder" />
 </Problem>
 
 <Problem n={7} title="Two counts at once">
 Design a machine that accepts exactly the strings with an even number of `0`s
 **and** an odd number of `1`s.
 <Tests accept={["1", "001", "100", "111", "00111"]} reject={["", "0", "11", "01", "0011"]} />
+<MachineBuilder client:visible language="counting/two-counts" />
 </Problem>
 
 <Problem n={8} title="A difference" hard>
@@ -54,16 +62,19 @@ Design a machine that accepts exactly the strings for which
 is divisible by 3. The difference can be negative, and "divisible by 3" means
 the usual thing for whole numbers of either sign.
 <Tests accept={["", "111", "000", "10", "01", "111000"]} reject={["1", "0", "11", "00", "1110"]} />
+<MachineBuilder client:visible language="counting/difference" />
 </Problem>
 
 <Problem n={9} title="A bigger remainder" hard>
 Design a machine that accepts exactly the strings in which the number of `1`s
 is divisible by 6.
 <Tests accept={["", "0", "111111", "0111111"]} reject={["1", "11", "111", "11111", "1111111"]} />
+<MachineBuilder client:visible language="counting/bigger-remainder" />
 </Problem>
 
 <Problem n={10} title="Two remainders at once" hard>
 Design a machine that accepts exactly the strings with an even number of `0`s **and** a number of
 `1`s divisible by 3.
 <Tests accept={["", "00", "111", "00111", "0011100"]} reject={["0", "1", "11", "0111", "00110"]} />
+<MachineBuilder client:visible language="counting/two-remainders" />
 </Problem>

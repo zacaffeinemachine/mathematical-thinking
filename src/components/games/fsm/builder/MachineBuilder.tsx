@@ -13,7 +13,11 @@
 //   drag empty canvas             pan the view
 //   Move all, then drag anywhere  move the whole machine at once
 //   - / + / Fit canvas            zoom out, zoom in, frame the whole machine
-//   Colour-code arrows            draw each arrow in the colour of its symbols instead of labelling it
+//   Colour-code arrows            draw each arrow in a colour instead of labelling it: one colour per
+//                                 symbol on an alphabet of up to 3, one per different label above that
+//   Add a convention              (large alphabets) name a set of symbols, e.g. V = "a, e, i, o, u",
+//                                 for use in labels; the label word `other` means every symbol no
+//                                 other arrow leaving the same state reads
 //
 // Below the canvas a tape runs any string through the machine as it stands.
 // Check decides exactly whether the machine accepts the strings the problem
@@ -26,7 +30,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePersistent } from "../../circuits/problems/storage";
 import { AuthorError, Button, Row, Status } from "../../circuits/problems/ui";
-import { compare, minimalDfa, missingArrows, parseLabel, runMachine, specFromEdges, type DrawnEdge } from "./engine";
+import { OTHER, compare, missingArrows, parseConvention, parseLabel, runMachine, specFromEdges, targetOf, type DrawnEdge } from "./engine";
 import { R, START_LEN, angleThrough, bendThrough, distToSamples, layoutEdges, type Pt } from "./geometry";
 import { LANGUAGES } from "./languages";
 import { MSG } from "./messages";
@@ -47,10 +51,12 @@ const SNAP = 5;
 const H_MIN = 220, H_MAX = 900;
 const Z_MIN = 0.3, Z_MAX = 3;
 const WORLD = 4000;                      // states stay within this many units of the origin
-// The two symbol colours of the colour-coded view, blue and orange, which
-// stay apart under every common kind of colour blindness. An arrow reading
-// both is striped.
-const SYM_COLOUR = ["var(--fsm-sym0)", "var(--fsm-sym1)"];
+// The colours of the colour-coded view. On an alphabet of up to 3 symbols
+// each symbol has one (blue, orange, purple: apart under the common colour
+// blindnesses) and an arrow reading several is striped. On a larger alphabet
+// each different label in the drawing gets one, in order of first use.
+const PALETTE = ["var(--fsm-sym0)", "var(--fsm-sym1)", "var(--fsm-c2)", "var(--fsm-c3)", "var(--fsm-c4)", "var(--fsm-c5)"];
+const MAX_CONVENTIONS = 8;
 const STORE = "qrmt.machines.v1";
 
 export interface MachineBuilderProps {
@@ -61,7 +67,8 @@ export interface MachineBuilderProps {
 }
 
 interface BState { id: string; name: string; x: number; y: number; accepting: boolean }
-interface Design { states: BState[]; start: string | null; edges: DrawnEdge[] }
+interface Convention { name: string; def: string }
+interface Design { states: BState[]; start: string | null; edges: DrawnEdge[]; conventions: Convention[] }
 interface View { cx: number; cy: number; z: number }      // centre of the view and zoom (1 = the canvas at its natural size)
 interface Saved { design: Design; word: string; solved: boolean; height: number | null; colour: boolean; view: View | null }
 
@@ -72,6 +79,7 @@ type Drag =
   | { kind: "pan"; cx: number; cy: number; moved: boolean; from: View; scale: number }
   | { kind: "all"; cx: number; cy: number; moved: boolean; before: Design; scale: number };
 type Editor = { kind: "name"; id: string; value: string } | { kind: "label"; index: number; value: string };
+type ConvEditor = { index: number | null; name: string; def: string };   // index null: a new one
 
 interface Verdict {
   tone: "right" | "wrong";
@@ -81,7 +89,7 @@ interface Verdict {
   wrong?: { word: string; accepts: boolean };
 }
 
-const emptyDesign = (): Design => ({ states: [], start: null, edges: [] });
+const emptyDesign = (): Design => ({ states: [], start: null, edges: [], conventions: [] });
 const sameTarget = (a: Target | null, b: Target) =>
   !!a && a.kind === b.kind && (a.kind === "state" ? a.id === (b as { id: string }).id : a.index === (b as { index: number }).index);
 
@@ -89,6 +97,11 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const lang = LANGUAGES[props.language];
   const id = props.id ?? props.language;
   const alphabet = lang?.alphabet ?? ["0", "1"];
+  const small = alphabet.length <= 3;
+  // What the student types on the tape, kept to the alphabet (capitals are
+  // read as lower case when only lower case is in the alphabet).
+  const cleanWord = (w: string) =>
+    [...w].map((c) => (alphabet.includes(c) ? c : alphabet.includes(c.toLowerCase()) ? c.toLowerCase() : "")).join("").slice(0, MAX_WORD);
 
   // ---- saved state ----
   const fresh = (): Saved => ({ design: emptyDesign(), word: "", solved: false, height: null, colour: false, view: null });
@@ -105,17 +118,20 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       .filter((e) => e && ids.has(e.from) && ids.has(e.to) && Array.isArray(e.label))
       .filter((e) => { const k = `${e.from}>${e.to}`; if (seen.has(k)) return false; seen.add(k); return true; })
       .map((e) => ({
-        from: e.from, to: e.to, label: alphabet.filter((a) => e.label.includes(a)),
+        from: e.from, to: e.to, label: e.label.filter((t): t is string => typeof t === "string" && t.length > 0 && t.length <= 8),
         ...(Number.isFinite(e.bend) ? { bend: e.bend } : {}),
         ...(Number.isFinite(e.angle) ? { angle: e.angle } : {}),
       }));
     const start = v.design.start && ids.has(v.design.start) ? v.design.start : null;
-    const word = typeof v.word === "string" ? [...v.word].filter((c) => alphabet.includes(c)).join("").slice(0, MAX_WORD) : "";
+    const word = typeof v.word === "string" ? cleanWord(v.word) : "";
+    const conventions = Array.isArray(v.design.conventions)
+      ? v.design.conventions.filter((c) => c && typeof c.name === "string" && typeof c.def === "string").slice(0, MAX_CONVENTIONS).map((c) => ({ name: c.name, def: c.def }))
+      : [];
     const height = Number.isFinite(v.height) ? Math.min(H_MAX, Math.max(H_MIN, v.height as number)) : null;
     const vw = v.view;
     const view = vw && Number.isFinite(vw.cx) && Number.isFinite(vw.cy) && Number.isFinite(vw.z)
       ? { cx: vw.cx, cy: vw.cy, z: Math.min(Z_MAX, Math.max(Z_MIN, vw.z)) } : null;
-    return { design: { states, start, edges }, word, solved: !!v.solved, height, colour: !!v.colour, view };
+    return { design: { states, start, edges, conventions }, word, solved: !!v.solved, height, colour: !!v.colour, view };
   };
   const [saved, setSaved, resetSaved] = usePersistent<Saved>(id, "machine-v2", fresh, revive, STORE);
   const design = saved.design;
@@ -155,7 +171,8 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [pos, setPos] = useState<number>(0);
   const [playing, setPlaying] = useState(false);
-  const [moveAll, setMoveAll] = useState(false);       // while on, any drag moves every state together
+  const [moveAll, setMoveAll] = useState(false);
+  const [conv, setConv] = useState<ConvEditor | null>(null);       // while on, any drag moves every state together
   const undo = useRef<Design[]>([]);
   // The last click, and the drawing before it if that click drew an arrow,
   // so the second click of a double-click can take the arrow back.
@@ -168,15 +185,46 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   // ---- the machine and its drawing ----
   const stateById = useMemo(() => new Map(design.states.map((q) => [q.id, q])), [design]);
   const nameOf = (sid: string | null | undefined) => (sid ? stateById.get(sid)?.name ?? "?" : "?");
+  const conventions = design.conventions ?? [];
+  const convMap = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    for (const c of conventions) { const set = parseConvention(c.def, alphabet); if (set) m[c.name] = set; }
+    return m;
+  }, [conventions, alphabet.join("")]);
+  const convNames = conventions.map((c) => c.name);
   const built = useMemo(
-    () => specFromEdges(design.states.map((q) => q.id), design.start, design.states.filter((q) => q.accepting).map((q) => q.id), design.edges, alphabet),
-    [design, alphabet.join("")],
+    () => specFromEdges(design.states.map((q) => q.id), design.start, design.states.filter((q) => q.accepting).map((q) => q.id), design.edges, alphabet, convMap),
+    [design, alphabet.join(""), convMap],
   );
   const drawing = useMemo(() => layoutEdges(design.states, design.edges, design.start), [design]);
   const walk = useMemo(() => runMachine(built.spec, word), [built, word]);
-  const target = useMemo(() => (lang ? minimalDfa(lang.alphabet, lang.accepts, lang.bound ?? 8) : null), [props.language]);
+  // Built on the first Check, not on load: the largest problems take a
+  // noticeable fraction of a second.
+  const targetRef = useRef<{ key: string; t: ReturnType<typeof targetOf> } | null>(null);
+  const getTarget = () => {
+    if (!lang) return null;
+    if (targetRef.current?.key !== props.language) targetRef.current = { key: props.language, t: targetOf(lang) };
+    return targetRef.current.t;
+  };
   const labelText = (e: DrawnEdge) => (e.label.length ? e.label.join(", ") : "?");
   const chipW = (e: DrawnEdge) => Math.max(18, labelText(e).length * 7.4 + 10);
+
+  // ---- colours ----
+  const classes = useMemo(() => {
+    if (small) return [] as string[];
+    const seen: string[] = [];
+    for (const e of design.edges) if (e.label.length && !seen.includes(labelText(e))) seen.push(labelText(e));
+    return seen;
+  }, [design, small]);
+  const tooMany = classes.length > PALETTE.length;
+  const colourOn = saved.colour && !tooMany;
+  const edgeColours = (i: number): string[] => {
+    const e = design.edges[i];
+    if (!e || e.label.length === 0) return [];
+    if (small) return (built.expanded[i] ?? []).map((a) => PALETTE[alphabet.indexOf(a)]);
+    const k = classes.indexOf(labelText(e));
+    return k >= 0 && k < PALETTE.length ? [PALETTE[k]] : [];
+  };
 
   // ---- editing ----
   const commit = (next: Design) => {
@@ -193,7 +241,8 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   };
   const freeSpot = (): Pt => {
     const cands: { x: number; y: number; d: number }[] = [];
-    const xMin = vbX + R + START_LEN + 16, xMax = vbX + vbW - R - 14, yMin = vbY + R + 16, yMax = vbY + vbH - R - 16;
+    // Room above for a loop (about 2.2 radii) and below for a mark.
+    const xMin = vbX + R + START_LEN + 16, xMax = vbX + vbW - R - 14, yMin = vbY + 3 * R, yMax = vbY + vbH - 2 * R;
     for (let x = xMin; x <= xMax; x += 10) for (let y = yMin; y <= yMax; y += 10)
       cands.push({ x, y, d: x + 3 * Math.abs(y - view.cy) });
     cands.sort((a, b) => a.d - b.d);
@@ -231,6 +280,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     if (!sel) return;
     if (sel.kind === "state") {
       commit({
+        ...design,
         states: design.states.filter((q) => q.id !== sel.id),
         edges: design.edges.filter((e) => e.from !== sel.id && e.to !== sel.id),
         start: design.start === sel.id ? null : design.start,
@@ -238,6 +288,30 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     } else commit({ ...design, edges: design.edges.filter((_, i) => i !== sel.index) });
     setSel(null);
   };
+
+  // ---- conventions ----
+  const saveConv = () => {
+    if (!conv) return;
+    const name = conv.name.trim();
+    if (!/^[^\s,]{1,8}$/u.test(name) || alphabet.includes(name) || name.toLowerCase() === OTHER) { setNotice(MSG.convBadName(name)); return; }
+    if (conventions.some((c, i) => i !== conv.index && c.name === name)) { setNotice(MSG.convNameTaken(name)); return; }
+    if (!parseConvention(conv.def, alphabet)) { setNotice(MSG.convBadDef); return; }
+    const old = conv.index === null ? null : conventions[conv.index]?.name;
+    const next = conv.index === null
+      ? [...conventions, { name, def: conv.def.trim() }]
+      : conventions.map((c, i) => (i === conv.index ? { name, def: conv.def.trim() } : c));
+    // A renamed convention keeps the arrows that use it.
+    const edges = old && old !== name
+      ? design.edges.map((e) => ({ ...e, label: e.label.map((t) => (t === old ? name : t)) }))
+      : design.edges;
+    commit({ ...design, conventions: next, edges });
+    setConv(null); setNotice(null);
+  };
+  const deleteConv = (i: number) => {
+    commit({ ...design, conventions: conventions.filter((_, k) => k !== i) });
+    if (conv?.index === i) setConv(null);
+  };
+  const showConventions = alphabet.length > 3 || conventions.length > 0;
 
   // ---- the editor for a name or a label ----
   const openEditor = (t: Target) => {
@@ -256,8 +330,8 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       if (design.states.some((q) => q.id !== ed.id && q.name === name)) { setNotice(MSG.nameTaken(name)); return; }
       if (stateById.get(ed.id)?.name !== name) commit({ ...design, states: design.states.map((q) => (q.id === ed.id ? { ...q, name } : q)) });
     } else {
-      const label = parseLabel(ed.value, alphabet);
-      if (label === null) { setNotice(MSG.badLabel(alphabet)); return; }
+      const label = parseLabel(ed.value, alphabet, convNames);
+      if (label === null) { setNotice(small ? MSG.badLabel(alphabet) : MSG.badLabelLarge); return; }
       const old = design.edges[ed.index];
       if (old && old.label.join() !== label.join())
         commit({ ...design, edges: design.edges.map((e, i) => (i === ed.index ? { ...e, label } : e)) });
@@ -281,7 +355,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     for (const a of drawing) {
       const e = design.edges[a.index];
       const w = chipW(e);
-      const chip = !colour || e.label.length === 0;
+      const chip = !colourOn || e.label.length === 0;
       const inChip = chip && Math.abs(x - a.mid.x) <= w / 2 + 2 && Math.abs(y - a.mid.y) <= 11;
       const d = inChip ? 0 : distToSamples({ x, y }, a.samples);
       if (d <= slack && (!best || d < best.d)) best = { index: a.index, d };
@@ -446,12 +520,14 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
   // ---- check ----
   const check = () => {
+    const target = getTarget();
     if (!target) return;
     setSel(null); setNotice(null); setEditor(null);
     const no = (text: string, edges: number[] = [], states: string[] = []): Verdict => ({ tone: "wrong", text, edges, states });
     let v: Verdict;
     if (!design.start) v = no(MSG.noStart);
     else if (built.unlabeled.length) v = no(MSG.unlabeled(built.unlabeled.length), built.unlabeled);
+    else if (built.unknown.length) v = no(MSG.unknownName(built.unknown[0].token), built.unknown.map((u) => u.edge));
     else if (built.clashes.length) {
       const c = built.clashes[0];
       v = no(MSG.clash(nameOf(c.state), c.symbol), built.clashes.flatMap((x) => x.edges));
@@ -460,7 +536,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       if (miss.length) {
         v = no(MSG.missing(miss.slice(0, 3).map((m) => MSG.missingItem(nameOf(m.state), m.symbol)), miss.length - 3), [], miss.map((m) => m.state));
       } else {
-        const bad = compare(built.spec, alphabet, target);
+        const bad = compare(built.spec, alphabet, target.dfa, target.index);
         if (bad) {
           v = { ...no(MSG.wrong(bad.word, bad.accepts)), wrong: bad };
           setSaved((s) => ({ ...s, word: bad.word }));
@@ -468,7 +544,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
           setPlaying(false);
         } else {
           const n = design.states.length;
-          v = { tone: "right", text: `${MSG.right} ${n > target.n ? MSG.fewerPossible : MSG.fewestReached}`, edges: [], states: [] };
+          v = { tone: "right", text: `${MSG.right} ${n > target.dfa.n ? MSG.fewerPossible : MSG.fewestReached}`, edges: [], states: [] };
           setSaved((s) => ({ ...s, solved: true }));
         }
       }
@@ -490,7 +566,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const activeEdge = (() => {
     if (pos === 0 || stuckNow) return -1;
     const from = walk.path[pos - 1], to = walk.path[pos];
-    return design.edges.findIndex((e) => e.from === from && e.to === to && e.label.includes(word[pos - 1]));
+    return design.edges.findIndex((e, i) => e.from === from && e.to === to && (built.expanded[i] ?? []).includes(word[pos - 1]));
   })();
   const markEdges = new Set(verdict?.edges ?? []);
   const markStates = new Set(verdict?.states ?? []);
@@ -502,7 +578,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     if (!design.start) return MSG.noStart;
     if (stuckNow) {
       const s = walk.path[walk.stuckAt!]!, a = word[walk.stuckAt!];
-      const two = design.edges.filter((e) => e.from === s && e.label.includes(a)).length > 1;
+      const two = design.edges.filter((e, i) => e.from === s && (built.expanded[i] ?? []).includes(a)).length > 1;
       return two ? MSG.stuckTwo(nameOf(s), a) : MSG.stuckNone(nameOf(s), a);
     }
     const here = nameOf(current);
@@ -521,7 +597,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       : moveAll ? MSG.moveAllHint
       : selState ? MSG.stateSelected(selState.name)
       : sel?.kind === "edge" ? MSG.edgeSelected
-      : MSG.hint;
+      : small ? MSG.hint : MSG.hintLarge;
 
   // Where the editor box goes, in pixels inside the wrapper.
   const editorAt = (() => {
@@ -554,6 +630,46 @@ export default function MachineBuilder(props: MachineBuilderProps) {
         <Button onClick={reset}>Reset</Button>
         <Button main onClick={check}>Check</Button>
       </Row>
+
+      {showConventions && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: 8, fontSize: 12.5 }}>
+          <span style={{ color: MUTED, marginRight: 2 }}>{MSG.convTitle}</span>
+          {conventions.map((c, i) => {
+            const set = convMap[c.name];
+            return (
+              <span key={c.name} style={{ display: "inline-flex", alignItems: "center", border: "1px solid var(--rule)", borderRadius: 5, background: "var(--surface)" }}>
+                <button
+                  type="button"
+                  onClick={() => setConv({ index: i, name: c.name, def: c.def })}
+                  title={set ? MSG.convReads(set) : MSG.convBadDef}
+                  style={{ padding: "2px 8px", fontFamily: MONO, color: set ? INK : WRONG }}
+                >
+                  {c.name} = {c.def}
+                </button>
+                <button type="button" onClick={() => deleteConv(i)} aria-label={MSG.convDelete(c.name)} title={MSG.convDelete(c.name)}
+                  style={{ padding: "2px 7px", color: MUTED, borderLeft: "1px solid var(--rule)" }}>×</button>
+              </span>
+            );
+          })}
+          {conv ? (
+            <span style={{ display: "inline-flex", gap: 5, alignItems: "center", flexWrap: "wrap" }}>
+              <input autoFocus value={conv.name} onChange={(e) => setConv({ ...conv, name: e.target.value })} placeholder="V" maxLength={8}
+                aria-label={MSG.convNameLabel}
+                onKeyDown={(e) => { if (e.key === "Enter") saveConv(); else if (e.key === "Escape") setConv(null); }}
+                style={{ width: 60, fontFamily: MONO, fontSize: 13, padding: "2px 6px", border: `1px solid ${INK}`, borderRadius: 5, background: "var(--surface)", color: INK }} />
+              <span style={{ fontFamily: MONO }}>=</span>
+              <input value={conv.def} onChange={(e) => setConv({ ...conv, def: e.target.value })} placeholder={MSG.convDefPlaceholder}
+                aria-label={MSG.convDefLabel}
+                onKeyDown={(e) => { if (e.key === "Enter") saveConv(); else if (e.key === "Escape") setConv(null); }}
+                style={{ width: 200, fontFamily: MONO, fontSize: 13, padding: "2px 6px", border: `1px solid ${INK}`, borderRadius: 5, background: "var(--surface)", color: INK }} />
+              <Button main onClick={saveConv}>Save</Button>
+              <Button onClick={() => setConv(null)}>Cancel</Button>
+            </span>
+          ) : (
+            <Button onClick={() => setConv({ index: null, name: "", def: "" })} disabled={conventions.length >= MAX_CONVENTIONS}>{MSG.convAdd}</Button>
+          )}
+        </div>
+      )}
 
       <div ref={wrapRef} style={{ position: "relative" }}>
         <svg
@@ -595,16 +711,20 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             const isActive = activeEdge === a.index;
             const bad = markEdges.has(a.index);
             const e = design.edges[a.index];
-            const syms = colour && !bad ? alphabet.map((x, i) => (e.label.includes(x) ? i : -1)).filter((i) => i >= 0 && i < SYM_COLOUR.length) : [];
-            const stroke = bad ? WRONG : syms.length === 1 ? SYM_COLOUR[syms[0]] : syms.length > 1 ? SYM_COLOUR[0] : isActive ? INK : "var(--fsm-edge)";
-            const width = isActive ? 3.2 : colour && syms.length ? 2.3 : 1.6;
-            const head = syms.length > 1 ? INK : stroke;
+            const cols = colourOn && !bad ? edgeColours(a.index) : [];
+            const stroke = bad ? WRONG : cols.length ? cols[0] : isActive ? INK : "var(--fsm-edge)";
+            const width = isActive ? 3.2 : cols.length ? 2.3 : 1.6;
+            const head = cols.length > 1 ? INK : stroke;
+            const D = 7;
             return (
               <g key={`e${a.index}`} style={{ pointerEvents: "none" }}>
                 {isSel && <path d={a.d} fill="none" stroke="var(--fsm-select)" strokeWidth={10} strokeLinecap="round" />}
-                {isActive && colour && syms.length > 0 && <path d={a.d} fill="none" stroke="var(--fsm-select)" strokeWidth={9} strokeLinecap="round" />}
+                {isActive && cols.length > 0 && <path d={a.d} fill="none" stroke="var(--fsm-select)" strokeWidth={9} strokeLinecap="round" />}
                 <path d={a.d} fill="none" stroke={stroke} strokeWidth={width} strokeDasharray={bad ? "5 3" : undefined} />
-                {syms.length > 1 && <path d={a.d} fill="none" stroke={SYM_COLOUR[1]} strokeWidth={width} strokeDasharray="7 7" />}
+                {cols.slice(1).map((c, k) => (
+                  <path key={k} d={a.d} fill="none" stroke={c} strokeWidth={width}
+                    strokeDasharray={`${D} ${D * (cols.length - 1)}`} strokeDashoffset={-D * (k + 1)} />
+                ))}
                 <path d={a.head} fill={head} stroke={head} strokeWidth={0.8} strokeLinejoin="round" />
               </g>
             );
@@ -653,7 +773,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
           {drawing.map((a) => {
             const e = design.edges[a.index];
             if (editor?.kind === "label" && editor.index === a.index) return null;
-            if (colour && e.label.length > 0) return null;      // the colour is the label
+            if (colourOn && edgeColours(a.index).length > 0 && !markEdges.has(a.index)) return null;      // the colour is the label
             const w = chipW(e);
             const none = e.label.length === 0;
             const bad = markEdges.has(a.index);
@@ -671,7 +791,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
         {/* view controls, in the corner of the canvas */}
         <div style={{ position: "absolute", top: 8, right: 8, display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 4, alignItems: "center", maxWidth: "calc(100% - 16px)" }}>
-          <ViewButton onClick={() => setSaved((s) => ({ ...s, colour: !s.colour }))} pressed={colour} title={MSG.colourTitle}>{narrow ? MSG.colourShort : MSG.colour}</ViewButton>
+          <ViewButton onClick={() => setSaved((s) => ({ ...s, colour: !s.colour }))} pressed={colourOn} disabled={tooMany} title={tooMany ? MSG.tooManyColours(PALETTE.length) : MSG.colourTitle}>{narrow ? MSG.colourShort : MSG.colour}</ViewButton>
           <ViewButton onClick={() => { setMoveAll((m) => !m); setSel(null); }} pressed={moveAll} disabled={design.states.length === 0} title={MSG.moveAllTitle}>
             {narrow ? MSG.moveAllShort : MSG.moveAll}
           </ViewButton>
@@ -682,23 +802,30 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
         {/* the key to the colours, bottom left */}
         <div style={{ position: "absolute", left: 8, bottom: 22, pointerEvents: "none" }}>
-          {colour && (
-            <span style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 11.5, color: MUTED, background: "var(--surface)", padding: "2px 6px", borderRadius: 5, border: "1px solid var(--rule)" }}>
-              {alphabet.slice(0, 2).map((x, i) => (
-                <span key={x} style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
-                  <svg width={18} height={6} aria-hidden="true"><line x1={1} y1={3} x2={17} y2={3} stroke={SYM_COLOUR[i]} strokeWidth={2.5} strokeLinecap="round" /></svg>
-                  <span style={{ fontFamily: MONO, color: INK }}>{x}</span>
-                </span>
-              ))}
-              <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
-                <svg width={18} height={6} aria-hidden="true">
-                  <line x1={1} y1={3} x2={17} y2={3} stroke={SYM_COLOUR[0]} strokeWidth={2.5} />
-                  <line x1={1} y1={3} x2={17} y2={3} stroke={SYM_COLOUR[1]} strokeWidth={2.5} strokeDasharray="4 4" />
-                </svg>
-                <span style={{ fontFamily: MONO, color: INK }}>both</span>
+          {colourOn && (() => {
+            const entries: { text: string; cols: string[] }[] = small
+              ? [
+                  ...alphabet.map((x, k) => ({ text: x, cols: [PALETTE[k]] })),
+                  ...(built.expanded.some((x) => x.length > 1) ? [{ text: alphabet.length === 2 ? MSG.both : MSG.several, cols: alphabet.map((_, k) => PALETTE[k]) }] : []),
+                ]
+              : classes.map((t, k) => ({ text: t, cols: [PALETTE[k]] }));
+            if (entries.length === 0) return null;
+            return (
+              <span style={{ display: "inline-flex", flexWrap: "wrap", gap: "2px 9px", alignItems: "center", fontSize: 11.5, color: MUTED, background: "var(--surface)", padding: "2px 6px", borderRadius: 5, border: "1px solid var(--rule)", maxWidth: "100%" }}>
+                {entries.map((en) => (
+                  <span key={en.text} style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+                    <svg width={18} height={6} aria-hidden="true">
+                      {en.cols.map((c, k) => (
+                        <line key={k} x1={1} y1={3} x2={17} y2={3} stroke={c} strokeWidth={2.5}
+                          strokeDasharray={k === 0 ? undefined : `4 ${4 * (en.cols.length - 1)}`} strokeDashoffset={-4 * k} />
+                      ))}
+                    </svg>
+                    <span style={{ fontFamily: MONO, color: INK }}>{en.text}</span>
+                  </span>
+                ))}
               </span>
-            </span>
-          )}
+            );
+          })()}
         </div>
 
         {/* the resize bar */}
@@ -735,7 +862,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
           <input
             autoFocus
             value={editor.value}
-            maxLength={editor.kind === "name" ? MAX_NAME : 12}
+            maxLength={editor.kind === "name" ? MAX_NAME : 60}
             onChange={(e) => setEditor({ ...editor, value: e.target.value })}
             onFocus={(e) => e.target.select()}
             onKeyDown={(e) => {
@@ -744,13 +871,13 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             }}
             onBlur={() => closeEditor(true)}
             aria-label={editor.kind === "name" ? "Name of the state" : "Symbols this arrow reads, separated by commas"}
-            placeholder={editor.kind === "label" ? alphabet.join(", ") : ""}
+            placeholder={editor.kind === "label" ? (small ? alphabet.join(", ") : "a, other") : ""}
             style={{
               position: "absolute",
               left: editorAt.left,
               top: editorAt.top,
               transform: "translate(-50%, -50%)",
-              width: editor.kind === "name" ? 70 : 64,
+              width: editor.kind === "name" ? 70 : Math.min(220, Math.max(64, editor.value.length * 8.6 + 24)),
               textAlign: "center",
               fontFamily: MONO,
               fontSize: 14,
@@ -788,11 +915,11 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             {MSG.tryLabel}{" "}
             <input
               type="text"
-              inputMode="numeric"
+              inputMode={alphabet.every((c) => /[0-9]/.test(c)) ? "numeric" : "text"}
               value={word}
-              placeholder={MSG.placeholder}
+              placeholder={MSG.placeholder(alphabet)}
               onChange={(e) => {
-                const w = [...e.target.value].filter((c) => alphabet.includes(c)).join("").slice(0, MAX_WORD);
+                const w = cleanWord(e.target.value);
                 setSaved((s) => ({ ...s, word: w }));
               }}
               style={{

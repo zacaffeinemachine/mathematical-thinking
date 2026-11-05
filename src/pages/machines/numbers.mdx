@@ -8,6 +8,7 @@ blurb: The string is not a string any more, it is a number written in binary. Th
 description: "Design-a-machine problems where the input is read as a number."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="Even numbers">
 The string is a number written in binary, read left to right. Leading zeros
@@ -15,6 +16,7 @@ are allowed, and the empty string is not a number, so it must be rejected.
 
 Design a machine that accepts exactly the strings whose value is even.
 <Tests accept={["0", "10", "110", "00", "1010"]} reject={["", "1", "11", "101", "0111"]} />
+<MachineBuilder client:visible language="numbers/even" />
 </Problem>
 
 <Problem n={2} title="Divisible by four">
@@ -24,6 +26,7 @@ are allowed, and the empty string is not a number, so it must be rejected.
 Design a machine that accepts exactly the strings whose value is divisible
 by 4.
 <Tests accept={["0", "00", "100", "1000", "1100"]} reject={["", "1", "10", "110", "1010"]} />
+<MachineBuilder client:visible language="numbers/divisible-by-four" />
 </Problem>
 
 <Problem n={3} title="Divisible by six">
@@ -33,6 +36,7 @@ are allowed, and the empty string is not a number, so it must be rejected.
 Design a machine that accepts exactly the strings whose value is divisible
 by 6.
 <Tests accept={["0", "110", "1100", "010010"]} reject={["", "1", "10", "11", "111", "1101"]} />
+<MachineBuilder client:visible language="numbers/divisible-by-six" />
 </Problem>
 
 <Problem n={4} title="A remainder that is not zero">
@@ -42,6 +46,7 @@ are allowed, and the empty string is not a number, so it must be rejected.
 Design a machine that accepts exactly the strings whose value leaves remainder
 1 on division by 3.
 <Tests accept={["1", "100", "111", "1010", "0001"]} reject={["", "0", "10", "11", "110"]} />
+<MachineBuilder client:visible language="numbers/remainder-not-zero" />
 </Problem>
 
 <Problem n={5} title="Big enough" hard>
@@ -50,6 +55,7 @@ are allowed, and the empty string is not a number, so it must be rejected.
 
 Design a machine that accepts exactly the strings whose value is at least 8.
 <Tests accept={["1000", "1001", "01000", "11111", "0001111"]} reject={["", "0", "111", "0111", "00000", "1"]} />
+<MachineBuilder client:visible language="numbers/big-enough" />
 </Problem>
 
 <Problem n={6} title="Paying exactly five" alphabet="{1, 2}">
@@ -59,6 +65,7 @@ credits. The string is the sequence of coins in the order they went in.
 Design a machine that accepts exactly the sequences whose total value is
 exactly 5 credits.
 <Tests accept={["11111", "122", "212", "221", "2111"]} reject={["", "1", "1111", "22", "222", "111111"]} />
+<MachineBuilder client:visible language="numbers/paying-five" />
 </Problem>
 
 <Problem n={7} title="Paying a multiple of five" hard alphabet="{1, 2}">
@@ -68,6 +75,7 @@ credits. The string is the sequence of coins in the order they went in.
 Design a machine that accepts exactly the non-empty sequences whose total value
 is a multiple of 5.
 <Tests accept={["11111", "122", "22222", "1111111111"]} reject={["", "1", "11", "2", "22", "1111"]} />
+<MachineBuilder client:visible language="numbers/multiple-of-five" />
 </Problem>
 
 <Problem n={8} title="The number written backwards" hard>
@@ -79,4 +87,5 @@ string is not a number and must be rejected.
 Design a machine that accepts exactly the strings whose value under this
 backwards reading is divisible by 5.
 <Tests accept={["0", "00", "101", "0101", "1111"]} reject={["", "1", "10", "11", "110"]} />
+<MachineBuilder client:visible language="numbers/backwards" />
 </Problem>

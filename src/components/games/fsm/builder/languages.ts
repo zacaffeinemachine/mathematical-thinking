@@ -2,6 +2,7 @@
 // `language` prop of <MachineBuilder>. A language is a predicate on strings,
 // written from the problem statement and nothing else. It is the statement
 // in code, not a solution: no machine is written down here or anywhere else.
+// One file per page in languages/, merged below.
 //
 // The predicate ships to the browser (MDX cannot pass a function to an
 // island), so it lives here and the page names it by key.
@@ -12,52 +13,37 @@
 //     on the page against it, so a predicate and a statement that drift
 //     apart are caught.
 //   - Keys are "<page>/<problem>", unique across the site.
-//   - `bound` (default 8) must exceed the size of the smallest machine. The
-//     test checks that raising it changes nothing.
+//   - `bound` (default 8) must exceed the number of states of the smallest
+//     machine. The test checks that raising it changes nothing.
+//   - `longest`, for a finite language: no accepted string is longer than
+//     this. Suffixes of that length already tell any two states apart, so
+//     `bound` = `longest` + 1 is exact however many states the machine has.
+//     The test checks that every longer string is rejected.
+//   - `relevant`, for a large alphabet: the only symbols the language treats
+//     individually. Every other symbol must be interchangeable with every
+//     other (swapping one for another never changes the answer), and the
+//     check then treats them all as one. The test confirms the claim.
 
 export interface Language {
   alphabet: string[];
   accepts: (s: string) => boolean;
   bound?: number;
+  relevant?: string[];
+  longest?: number;
 }
 
-const B = ["0", "1"];
+// Re-exported before the page files are imported, so a page file that takes
+// LOWER from here finds it initialised.
+export { LOWER } from "./languages/alphabets.ts";
 
-export const LANGUAGES: Record<string, Language> = {
-  // ---- machines/ends-and-beginnings ----------------------------------------
-  "ends-and-beginnings/ends-1":        { alphabet: B, accepts: (s) => s.endsWith("1") },
-  "ends-and-beginnings/ends-00":       { alphabet: B, accepts: (s) => s.endsWith("00") },
-  "ends-and-beginnings/ends-010":      { alphabet: B, accepts: (s) => s.endsWith("010") },
-  "ends-and-beginnings/begins-1":      { alphabet: B, accepts: (s) => s.startsWith("1") },
-  "ends-and-beginnings/begins-00":     { alphabet: B, accepts: (s) => s.startsWith("00") },
-  // every 0 is immediately followed by a 1
-  "ends-and-beginnings/zero-then-one": {
-    alphabet: B,
-    accepts: (s) => [...s].every((c, i) => c !== "0" || s[i + 1] === "1"),
-  },
-  // every 1 is immediately preceded by a 0
-  "ends-and-beginnings/one-after-zero": {
-    alphabet: B,
-    accepts: (s) => [...s].every((c, i) => c !== "1" || (i > 0 && s[i - 1] === "0")),
-  },
-  // every 0 comes before every 1
-  "ends-and-beginnings/zeros-first": {
-    alphabet: B,
-    accepts: (s) => !s.includes("10"),
-  },
-  // length at least 1, first symbol equals last symbol
-  "ends-and-beginnings/same-ends": {
-    alphabet: B,
-    accepts: (s) => s.length >= 1 && s[0] === s[s.length - 1],
-  },
-  // begins with 01 and ends with 10
-  "ends-and-beginnings/both-ends": {
-    alphabet: B,
-    accepts: (s) => s.startsWith("01") && s.endsWith("10"),
-  },
-  // the first symbol appears again somewhere later
-  "ends-and-beginnings/first-again": {
-    alphabet: B,
-    accepts: (s) => s.length >= 2 && s.slice(1).includes(s[0]),
-  },
-};
+import { L as ends_and_beginnings } from "./languages/ends-and-beginnings.ts";
+import { L as counting } from "./languages/counting.ts";
+import { L as length } from "./languages/length.ts";
+import { L as somewhere_inside } from "./languages/somewhere-inside.ts";
+import { L as looking_back } from "./languages/looking-back.ts";
+import { L as exact_words } from "./languages/exact-words.ts";
+import { L as numbers } from "./languages/numbers.ts";
+import { L as two_conditions } from "./languages/two-conditions.ts";
+import { L as deep_end } from "./languages/deep-end.ts";
+
+export const LANGUAGES: Record<string, Language> = { ...ends_and_beginnings, ...counting, ...length, ...somewhere_inside, ...looking_back, ...exact_words, ...numbers, ...two_conditions, ...deep_end };

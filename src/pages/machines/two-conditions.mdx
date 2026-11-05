@@ -8,35 +8,41 @@ blurb: You have a machine for each of two properties. Now build one machine for 
 description: "Design-a-machine problems on combining two properties with and, or, and not."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="Both parities">
 Design a machine that accepts exactly the strings with an even number of `0`s **and** an even
 number of `1`s.
 <Tests accept={["", "00", "11", "0011", "1100", "0110"]} reject={["0", "1", "01", "10", "001", "0111"]} />
+<MachineBuilder client:visible language="two-conditions/both-parities" />
 </Problem>
 
 <Problem n={2} title="Either one">
 Design a machine that accepts exactly the strings that have an even number of `0`s **or** end in
 `1`, or both.
 <Tests accept={["", "1", "11", "011", "001", "0011", "1001"]} reject={["0", "10", "110", "000", "0100"]} />
+<MachineBuilder client:visible language="two-conditions/either-one" />
 </Problem>
 
 <Problem n={3} title="The opposite of a machine you have">
 Design a machine that accepts exactly the strings in which the number of `1`s
 is **not** divisible by 3.
 <Tests accept={["1", "11", "1111", "0101"]} reject={["", "0", "111", "111111", "010101"]} />
+<MachineBuilder client:visible language="two-conditions/opposite" />
 </Problem>
 
 <Problem n={4} title="One block wanted, another forbidden">
 Design a machine that accepts exactly the strings that contain `11` somewhere **and** do not
 contain `00` anywhere.
 <Tests accept={["11", "011", "110", "0110", "1101"]} reject={["", "1", "00", "1100", "0011", "0101"]} />
+<MachineBuilder client:visible language="two-conditions/wanted-and-forbidden" />
 </Problem>
 
 <Problem n={5} title="Two counts, either will do">
 Design a machine that accepts exactly the strings in which the number of `0`s
 is divisible by 3 **or** the number of `1`s is divisible by 4.
 <Tests accept={["", "000", "1111", "000111", "0001111"]} reject={["01", "001", "011", "0111", "0011"]} />
+<MachineBuilder client:visible language="two-conditions/two-counts" />
 </Problem>
 
 <Problem n={6} title="Exactly one of the two" hard>
@@ -46,10 +52,12 @@ the following two things is true:
 - the string begins with `1`;
 - the string ends with `1`.
 <Tests accept={["10", "100", "01", "011", "1000"]} reject={["", "0", "1", "11", "00", "101"]} />
+<MachineBuilder client:visible language="two-conditions/exactly-one" />
 </Problem>
 
 <Problem n={7} title="A count and a block together" hard>
 Design a machine that accepts exactly the strings that have even length
 **and** contain `101` somewhere inside.
 <Tests accept={["1010", "0101", "110100", "101001"]} reject={["", "101", "10101", "1100", "01"]} />
+<MachineBuilder client:visible language="two-conditions/count-and-block" />
 </Problem>

@@ -8,45 +8,53 @@ blurb: Hunting for a run of symbols anywhere in the string. The problems are all
 description: "Design-a-machine problems on finding a block of symbols somewhere inside the input."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="Two in a row">
 Design a machine that accepts exactly the strings that contain `00` somewhere inside.
 <Tests accept={["00", "100", "0011", "10010"]} reject={["", "0", "1", "0101", "1010"]} />
+<MachineBuilder client:visible language="somewhere-inside/two-in-a-row" />
 </Problem>
 
 <Problem n={2} title="Three in a row">
 Design a machine that accepts exactly the strings that contain `101` somewhere inside.
 <Tests accept={["101", "0101", "1011", "11010"]} reject={["", "10", "100", "0110", "1100"]} />
+<MachineBuilder client:visible language="somewhere-inside/three-in-a-row" />
 </Problem>
 
 <Problem n={3} title="Four in a row">
 Design a machine that accepts exactly the strings that contain `0110`
 somewhere inside.
 <Tests accept={["0110", "10110", "01100", "001101"]} reject={["", "011", "0101", "0111", "1100"]} />
+<MachineBuilder client:visible language="somewhere-inside/four-in-a-row" />
 </Problem>
 
 <Problem n={4} title="Never in a row">
 Design a machine that accepts exactly the strings that do **not** contain `11`
 anywhere.
 <Tests accept={["", "0", "1", "01", "1010", "0100"]} reject={["11", "011", "110", "1011"]} />
+<MachineBuilder client:visible language="somewhere-inside/never-in-a-row" />
 </Problem>
 
 <Problem n={5} title="Both of two blocks">
 Design a machine that accepts exactly the strings that contain `01` somewhere **and** contain `10`
 somewhere.
 <Tests accept={["010", "101", "0110", "1001"]} reject={["", "01", "10", "0011", "11"]} />
+<MachineBuilder client:visible language="somewhere-inside/both-blocks" />
 </Problem>
 
 <Problem n={6} title="A word in the middle of a sentence" alphabet="{a, b, c}">
 Design a machine that accepts exactly the strings that contain `abc`
 somewhere inside.
 <Tests accept={["abc", "aabc", "abcc", "cabca"]} reject={["", "ab", "acb", "abab", "bca"]} />
+<MachineBuilder client:visible language="somewhere-inside/word-in-the-middle" />
 </Problem>
 
 <Problem n={7} title="One block only if the other one turns up" hard>
 Design a machine that accepts exactly the strings that contain `00` **if**
 they contain `11`.
 <Tests accept={["", "01", "0100", "0011", "1100", "1010"]} reject={["11", "011", "110", "1101"]} />
+<MachineBuilder client:visible language="somewhere-inside/only-if-the-other" />
 </Problem>
 
 <Problem n={8} title="Once and once only" hard>
@@ -54,6 +62,7 @@ Design a machine that accepts exactly the strings that contain `11` exactly
 once. Overlapping counts as more than once, so `111` contains `11` twice:
 once at the first two symbols and once at the last two.
 <Tests accept={["11", "011", "110", "0110", "11010"]} reject={["", "1", "111", "1111", "11011"]} />
+<MachineBuilder client:visible language="somewhere-inside/once-only" />
 </Problem>
 
 <Problem n={9} title="A block in every other symbol" hard alphabet="the 26 lowercase letters">
@@ -65,4 +74,5 @@ Design a machine that accepts exactly the strings whose odd part contains
 `dfa` somewhere inside. Draw one arrow labelled `x` for "any other letter"
 rather than drawing twenty-six.
 <Tests accept={["dxfxa", "dafaa", "zzdxfxa", "dqfsa"]} reject={["", "dfa", "dxf", "xdxfxa", "adf"]} />
+<MachineBuilder client:visible language="somewhere-inside/every-other-symbol" />
 </Problem>

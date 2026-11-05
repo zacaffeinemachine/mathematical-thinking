@@ -8,6 +8,7 @@ blurb: Ten problems that need an idea before they need a diagram. Every one of t
 description: "The hardest design-a-machine problems in the chapter, all of them solvable."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="Scattered, not consecutive">
 Design a machine that accepts exactly the strings in which you can find a `0`,
@@ -15,6 +16,7 @@ then a `1` somewhere after it, then a `0` somewhere after that, then a `1`
 somewhere after that. The four symbols need not be next to one another, and
 anything at all may sit between them.
 <Tests accept={["0101", "010011", "00110101", "1010101", "0011011"]} reject={["", "0011", "0110", "1010", "1111", "01000"]} />
+<MachineBuilder client:visible language="deep-end/scattered-not-consecutive" />
 </Problem>
 <Problem n={2} title="One rule for each letter" alphabet="{x, y}">
 A block is one unbroken stretch of a single letter, taken as long as it will
@@ -26,6 +28,7 @@ has even length **and** every block of `y` has odd length. A string with no
 blocks of `y` in it meets the second condition, and a string with no blocks of
 `x` meets the first.
 <Tests accept={["", "y", "xx", "xxy", "yxxy", "yyy", "xxyyyxx"]} reject={["x", "yy", "xyx", "xxyy", "xxxy"]} />
+<MachineBuilder client:visible language="deep-end/one-rule-each-letter" />
 </Problem>
 <Problem n={3} title="Two patterns, equally often">
 Count how many times `01` appears in the string, counting a fresh appearance
@@ -34,6 +37,7 @@ at every position where it fits. Count `10` the same way.
 Design a machine that accepts exactly the strings in which the two counts are
 equal.
 <Tests accept={["", "0", "1", "010", "0110", "1001", "11011"]} reject={["01", "10", "0101", "1100", "0011", "100"]} />
+<MachineBuilder client:visible language="deep-end/two-patterns-equally" />
 </Problem>
 <Problem n={4} title="Even gaps between the ones">
 Design a machine that accepts exactly the strings in which every stretch of
@@ -41,6 +45,7 @@ Design a machine that accepts exactly the strings in which every stretch of
 first `1`, or after the last `1`, is not between two `1`s and is not
 restricted. A string with no `1`s in it is accepted.
 <Tests accept={["", "0", "000", "11", "1001", "100001", "0100110"]} reject={["101", "10001", "1101", "01010", "100010"]} />
+<MachineBuilder client:visible language="deep-end/even-gaps" />
 </Problem>
 <Problem n={5} title="Overlaps count">
 Count how many times `11` appears in the string, counting a fresh appearance
@@ -49,6 +54,7 @@ them and `1111` contains three.
 
 Design a machine that accepts exactly the strings in which that count is even.
 <Tests accept={["", "1", "111", "11011", "0000", "1110"]} reject={["11", "1111", "1101", "0110", "0011000"]} />
+<MachineBuilder client:visible language="deep-end/overlaps-count" />
 </Problem>
 <Problem n={6} title="The first block and the last" hard>
 A block of `1`s is one unbroken stretch of `1`s, taken as long as it will go.
@@ -60,6 +66,7 @@ and last block of `1`s are either both of even length or both of odd length. A
 string with only one block of `1`s has that one block as both its first and
 its last, so it is accepted, and a string with no `1`s at all is accepted too.
 <Tests accept={["", "0", "1", "11", "101", "1001", "11011", "0110", "1010101"]} reject={["1011", "1101", "10011", "111011", "110111"]} />
+<MachineBuilder client:visible language="deep-end/first-and-last-block" />
 </Problem>
 
 <Problem n={7} title="Never too close, never too far" hard>
@@ -71,6 +78,7 @@ Design a machine that accepts exactly the strings in which every one of those
 stretches is 1, 2 or 3 symbols long. A string with fewer than two `1`s has no
 such stretch and is accepted.
 <Tests accept={["", "0", "1", "101", "1001", "10001", "1010001"]} reject={["11", "1101", "100001", "0110", "1000010001"]} />
+<MachineBuilder client:visible language="deep-end/never-too-close" />
 </Problem>
 <Problem n={8} title="Twice over, without sharing" hard>
 Design a machine that accepts exactly the strings that contain two appearances
@@ -78,6 +86,7 @@ of `101` which do not overlap, meaning that no symbol of the string is used by
 both of them. Note that `10101` contains two appearances of `101`, but they
 share the middle `1`, so it must be rejected.
 <Tests accept={["101101", "1011101", "1010101", "0101010101"]} reject={["", "101", "10101", "1010", "11011"]} />
+<MachineBuilder client:visible language="deep-end/twice-without-sharing" />
 </Problem>
 <Problem n={9} title="Thirds, one letter or the other" hard>
 Design a machine that accepts exactly the strings for which at least one of
@@ -90,6 +99,7 @@ A block is one unbroken stretch of a single symbol, taken as long as it will
 go, and a string with no blocks of a given symbol meets that symbol's
 condition.
 <Tests accept={["", "000", "111", "111000", "0001", "1000"]} reject={["01", "110", "100", "0011", "10101"]} />
+<MachineBuilder client:visible language="deep-end/thirds-either-letter" />
 </Problem>
 <Problem n={10} title="Even blocks, counted in threes" alphabet="{x, y}" hard>
 A block of `x` is one unbroken stretch of `x`s, taken as long as it will go.
@@ -101,4 +111,5 @@ blocks of `x` of **even** length is a multiple of 3. A string with no blocks
 of even length in it has none of them, and zero is a multiple of 3, so it is
 accepted.
 <Tests accept={["", "y", "x", "xyx", "xxx", "xyxxxyx", "xxyxxyxx"]} reject={["xx", "xxyxx", "xxxx", "xxyy", "xxyxxyxxyxx"]} />
+<MachineBuilder client:visible language="deep-end/even-blocks-in-threes" />
 </Problem>

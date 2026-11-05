@@ -8,45 +8,53 @@ blurb: Rules about the second-to-last symbol, and worse. The machine cannot know
 description: "Design-a-machine problems about symbols counted backwards from the end of the input."
 ---
 import { Problem, Tests } from "../../components/games/fsm/Problem.tsx";
+import MachineBuilder from "../../components/games/fsm/builder/MachineBuilder.tsx";
 
 <Problem n={1} title="The last two agree">
 Design a machine that accepts exactly the strings of length at least 2 whose last two symbols are
 the same.
 <Tests accept={["00", "11", "100", "0111", "1100"]} reject={["", "0", "1", "01", "10", "0101"]} />
+<MachineBuilder client:visible language="looking-back/last-two-agree" />
 </Problem>
 
 <Problem n={2} title="The last two differ">
 Design a machine that accepts exactly the strings of length at least 2 whose
 last two symbols are different.
 <Tests accept={["01", "10", "001", "1110", "0101"]} reject={["", "0", "1", "00", "11", "0100"]} />
+<MachineBuilder client:visible language="looking-back/last-two-differ" />
 </Problem>
 
 <Problem n={3} title="Third from the end">
 Design a machine that accepts exactly the strings of length at least 3 whose third-to-last symbol
 is a `1`.
 <Tests accept={["100", "101", "110", "111", "01101"]} reject={["", "1", "11", "000", "0011"]} />
+<MachineBuilder client:visible language="looking-back/third-from-end" />
 </Problem>
 
 <Problem n={4} title="Three of a kind at the end">
 Design a machine that accepts exactly the strings of length at least 3 whose last three symbols are
 all the same.
 <Tests accept={["000", "111", "0111", "1000", "010000"]} reject={["", "11", "011", "0110", "1101"]} />
+<MachineBuilder client:visible language="looking-back/three-of-a-kind" />
 </Problem>
 
 <Problem n={5} title="The beginning meets the end" hard>
 Design a machine that accepts exactly the strings of length at least 2 whose
 **first** symbol is the same as the **second-to-last** symbol.
 <Tests accept={["00", "01", "10", "11", "1011", "0100101"]} reject={["", "0", "1", "0110", "1000", "0100011"]} />
+<MachineBuilder client:visible language="looking-back/beginning-meets-end" />
 </Problem>
 
 <Problem n={6} title="Fourth from the end" hard>
 Design a machine that accepts exactly the strings of length at least 4 whose
 fourth-to-last symbol is a `1`.
 <Tests accept={["1000", "1111", "01001", "1100"]} reject={["", "1", "111", "0000", "0100"]} />
+<MachineBuilder client:visible language="looking-back/fourth-from-end" />
 </Problem>
 
 <Problem n={7} title="A vote among the last three" hard>
 Design a machine that accepts exactly the strings of length at least 3 in which at least two of the
 last three symbols are `1`s.
 <Tests accept={["110", "011", "101", "111", "00011"]} reject={["", "1", "11", "000", "1000", "0100"]} />
+<MachineBuilder client:visible language="looking-back/vote" />
 </Problem>

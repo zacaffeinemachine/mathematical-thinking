@@ -29,18 +29,37 @@ export const MSG = {
   full: (n: number) => `The canvas holds at most ${n} states.`,
   edgeExists: (a: string, b: string) => `There is already an arrow from ${a} to ${b}. Double-click it to change its label.`,
   badLabel: (alphabet: string[]) => `A label may use only ${list(alphabet)}, separated by commas.`,
+  badLabelLarge: "A label may use single letters, the word other, and the names of your conventions, separated by commas.",
+  unknownName: (t: string) => `An arrow is labelled ${t}, but there is no convention called ${t}. It is marked.`,
   badName: "A name needs at least one letter or digit.",
   nameTaken: (n: string) => `Another state is already called ${n}.`,
 
   // Hints under the canvas.
   emptyCanvas: "Press Add start state to begin.",
   hint: "Click a state and then another to draw an arrow. Double-click a state to rename it, or an arrow to label it. Drag a state to move it, an arrow to bend it, or empty space to move the view.",
+  hintLarge: "Click a state and then another to draw an arrow. Double-click an arrow to label it: a letter, a convention, or other for every letter no other arrow from that state reads. Double-click a state to rename it.",
   stateSelected: (n: string) =>
     `${n} is selected. Click another state to draw an arrow from ${n}, or click ${n} again for an arrow back to itself. Click empty space to cancel.`,
   edgeSelected: "Drag the arrow to bend it. Double-click it to label it, or press Delete to remove it.",
   resize: "Drag to make the canvas taller or shorter",
   colour: "Colour-code arrows",
   colourShort: "Colour code",
+  tooManyColours: (n: number) => `There are more than ${n} different labels, too many to tell apart by colour.`,
+  both: "both",
+  several: "several",
+
+  // Conventions.
+  convTitle: "Conventions",
+  convAdd: "Add a convention",
+  convNameLabel: "Name of the convention",
+  convDefLabel: "Which symbols it stands for",
+  convDefPlaceholder: "all except a, d, f",
+  convBadName: (n: string) =>
+    n === "" ? "A convention needs a name." : `${n} cannot be the name of a convention. Use up to 8 characters, with no spaces or commas, that are not a symbol of the alphabet or the word other.`,
+  convNameTaken: (n: string) => `There is already a convention called ${n}.`,
+  convBadDef: "A convention lists symbols, such as a, e, i, o, u, or a range such as a-f, or starts with all except, such as all except a, d, f.",
+  convReads: (set: string[]) => `Stands for ${set.length} symbol${set.length === 1 ? "" : "s"}: ${set.join(" ")}`,
+  convDelete: (n: string) => `Delete the convention ${n}`,
   colourTitle: "Draw each arrow in the colour of the symbols it reads, instead of labelling it",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
@@ -54,7 +73,8 @@ export const MSG = {
 
   // The tape.
   tryLabel: "Try a string",
-  placeholder: "type 0s and 1s",
+  placeholder: (alphabet: string[]) =>
+    alphabet.join("") === "01" ? "type 0s and 1s" : alphabet.length > 6 ? "type a word" : `type a string of ${alphabet.join(" ")}`,
   atStart: (s: string) => `Not started. The machine is in ${s}, the start.`,
   midway: (k: number, n: number, s: string) => `Read ${k} of ${n}. The machine is in ${s}.`,
   endAccept: (s: string) => `It ends in ${s}, an accepting state. Accepted.`,
