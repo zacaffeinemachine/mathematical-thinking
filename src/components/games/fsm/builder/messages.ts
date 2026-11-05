@@ -45,6 +45,10 @@ export const MSG = {
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
   fit: "Fit canvas",
+  moveAll: "Move all",
+  moveAllShort: "Move",
+  moveAllTitle: "While this is on, drag anywhere on the canvas to move the whole machine",
+  moveAllHint: "Drag anywhere on the canvas to move the whole machine. Press Move all again, or Escape, to stop.",
   fitShort: "Fit",
   fitTitle: "Zoom and move the view so the whole machine fits",
 

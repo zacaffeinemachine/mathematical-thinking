@@ -11,6 +11,7 @@
 //   click a state or an arrow     select it, then Delete removes it
 //   drag the bar under the canvas make the canvas taller or shorter
 //   drag empty canvas             pan the view
+//   Move all, then drag anywhere  move the whole machine at once
 //   - / + / Fit canvas            zoom out, zoom in, frame the whole machine
 //   Colour-code arrows            draw each arrow in the colour of its symbols instead of labelling it
 //
@@ -68,7 +69,8 @@ type Target = { kind: "state"; id: string } | { kind: "edge"; index: number };
 type Drag =
   | { kind: "move"; id: string; offX: number; offY: number; cx: number; cy: number; moved: boolean; before: Design }
   | { kind: "edge"; index: number; cx: number; cy: number; moved: boolean; before: Design }
-  | { kind: "pan"; cx: number; cy: number; moved: boolean; from: View; scale: number };
+  | { kind: "pan"; cx: number; cy: number; moved: boolean; from: View; scale: number }
+  | { kind: "all"; cx: number; cy: number; moved: boolean; before: Design; scale: number };
 type Editor = { kind: "name"; id: string; value: string } | { kind: "label"; index: number; value: string };
 
 interface Verdict {
@@ -153,6 +155,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [pos, setPos] = useState<number>(0);
   const [playing, setPlaying] = useState(false);
+  const [moveAll, setMoveAll] = useState(false);       // while on, any drag moves every state together
   const undo = useRef<Design[]>([]);
   // The last click, and the drawing before it if that click drew an arrow,
   // so the second click of a double-click can take the arrow back.
@@ -202,6 +205,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   };
   const addState = (asStart: boolean) => {
     setNotice(null);
+    setMoveAll(false);
     if (asStart && design.start) { setNotice(MSG.startExists); return; }
     if (design.states.length >= MAX_STATES) { setNotice(MSG.full(MAX_STATES)); return; }
     const usedIds = new Set(design.states.map((q) => q.id));
@@ -313,6 +317,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     svgRef.current?.setPointerCapture(e.pointerId);
     svgRef.current?.focus({ preventScroll: true });
     setNotice(null);
+    if (moveAll) { setSel(null); setDrag({ kind: "all", cx: e.clientX, cy: e.clientY, moved: false, before: design, scale: s }); return; }
     const q = stateAt(x, y);
     if (q) { setDrag({ kind: "move", id: q.id, offX: x - q.x, offY: y - q.y, cx: e.clientX, cy: e.clientY, moved: false, before: design }); return; }
     const slack = (e.pointerType === "touch" ? 14 : 7) / s;
@@ -330,6 +335,14 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       const next = ed.from === ed.to ? { ...ed, angle: angleThrough(P, at) } : { ...ed, bend: bendThrough(P, Q, at) };
       setSaved((st) => ({ ...st, design: { ...st.design, edges: st.design.edges.map((x, i) => (i === drag.index ? next : x)) } }));
       if (!drag.moved) { setDrag({ ...drag, moved: true }); setSel({ kind: "edge", index: drag.index }); lastTap.current = null; }
+      return;
+    }
+    if (drag?.kind === "all") {
+      const dx = Math.round((e.clientX - drag.cx) / drag.scale / SNAP) * SNAP;
+      const dy = Math.round((e.clientY - drag.cy) / drag.scale / SNAP) * SNAP;
+      if (!drag.moved && Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) <= TAP_PX) return;
+      setSaved((st) => ({ ...st, design: { ...st.design, states: drag.before.states.map((q) => ({ ...q, x: world(q.x + dx), y: world(q.y + dy) })) } }));
+      if (!drag.moved) setDrag({ ...drag, moved: true });
       return;
     }
     if (drag?.kind === "pan") {
@@ -358,6 +371,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       tap({ kind: "state", id: d.id });
       return;
     }
+    if (d.kind === "all") { if (d.moved) undo.current.push(d.before); return; }
     if (d.kind === "edge") {
       if (d.moved) { undo.current.push(d.before); return; }
       tap({ kind: "edge", index: d.index });
@@ -369,7 +383,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (editor) return;
     if ((e.key === "Delete" || e.key === "Backspace") && sel) { e.preventDefault(); deleteSel(); }
-    else if (e.key === "Escape") setSel(null);
+    else if (e.key === "Escape") { setSel(null); setMoveAll(false); }
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); doUndo(); }
   };
 
@@ -504,6 +518,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   const selState = sel?.kind === "state" ? stateById.get(sel.id) : undefined;
   const hint =
     design.states.length === 0 ? MSG.emptyCanvas
+      : moveAll ? MSG.moveAllHint
       : selState ? MSG.stateSelected(selState.name)
       : sel?.kind === "edge" ? MSG.edgeSelected
       : MSG.hint;
@@ -564,7 +579,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             userSelect: "none",
             WebkitUserSelect: "none",
             outline: "none",
-            cursor: drag && "moved" in drag && drag.moved ? "grabbing" : "default",
+            cursor: drag && "moved" in drag && drag.moved ? "grabbing" : moveAll ? "move" : "default",
           }}
         >
           <defs>
@@ -657,6 +672,9 @@ export default function MachineBuilder(props: MachineBuilderProps) {
         {/* view controls, in the corner of the canvas */}
         <div style={{ position: "absolute", top: 8, right: 8, display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 4, alignItems: "center", maxWidth: "calc(100% - 16px)" }}>
           <ViewButton onClick={() => setSaved((s) => ({ ...s, colour: !s.colour }))} pressed={colour} title={MSG.colourTitle}>{narrow ? MSG.colourShort : MSG.colour}</ViewButton>
+          <ViewButton onClick={() => { setMoveAll((m) => !m); setSel(null); }} pressed={moveAll} disabled={design.states.length === 0} title={MSG.moveAllTitle}>
+            {narrow ? MSG.moveAllShort : MSG.moveAll}
+          </ViewButton>
           <ViewButton onClick={() => zoomBy(1 / 1.25)} disabled={view.z <= Z_MIN + 1e-6} title={MSG.zoomOut}>−</ViewButton>
           <ViewButton onClick={() => zoomBy(1.25)} disabled={view.z >= Z_MAX - 1e-6} title={MSG.zoomIn}>+</ViewButton>
           <ViewButton onClick={fit} title={MSG.fitTitle}>{narrow ? MSG.fitShort : MSG.fit}</ViewButton>
