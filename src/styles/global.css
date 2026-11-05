@@ -76,6 +76,10 @@
   --fsm-edge: #52525b;
   --fsm-lit: #e4e4e7;
   --fsm-select: rgba(24, 24, 27, 0.08);
+  /* The colour-coded view of the builder: blue for 0, orange for 1, a
+     pair that survives every common colour blindness. */
+  --fsm-sym0: #2563a8;
+  --fsm-sym1: #d9730d;
 
 }
 
@@ -143,6 +147,8 @@
   --fsm-edge: #a1a1aa;
   --fsm-lit: #3f3f46;
   --fsm-select: rgba(244, 244, 245, 0.10);
+  --fsm-sym0: #6aa6e6;
+  --fsm-sym1: #f0954a;
 
 }
 

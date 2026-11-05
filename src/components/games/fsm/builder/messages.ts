@@ -34,11 +34,19 @@ export const MSG = {
 
   // Hints under the canvas.
   emptyCanvas: "Press Add start state to begin.",
-  hint: "Click a state and then another to draw an arrow. Double-click a state to rename it, or an arrow to label it. Drag a state to move it, or an arrow to bend it.",
+  hint: "Click a state and then another to draw an arrow. Double-click a state to rename it, or an arrow to label it. Drag a state to move it, an arrow to bend it, or empty space to move the view.",
   stateSelected: (n: string) =>
     `${n} is selected. Click another state to draw an arrow from ${n}, or click ${n} again for an arrow back to itself. Click empty space to cancel.`,
   edgeSelected: "Drag the arrow to bend it. Double-click it to label it, or press Delete to remove it.",
   resize: "Drag to make the canvas taller or shorter",
+  colour: "Colour-code arrows",
+  colourShort: "Colour code",
+  colourTitle: "Draw each arrow in the colour of the symbols it reads, instead of labelling it",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  fit: "Fit canvas",
+  fitShort: "Fit",
+  fitTitle: "Zoom and move the view so the whole machine fits",
 
   // The tape.
   tryLabel: "Try a string",
