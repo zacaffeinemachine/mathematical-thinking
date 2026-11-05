@@ -113,3 +113,20 @@ for (const page of PAGES) {
     }
   });
 }
+
+test("drawn arrows: labels, clashes, unlabelled arrows", async () => {
+  const { specFromEdges, parseLabel } = await import("../src/components/games/fsm/builder/engine.ts");
+  const AB = ["0", "1"];
+  assert.deepEqual(parseLabel("1, 0", AB), ["0", "1"]);
+  assert.deepEqual(parseLabel(" 0 0 ", AB), ["0"]);
+  assert.deepEqual(parseLabel("", AB), []);
+  assert.equal(parseLabel("0,2", AB), null);
+  const r = specFromEdges(["P", "Q"], "P", [], [
+    { from: "P", to: "Q", label: ["0"] },
+    { from: "P", to: "P", label: ["0", "1"] },
+    { from: "Q", to: "P", label: [] },
+  ], AB);
+  assert.deepEqual(r.unlabeled, [2]);
+  assert.deepEqual(r.clashes, [{ state: "P", symbol: "0", edges: [0, 1] }]);
+  assert.deepEqual(r.spec.arrows, { P: { "1": "P" }, Q: {} });
+});

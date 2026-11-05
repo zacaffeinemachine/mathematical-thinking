@@ -1,71 +1,105 @@
-// The student builds a machine on a canvas, in the look of the circuit
-// builder (circuits/problems/CircuitBuilder.tsx): states are tinted
-// circles, each with one coloured knob per symbol, and an arrow is drawn by
-// dragging a knob onto a state. A state can never have two arrows for one
-// symbol, because each knob carries exactly one arrow.
-//
-// Below the canvas a tape runs any string through the machine as it stands:
-// the state the machine is in lights up like a bulb, and the arrow it just
-// took glows. Check decides exactly whether the machine accepts the strings
-// the problem asks for (engine.ts), and on a wrong machine loads the
-// shortest string it gets wrong onto the tape.
+// The student builds a machine on a canvas and checks it.
 //
 // Interaction (mouse, pen and touch all go through pointer events):
-//   tap Add a state            put a state on the canvas (the first is the start)
-//   drag a knob onto a state   draw that symbol's arrow (onto its own state: a loop)
-//   tap a knob, then a state   the same, without dragging
-//   drag a knob into space     delete its arrow
-//   drag a state               move it
-//   double-tap a state         make it accepting, or not
-//   tap a state or an arrow    select it, then its x badge (or Delete)
+//   Add start state / Add state   put a state on the canvas (one start only)
+//   click a state, then another   draw an arrow between them (the same state twice: a loop)
+//   double-click a state          rename it
+//   double-click an arrow         label it with the symbols it reads, e.g. "0, 1"
+//   click a state, then Accepting make it accepting, or not
+//   drag a state                  move it
+//   click a state or an arrow     select it, then Delete removes it
+//   drag the bar under the canvas make the canvas taller or shorter
+//
+// Below the canvas a tape runs any string through the machine as it stands.
+// Check decides exactly whether the machine accepts the strings the problem
+// asks for (engine.ts) and on a wrong machine loads the shortest string it
+// gets wrong onto the tape. The look is deliberately neutral: ink and greys,
+// with colour only in the verdict boxes.
+//
 // Work is saved in localStorage under qrmt.machines.v1:<page>:<id>.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GATE_INK } from "../../circuits/gateShapes";
 import { usePersistent } from "../../circuits/problems/storage";
 import { AuthorError, Button, Row, Status } from "../../circuits/problems/ui";
-import { checkMachine, minimalDfa, runMachine, type CheckResult, type MachineSpec } from "./engine";
-import { KNOB, R, START_LEN, distToSamples, layoutMachine, previewPath, type Pt } from "./geometry";
+import { compare, minimalDfa, missingArrows, parseLabel, runMachine, specFromEdges, type DrawnEdge } from "./engine";
+import { R, START_LEN, distToSamples, layoutEdges, type Pt } from "./geometry";
 import { LANGUAGES } from "./languages";
 import { MSG } from "./messages";
 
 const MONO = 'ui-monospace, "JetBrains Mono", Menlo, monospace';
 const SANS = "ui-sans-serif, system-ui";
+const INK = "var(--ink)";
+const MUTED = "var(--muted)";
 const WRONG = "var(--mcq-wrong)";
 const RIGHT = "var(--mcq-right)";
-const HILITE = "var(--accent)";
-const SYM_COLOR = ["var(--fsm-sym-a)", "var(--fsm-sym-b)", "#b45309"];
-const NAMES = "ABCDEFGHIJKL".split("");
-const MAX_STATES = 10;
+const NAMES = "ABCDEFGHIJKLMNOP".split("");
+const MAX_STATES = 12;
+const MAX_NAME = 6;
 const MAX_WORD = 32;
 const TAP_PX = 6;
+const DOUBLE_MS = 320;
 const SNAP = 5;
+const H_MIN = 220, H_MAX = 900;
 const STORE = "qrmt.machines.v1";
 
 export interface MachineBuilderProps {
   id?: string;           // unique on the page; defaults to the language key
   language: string;      // a key of LANGUAGES in languages.ts
-  width?: number;        // logical canvas size (default 600 by 300)
-  height?: number;
+  width?: number;        // logical canvas width (default 600)
+  height?: number;       // starting height (default 300); the student can drag it taller
 }
 
-interface BState { id: string; x: number; y: number; accepting: boolean }
-interface Design { states: BState[]; start: string | null; arrows: Record<string, Record<string, string>> }
-interface Saved { design: Design; word: string; solved: boolean }
+interface BState { id: string; name: string; x: number; y: number; accepting: boolean }
+interface Design { states: BState[]; start: string | null; edges: DrawnEdge[] }
+interface Saved { design: Design; word: string; solved: boolean; height: number | null }
 
+type Target = { kind: "state"; id: string } | { kind: "edge"; index: number };
 type Drag =
   | { kind: "move"; id: string; offX: number; offY: number; cx: number; cy: number; moved: boolean; before: Design }
-  | { kind: "knob"; state: string; sym: string; cx: number; cy: number; moved: boolean };
-type Sel = { kind: "state"; id: string } | { kind: "arrow"; from: string; sym: string } | null;
-type Knob = { state: string; sym: string };
+  | { kind: "edge"; index: number }
+  | { kind: "empty" };
+type Editor = { kind: "name"; id: string; value: string } | { kind: "label"; index: number; value: string };
 
-const emptyDesign = (): Design => ({ states: [], start: null, arrows: {} });
+interface Verdict {
+  tone: "right" | "wrong";
+  text: string;
+  edges: number[];
+  states: string[];
+  wrong?: { word: string; accepts: boolean };
+}
+
+const emptyDesign = (): Design => ({ states: [], start: null, edges: [] });
+const sameTarget = (a: Target | null, b: Target) =>
+  !!a && a.kind === b.kind && (a.kind === "state" ? a.id === (b as { id: string }).id : a.index === (b as { index: number }).index);
 
 export default function MachineBuilder(props: MachineBuilderProps) {
   const lang = LANGUAGES[props.language];
   const id = props.id ?? props.language;
   const alphabet = lang?.alphabet ?? ["0", "1"];
-  const symColor = (a: string) => SYM_COLOR[Math.max(0, alphabet.indexOf(a))] ?? GATE_INK;
+
+  // ---- saved state ----
+  const fresh = (): Saved => ({ design: emptyDesign(), word: "", solved: false, height: null });
+  const revive = (s: unknown): Saved | null => {
+    const v = s as Saved;
+    if (!v || !v.design || !Array.isArray(v.design.states) || !Array.isArray(v.design.edges)) return null;
+    const states = v.design.states
+      .filter((q) => q && typeof q.id === "string" && typeof q.name === "string" && Number.isFinite(q.x) && Number.isFinite(q.y))
+      .slice(0, MAX_STATES)
+      .map((q) => ({ id: q.id, name: q.name.slice(0, MAX_NAME) || "?", x: q.x, y: q.y, accepting: !!q.accepting }));
+    const ids = new Set(states.map((q) => q.id));
+    const seen = new Set<string>();
+    const edges = v.design.edges
+      .filter((e) => e && ids.has(e.from) && ids.has(e.to) && Array.isArray(e.label))
+      .filter((e) => { const k = `${e.from}>${e.to}`; if (seen.has(k)) return false; seen.add(k); return true; })
+      .map((e) => ({ from: e.from, to: e.to, label: alphabet.filter((a) => e.label.includes(a)) }));
+    const start = v.design.start && ids.has(v.design.start) ? v.design.start : null;
+    const word = typeof v.word === "string" ? [...v.word].filter((c) => alphabet.includes(c)).join("").slice(0, MAX_WORD) : "";
+    const height = Number.isFinite(v.height) ? Math.min(H_MAX, Math.max(H_MIN, v.height as number)) : null;
+    return { design: { states, start, edges }, word, solved: !!v.solved, height };
+  };
+  const [saved, setSaved, resetSaved] = usePersistent<Saved>(id, "machine-v2", fresh, revive, STORE);
+  const design = saved.design;
+  const word = saved.word;
 
   // ---- canvas geometry (narrow screens get fewer units across, as in the circuit builder) ----
   const boxRef = useRef<HTMLDivElement>(null);
@@ -80,83 +114,61 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   }, []);
   const fullW = props.width ?? 600;
   const W = boxW !== null && boxW < fullW * 0.8 ? Math.min(fullW, Math.max(360, Math.round(boxW / 0.8))) : fullW;
-  const H = props.height ?? 300;
+  const H = saved.height ?? props.height ?? 300;
   const xMin = R + START_LEN + 16, xMax = W - R - 14, yMin = R + 16, yMax = H - R - 16;
   const clampX = (x: number) => Math.min(Math.max(xMin, x), xMax);
   const clampY = (y: number) => Math.min(Math.max(yMin, y), yMax);
 
-  // ---- saved state ----
-  const fresh = (): Saved => ({ design: emptyDesign(), word: "", solved: false });
-  const revive = (s: unknown): Saved | null => {
-    const v = s as Saved;
-    if (!v || !v.design || !Array.isArray(v.design.states)) return null;
-    const states = v.design.states
-      .filter((q) => q && typeof q.id === "string" && Number.isFinite(q.x) && Number.isFinite(q.y))
-      .slice(0, MAX_STATES)
-      .map((q) => ({ id: q.id, x: q.x, y: q.y, accepting: !!q.accepting }));
-    const ids = new Set(states.map((q) => q.id));
-    const arrows: Design["arrows"] = {};
-    for (const q of states) {
-      arrows[q.id] = {};
-      for (const a of alphabet) {
-        const t = v.design.arrows?.[q.id]?.[a];
-        if (typeof t === "string" && ids.has(t)) arrows[q.id][a] = t;
-      }
-    }
-    const start = v.design.start && ids.has(v.design.start) ? v.design.start : states[0]?.id ?? null;
-    const word = typeof v.word === "string" ? [...v.word].filter((c) => alphabet.includes(c)).join("").slice(0, MAX_WORD) : "";
-    return { design: { states, start, arrows }, word, solved: !!v.solved };
-  };
-  const [saved, setSaved, resetSaved] = usePersistent<Saved>(id, "machine", fresh, revive, STORE);
-  const design = saved.design;
-  const word = saved.word;
-
   // ---- UI state ----
-  const [sel, setSel] = useState<Sel>(null);
+  const [sel, setSel] = useState<Target | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [armed, setArmed] = useState<Knob | null>(null);
-  const [hot, setHot] = useState<string | null>(null);
-  const [pointer, setPointer] = useState<Pt | null>(null);
-  const [result, setResult] = useState<CheckResult | null>(null);
+  const [editor, setEditorState] = useState<Editor | null>(null);
+  const edRef = useRef<Editor | null>(null);            // the live editor, so Enter and blur cannot both save it
+  const setEditor = (e: Editor | null) => { edRef.current = e; setEditorState(e); };
+  const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pos, setPos] = useState<number>(0);
   const [playing, setPlaying] = useState(false);
+  const [fired, setFired] = useState<Target | null>(null);     // a single click on a state, once it is known not to be a double
   const undo = useRef<Design[]>([]);
-  const lastTap = useRef<{ id: string; t: number } | null>(null);
+  const lastTap = useRef<{ target: Target; t: number } | null>(null);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
-  // The tape shows the end of the walk whenever the word changes.
   useEffect(() => { setPos(word.length); setPlaying(false); }, [word]);
+  useEffect(() => () => { if (tapTimer.current) clearTimeout(tapTimer.current); }, []);
 
   // ---- the machine and its drawing ----
-  const spec: MachineSpec = useMemo(() => ({
-    states: design.states.map((q) => q.id),
-    start: design.start,
-    accepting: design.states.filter((q) => q.accepting).map((q) => q.id),
-    arrows: design.arrows,
-  }), [design]);
-  const drawing = useMemo(() => layoutMachine(design.states, design.arrows, alphabet, design.start), [design, alphabet.join("")]);
   const stateById = useMemo(() => new Map(design.states.map((q) => [q.id, q])), [design]);
-  const walk = useMemo(() => runMachine(spec, word), [spec, word]);
+  const nameOf = (sid: string | null | undefined) => (sid ? stateById.get(sid)?.name ?? "?" : "?");
+  const built = useMemo(
+    () => specFromEdges(design.states.map((q) => q.id), design.start, design.states.filter((q) => q.accepting).map((q) => q.id), design.edges, alphabet),
+    [design, alphabet.join("")],
+  );
+  const drawing = useMemo(() => layoutEdges(design.states, design.edges, design.start), [design]);
+  const walk = useMemo(() => runMachine(built.spec, word), [built, word]);
   const target = useMemo(() => (lang ? minimalDfa(lang.alphabet, lang.accepts, lang.bound ?? 8) : null), [props.language]);
+  const labelText = (e: DrawnEdge) => (e.label.length ? e.label.join(", ") : "?");
+  const chipW = (e: DrawnEdge) => Math.max(18, labelText(e).length * 7.4 + 10);
 
   // ---- editing ----
   const commit = (next: Design) => {
     undo.current.push(design);
     if (undo.current.length > 60) undo.current.shift();
     setSaved((s) => ({ ...s, design: next }));
-    setResult(null);
+    setVerdict(null);
   };
   const doUndo = () => {
     const prev = undo.current.pop();
     if (!prev) return;
     setSaved((s) => ({ ...s, design: prev }));
-    setSel(null); setArmed(null); setResult(null); setNotice(null);
+    setSel(null); setEditor(null); setVerdict(null); setNotice(null);
   };
   const freeSpot = (): Pt => {
     const cands: { x: number; y: number; d: number }[] = [];
     for (let x = xMin; x <= xMax; x += 10) for (let y = yMin; y <= yMax; y += 10)
-      cands.push({ x, y, d: x + 3 * Math.abs(y - H / 2) });   // a row across the middle first, then above and below
+      cands.push({ x, y, d: x + 3 * Math.abs(y - H / 2) });
     cands.sort((a, b) => a.d - b.d);
     for (const gap of [4.8 * R, 3.6 * R, 2.6 * R]) {
       const c = cands.find((c) => design.states.every((q) => Math.hypot(q.x - c.x, q.y - c.y) >= gap));
@@ -164,39 +176,63 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     }
     return { x: (xMin + xMax) / 2, y: H / 2 };
   };
-  const addState = () => {
+  const addState = (asStart: boolean) => {
+    setNotice(null);
+    if (asStart && design.start) { setNotice(MSG.startExists); return; }
     if (design.states.length >= MAX_STATES) { setNotice(MSG.full(MAX_STATES)); return; }
-    const used = new Set(design.states.map((q) => q.id));
-    const name = NAMES.find((n) => !used.has(n))!;
+    const usedIds = new Set(design.states.map((q) => q.id));
+    let k = 1;
+    while (usedIds.has(`s${k}`)) k++;
+    const usedNames = new Set(design.states.map((q) => q.name));
+    const name = NAMES.find((n) => !usedNames.has(n)) ?? `S${k}`;
     const p = freeSpot();
-    commit({
-      states: [...design.states, { id: name, x: p.x, y: p.y, accepting: false }],
-      start: design.start ?? name,
-      arrows: { ...design.arrows, [name]: {} },
-    });
-    setSel({ kind: "state", id: name });
-    setArmed(null); setNotice(null);
+    const q: BState = { id: `s${k}`, name, x: p.x, y: p.y, accepting: false };
+    commit({ ...design, states: [...design.states, q], start: asStart ? q.id : design.start });
+    setSel(null); setEditor(null);
   };
-  const setArrow = (from: string, sym: string, to: string | null) => {
-    const row = { ...(design.arrows[from] ?? {}) };
-    if (to === null) delete row[sym]; else row[sym] = to;
-    commit({ ...design, arrows: { ...design.arrows, [from]: row } });
+  const connect = (from: string, to: string) => {
+    const at = design.edges.findIndex((e) => e.from === from && e.to === to);
+    if (at >= 0) { setSel({ kind: "edge", index: at }); setNotice(MSG.edgeExists(nameOf(from), nameOf(to))); return; }
+    commit({ ...design, edges: [...design.edges, { from, to, label: [] }] });
+    setSel({ kind: "edge", index: design.edges.length });
   };
   const toggleAccepting = (sid: string) =>
     commit({ ...design, states: design.states.map((q) => (q.id === sid ? { ...q, accepting: !q.accepting } : q)) });
-  const makeStart = (sid: string) => { if (design.start !== sid) commit({ ...design, start: sid }); };
   const deleteSel = () => {
     if (!sel) return;
     if (sel.kind === "state") {
-      const states = design.states.filter((q) => q.id !== sel.id);
-      const arrows: Design["arrows"] = {};
-      for (const q of states) {
-        arrows[q.id] = {};
-        for (const [a, t] of Object.entries(design.arrows[q.id] ?? {})) if (t !== sel.id) arrows[q.id][a] = t;
-      }
-      commit({ states, arrows, start: design.start === sel.id ? states[0]?.id ?? null : design.start });
-    } else setArrow(sel.from, sel.sym, null);
+      commit({
+        states: design.states.filter((q) => q.id !== sel.id),
+        edges: design.edges.filter((e) => e.from !== sel.id && e.to !== sel.id),
+        start: design.start === sel.id ? null : design.start,
+      });
+    } else commit({ ...design, edges: design.edges.filter((_, i) => i !== sel.index) });
     setSel(null);
+  };
+
+  // ---- the editor for a name or a label ----
+  const openEditor = (t: Target) => {
+    setSel(null);
+    if (t.kind === "state") { const q = stateById.get(t.id); if (q) setEditor({ kind: "name", id: q.id, value: q.name }); }
+    else { const e = design.edges[t.index]; if (e) setEditor({ kind: "label", index: t.index, value: e.label.join(", ") }); }
+  };
+  const closeEditor = (save: boolean) => {
+    const ed = edRef.current;
+    if (!ed) return;
+    setEditor(null);
+    if (!ed || !save) return;
+    if (ed.kind === "name") {
+      const name = ed.value.trim().slice(0, MAX_NAME);
+      if (!/[\p{L}\p{N}]/u.test(name)) { setNotice(MSG.badName); return; }
+      if (design.states.some((q) => q.id !== ed.id && q.name === name)) { setNotice(MSG.nameTaken(name)); return; }
+      if (stateById.get(ed.id)?.name !== name) commit({ ...design, states: design.states.map((q) => (q.id === ed.id ? { ...q, name } : q)) });
+    } else {
+      const label = parseLabel(ed.value, alphabet);
+      if (label === null) { setNotice(MSG.badLabel(alphabet)); return; }
+      const old = design.edges[ed.index];
+      if (old && old.label.join() !== label.join())
+        commit({ ...design, edges: design.edges.map((e, i) => (i === ed.index ? { ...e, label } : e)) });
+    }
   };
 
   // ---- pointer handling ----
@@ -209,114 +245,103 @@ export default function MachineBuilder(props: MachineBuilderProps) {
     const p = pt.matrixTransform(m.inverse());
     return { x: p.x, y: p.y, s: m.a || 1 };
   };
-  const radius = (e: React.PointerEvent, s: number) => (e.pointerType === "touch" ? 20 : e.pointerType === "pen" ? 13 : 10) / s;
-  const stateAt = (x: number, y: number, slack = 2) =>
-    [...design.states].reverse().find((q) => Math.hypot(q.x - x, q.y - y) <= R + slack) ?? null;
-  const badgePos = (): Pt | null => {
-    if (!sel) return null;
-    if (sel.kind === "state") {
-      const q = stateById.get(sel.id);
-      return q ? { x: q.x + R * 0.8 + 6, y: q.y - R * 0.8 - 6 } : null;
+  const stateAt = (x: number, y: number) =>
+    [...design.states].reverse().find((q) => Math.hypot(q.x - x, q.y - y) <= R + 3) ?? null;
+  const edgeAt = (x: number, y: number, slack: number) => {
+    let best: { index: number; d: number } | null = null;
+    for (const a of drawing) {
+      const e = design.edges[a.index];
+      const w = chipW(e);
+      const inChip = Math.abs(x - a.mid.x) <= w / 2 + 2 && Math.abs(y - a.mid.y) <= 11;
+      const d = inChip ? 0 : distToSamples({ x, y }, a.samples);
+      if (d <= slack && (!best || d < best.d)) best = { index: a.index, d };
     }
-    const a = drawing.arrows.find((x) => x.from === sel.from && x.sym === sel.sym);
-    return a ? { x: a.mid.x, y: a.mid.y - 14 } : null;
+    return best?.index ?? null;
   };
+
+  // A click is held back briefly, so a double-click is not also two clicks.
+  const tap = (t: Target) => {
+    const now = Date.now();
+    if (lastTap.current && sameTarget(lastTap.current.target, t) && now - lastTap.current.t < DOUBLE_MS) {
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      lastTap.current = null;
+      openEditor(t);
+      return;
+    }
+    lastTap.current = { target: t, t: now };
+    if (t.kind === "edge") { setSel(t); return; }        // selecting an arrow is harmless, do it at once
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => setFired(t), DOUBLE_MS);
+  };
+  useEffect(() => {
+    if (!fired || fired.kind !== "state") return;
+    setFired(null);
+    if (!stateById.has(fired.id)) return;
+    if (sel?.kind === "state" && stateById.has(sel.id)) connect(sel.id, fired.id);
+    else setSel(fired);
+  }, [fired]);
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
     const { x, y, s } = toLocal(e);
-    const Rh = radius(e, s);
     svgRef.current?.setPointerCapture(e.pointerId);
     svgRef.current?.focus({ preventScroll: true });
-    setPointer({ x, y });
     setNotice(null);
-
-    // 1. the delete badge
-    const bp = badgePos();
-    if (bp && Math.hypot(bp.x - x, bp.y - y) <= Math.max(11, Rh * 0.8)) { deleteSel(); return; }
-
-    // 2. a knob, unless the press is well inside a state
-    let knob: { k: (typeof drawing.knobs)[number]; d: number } | null = null;
-    for (const k of drawing.knobs) {
-      const d = Math.hypot(k.x - x, k.y - y);
-      if (d <= Math.max(KNOB + 2, Rh) && (!knob || d < knob.d)) knob = { k, d };
-    }
-    const inside = stateAt(x, y, -9);
-    if (knob && (!inside || knob.d <= KNOB)) {
-      setArmed(null); setSel(null);
-      setDrag({ kind: "knob", state: knob.k.state, sym: knob.k.sym, cx: e.clientX, cy: e.clientY, moved: false });
-      return;
-    }
-
-    // 3. a state
     const q = stateAt(x, y);
-    if (q) {
-      if (armed) { setArrow(armed.state, armed.sym, q.id); setArmed(null); setHot(null); return; }
-      setSel({ kind: "state", id: q.id });
-      setDrag({ kind: "move", id: q.id, offX: x - q.x, offY: y - q.y, cx: e.clientX, cy: e.clientY, moved: false, before: design });
-      return;
-    }
-    setArmed(null);
-
-    // 4. an arrow
-    let best: { a: (typeof drawing.arrows)[number]; d: number } | null = null;
-    for (const a of drawing.arrows) {
-      const d = distToSamples({ x, y }, a.samples);
-      if (d <= Math.max(6, Rh * 0.6) && (!best || d < best.d)) best = { a, d };
-    }
-    if (best) { setSel({ kind: "arrow", from: best.a.from, sym: best.a.sym }); return; }
-
-    // 5. empty canvas
-    setSel(null);
+    if (q) { setDrag({ kind: "move", id: q.id, offX: x - q.x, offY: y - q.y, cx: e.clientX, cy: e.clientY, moved: false, before: design }); return; }
+    const slack = (e.pointerType === "touch" ? 14 : 7) / s;
+    const ei = edgeAt(x, y, slack);
+    if (ei !== null) { setDrag({ kind: "edge", index: ei }); return; }
+    setDrag({ kind: "empty" });
   };
-
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (drag?.kind !== "move") return;
     const { x, y } = toLocal(e);
-    setPointer({ x, y });
-    const far = (d: { cx: number; cy: number }) => Math.hypot(e.clientX - d.cx, e.clientY - d.cy) > TAP_PX;
-    if (!drag) { if (armed) setHot(stateAt(x, y, 10)?.id ?? null); return; }
-    if (drag.kind === "move") {
-      if (!drag.moved && !far(drag)) return;
-      const nx = clampX(Math.round((x - drag.offX) / SNAP) * SNAP);
-      const ny = clampY(Math.round((y - drag.offY) / SNAP) * SNAP);
-      const q = stateById.get(drag.id);
-      if (q && (q.x !== nx || q.y !== ny))
-        setSaved((st) => ({ ...st, design: { ...st.design, states: st.design.states.map((p) => (p.id === drag.id ? { ...p, x: nx, y: ny } : p)) } }));
-      if (!drag.moved) setDrag({ ...drag, moved: true });
-      return;
-    }
-    if (!drag.moved && far(drag)) setDrag({ ...drag, moved: true });
-    setHot(stateAt(x, y, 10)?.id ?? null);
+    if (!drag.moved && Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) <= TAP_PX) return;
+    const nx = clampX(Math.round((x - drag.offX) / SNAP) * SNAP);
+    const ny = clampY(Math.round((y - drag.offY) / SNAP) * SNAP);
+    const q = stateById.get(drag.id);
+    if (q && (q.x !== nx || q.y !== ny))
+      setSaved((st) => ({ ...st, design: { ...st.design, states: st.design.states.map((p) => (p.id === drag.id ? { ...p, x: nx, y: ny } : p)) } }));
+    if (!drag.moved) setDrag({ ...drag, moved: true });
   };
-
-  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+  const onPointerUp = () => {
     const d = drag;
     setDrag(null);
-    setHot(null);
     if (!d) return;
-    const { x, y } = toLocal(e);
     if (d.kind === "move") {
-      if (d.moved) { undo.current.push(d.before); return; }
-      const now = Date.now();
-      if (lastTap.current && lastTap.current.id === d.id && now - lastTap.current.t < 400) {
-        toggleAccepting(d.id);
-        lastTap.current = null;
-      } else lastTap.current = { id: d.id, t: now };
+      if (d.moved) { undo.current.push(d.before); setVerdict(null); return; }
+      tap({ kind: "state", id: d.id });
       return;
     }
-    if (!d.moved) { setArmed({ state: d.state, sym: d.sym }); return; }
-    const q = stateAt(x, y, 10);
-    if (q) setArrow(d.state, d.sym, q.id);
-    else if (design.arrows[d.state]?.[d.sym] !== undefined) setArrow(d.state, d.sym, null);
+    if (d.kind === "edge") { tap({ kind: "edge", index: d.index }); return; }
+    lastTap.current = null;
+    setSel(null);
   };
-
   const onKeyDown = (e: React.KeyboardEvent) => {
+    if (editor) return;
     if ((e.key === "Delete" || e.key === "Backspace") && sel) { e.preventDefault(); deleteSel(); }
-    else if (e.key === "Escape") { setArmed(null); setSel(null); }
+    else if (e.key === "Escape") setSel(null);
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); doUndo(); }
   };
 
-  // Keep every state inside the canvas when it narrows.
+  // ---- the resize bar ----
+  const resizing = useRef<{ y: number; h: number; scale: number } | null>(null);
+  const onBarDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    resizing.current = { y: e.clientY, h: H, scale: svg.clientWidth / W || 1 };
+  };
+  const onBarMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = resizing.current;
+    if (!r) return;
+    const h = Math.min(H_MAX, Math.max(H_MIN, Math.round((r.h + (e.clientY - r.y) / r.scale) / 10) * 10));
+    if (h !== H) setSaved((s) => ({ ...s, height: h }));
+  };
+  const onBarUp = () => { resizing.current = null; };
+
+  // Keep every state inside the canvas when it narrows or gets shorter.
   useEffect(() => {
     if (design.states.some((q) => clampX(q.x) !== q.x || clampY(q.y) !== q.y))
       setSaved((st) => ({ ...st, design: { ...st.design, states: st.design.states.map((q) => ({ ...q, x: clampX(q.x), y: clampY(q.y) })) } }));
@@ -325,7 +350,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   // Clear a stale selection after undo or delete.
   useEffect(() => {
     if (sel?.kind === "state" && !stateById.has(sel.id)) setSel(null);
-    if (sel?.kind === "arrow" && design.arrows[sel.from]?.[sel.sym] === undefined) setSel(null);
+    if (sel?.kind === "edge" && !design.edges[sel.index]) setSel(null);
   }, [design]);
 
   // Play: walk the tape one symbol at a time.
@@ -338,21 +363,39 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
   // ---- check ----
   const check = () => {
-    if (!target || !lang) return;
-    setArmed(null); setSel(null); setNotice(null);
-    const r = checkMachine(spec, alphabet, target);
-    setResult(r);
-    if (r.status === "wrong") {
-      setSaved((s) => ({ ...s, word: r.word }));
-      setPos(r.word.length);
-      setPlaying(false);
+    if (!target) return;
+    setSel(null); setNotice(null); setEditor(null);
+    const no = (text: string, edges: number[] = [], states: string[] = []): Verdict => ({ tone: "wrong", text, edges, states });
+    let v: Verdict;
+    if (!design.start) v = no(MSG.noStart);
+    else if (built.unlabeled.length) v = no(MSG.unlabeled(built.unlabeled.length), built.unlabeled);
+    else if (built.clashes.length) {
+      const c = built.clashes[0];
+      v = no(MSG.clash(nameOf(c.state), c.symbol), built.clashes.flatMap((x) => x.edges));
+    } else {
+      const miss = missingArrows(built.spec, alphabet);
+      if (miss.length) {
+        v = no(MSG.missing(miss.slice(0, 3).map((m) => MSG.missingItem(nameOf(m.state), m.symbol)), miss.length - 3), [], miss.map((m) => m.state));
+      } else {
+        const bad = compare(built.spec, alphabet, target);
+        if (bad) {
+          v = { ...no(MSG.wrong(bad.word, bad.accepts)), wrong: bad };
+          setSaved((s) => ({ ...s, word: bad.word }));
+          setPos(bad.word.length);
+          setPlaying(false);
+        } else {
+          const n = design.states.length;
+          v = { tone: "right", text: `${MSG.right} ${n > target.n ? MSG.fewerPossible : MSG.fewestReached}`, edges: [], states: [] };
+          setSaved((s) => ({ ...s, solved: true }));
+        }
+      }
     }
-    if (r.status === "ok") setSaved((s) => ({ ...s, solved: true }));
+    setVerdict(v);
   };
   const reset = () => {
     resetSaved();
     undo.current = [];
-    setSel(null); setArmed(null); setResult(null); setNotice(null); setPlaying(false);
+    setSel(null); setEditor(null); setVerdict(null); setNotice(null); setPlaying(false);
   };
 
   // ---- author errors ----
@@ -361,205 +404,244 @@ export default function MachineBuilder(props: MachineBuilderProps) {
   // ---- what to highlight ----
   const current = walk.path[Math.min(pos, walk.path.length - 1)] ?? null;
   const stuckNow = walk.stuckAt !== null && pos > walk.stuckAt;
-  const activeArrow = pos > 0 && !stuckNow && walk.path[pos - 1] ? { from: walk.path[pos - 1]!, sym: word[pos - 1] } : null;
-  const badKnobs = new Set(result?.status === "missing" ? result.missing.map((m) => `${m.state}:${m.symbol}`) : []);
-  const endMark = result?.status === "wrong" && word === result.word && pos === word.length && current
-    ? { state: current, text: MSG.shouldEnd(!result.accepts) }
+  const activeEdge = (() => {
+    if (pos === 0 || stuckNow) return -1;
+    const from = walk.path[pos - 1], to = walk.path[pos];
+    return design.edges.findIndex((e) => e.from === from && e.to === to && e.label.includes(word[pos - 1]));
+  })();
+  const markEdges = new Set(verdict?.edges ?? []);
+  const markStates = new Set(verdict?.states ?? []);
+  const endMark = verdict?.wrong && word === verdict.wrong.word && pos === word.length && current
+    ? { state: current, text: MSG.shouldEnd(!verdict.wrong.accepts) }
     : null;
-  const dragKnob = drag?.kind === "knob" && drag.moved ? drag : null;
-  const pending = dragKnob ?? (armed && !drag ? { ...armed } : null);
-
-  const statusText = (r: CheckResult): { tone: "right" | "wrong"; text: string } => {
-    switch (r.status) {
-      case "no-states": return { tone: "wrong", text: MSG.noStates };
-      case "missing": return { tone: "wrong", text: MSG.missing(r.missing.length) };
-      case "wrong": return { tone: "wrong", text: MSG.wrong(r.word, r.accepts) };
-      case "ok": return { tone: "right", text: `${MSG.right} ${r.states > r.fewest ? MSG.fewerPossible : MSG.fewestReached}` };
-    }
-  };
 
   const tapeLine = (() => {
     if (!design.start) return MSG.noStart;
-    if (stuckNow) return MSG.stuck(walk.path[walk.stuckAt!]!, word[walk.stuckAt!]);
-    if (word.length === 0) return `${MSG.emptyWord} ${stateById.get(current!)?.accepting ? MSG.endAccept(current!) : MSG.endReject(current!)}`;
-    if (pos === 0) return MSG.atStart(current!);
-    if (pos < word.length) return MSG.midway(pos, word.length, current!);
-    return stateById.get(current!)?.accepting ? MSG.endAccept(current!) : MSG.endReject(current!);
+    if (stuckNow) {
+      const s = walk.path[walk.stuckAt!]!, a = word[walk.stuckAt!];
+      const two = design.edges.filter((e) => e.from === s && e.label.includes(a)).length > 1;
+      return two ? MSG.stuckTwo(nameOf(s), a) : MSG.stuckNone(nameOf(s), a);
+    }
+    const here = nameOf(current);
+    const ends = stateById.get(current ?? "")?.accepting ? MSG.endAccept(here) : MSG.endReject(here);
+    if (word.length === 0) return `${MSG.emptyWord} ${ends}`;
+    if (pos === 0) return MSG.atStart(here);
+    if (pos < word.length) return MSG.midway(pos, word.length, here);
+    return ends;
   })();
   const verdictTone: "right" | "wrong" | null =
     !design.start || pos < word.length || word.length === 0 ? null : stuckNow ? "wrong" : stateById.get(current ?? "")?.accepting ? "right" : "wrong";
 
   const selState = sel?.kind === "state" ? stateById.get(sel.id) : undefined;
-  const badge = badgePos();
+  const hint =
+    design.states.length === 0 ? MSG.emptyCanvas
+      : selState ? MSG.stateSelected(selState.name)
+      : sel?.kind === "edge" ? MSG.edgeSelected
+      : MSG.hint;
+
+  // Where the editor box goes, in pixels inside the wrapper.
+  const editorAt = (() => {
+    if (!editor || !svgRef.current || !wrapRef.current) return null;
+    const p = editor.kind === "name" ? stateById.get(editor.id) : drawing.find((a) => a.index === editor.index)?.mid;
+    if (!p) return null;
+    const m = svgRef.current.getScreenCTM();
+    if (!m) return null;
+    const pt = svgRef.current.createSVGPoint();
+    pt.x = p.x; pt.y = p.y;
+    const c = pt.matrixTransform(m);
+    const w = wrapRef.current.getBoundingClientRect();
+    return { left: c.x - w.left, top: c.y - w.top };
+  })();
+
+  const nameSize = (n: string) => (n.length <= 2 ? 15 : n.length <= 4 ? 13 : 11);
+  const gridId = `mgrid-${id.replace(/[^\w-]/g, "_")}`;
 
   // ---- drawing ----
   return (
     <div ref={boxRef} className="not-prose machine-builder" style={{ margin: "12px 0" }}>
-      {/* palette and key */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 6 }}>
-        <button
-          type="button"
-          onClick={addState}
-          className="rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors"
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px 3px 5px", background: "var(--surface)", fontSize: 12.5, fontWeight: 600, color: "var(--ink)" }}
+      <Row style={{ marginTop: 0, marginBottom: 8 }}>
+        <Button onClick={() => addState(true)} disabled={!!design.start}>Add start state</Button>
+        <Button onClick={() => addState(false)}>Add state</Button>
+      </Row>
+
+      <div ref={wrapRef} style={{ position: "relative" }}>
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${H}`}
+          tabIndex={0}
+          role="application"
+          aria-label="Machine canvas"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => setDrag(null)}
+          onKeyDown={onKeyDown}
+          style={{
+            width: "100%",
+            height: "auto",
+            display: "block",
+            background: "var(--surface)",
+            border: `1px solid ${verdict?.tone === "right" ? RIGHT : "var(--rule)"}`,
+            borderBottom: "none",
+            borderRadius: "6px 6px 0 0",
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            outline: "none",
+            cursor: drag?.kind === "move" && drag.moved ? "grabbing" : "default",
+          }}
         >
-          <svg width={18} height={18} viewBox="-10 -10 20 20" aria-hidden="true">
-            <circle r={8} fill="var(--fsm-state)" stroke={GATE_INK} strokeWidth={1.3} />
+          <defs>
+            <pattern id={gridId} width={20} height={20} patternUnits="userSpaceOnUse">
+              <circle cx={10} cy={10} r={0.9} fill="var(--rule)" />
+            </pattern>
+          </defs>
+          <rect x={0} y={0} width={W} height={H} fill={`url(#${gridId})`} />
+
+          {/* arrows */}
+          {drawing.map((a) => {
+            const isSel = sel?.kind === "edge" && sel.index === a.index;
+            const isActive = activeEdge === a.index;
+            const bad = markEdges.has(a.index);
+            const stroke = bad ? WRONG : isActive ? INK : "var(--fsm-edge)";
+            return (
+              <g key={`e${a.index}`} style={{ pointerEvents: "none" }}>
+                {isSel && <path d={a.d} fill="none" stroke="var(--fsm-select)" strokeWidth={10} strokeLinecap="round" />}
+                <path d={a.d} fill="none" stroke={stroke} strokeWidth={isActive ? 2.8 : 1.6} strokeDasharray={bad ? "5 3" : undefined} />
+                <path d={a.head} fill={stroke} stroke={stroke} strokeWidth={0.8} strokeLinejoin="round" />
+              </g>
+            );
+          })}
+
+          {/* the start arrow */}
+          {design.start && stateById.get(design.start) && (() => {
+            const q = stateById.get(design.start!)!;
+            const x0 = q.x - R - START_LEN - 2, x1 = q.x - R - 1.5;
+            return (
+              <g style={{ pointerEvents: "none" }}>
+                <line x1={x0} y1={q.y} x2={x1 - 8} y2={q.y} stroke={INK} strokeWidth={1.6} />
+                <path d={`M ${x1} ${q.y} L ${x1 - 9} ${q.y - 4} L ${x1 - 9} ${q.y + 4} Z`} fill={INK} />
+                <text x={x0} y={q.y - 7} fontSize={10.5} fontFamily={SANS} fill={MUTED}>start</text>
+              </g>
+            );
+          })()}
+
+          {/* states */}
+          {design.states.map((q) => {
+            const lit = current === q.id && !!design.start && !stuckNow;
+            const isSel = sel?.kind === "state" && sel.id === q.id;
+            const bad = markStates.has(q.id);
+            return (
+              <g key={q.id} transform={`translate(${q.x},${q.y})`} style={{ cursor: "pointer" }}>
+                {isSel && <circle r={R + 7} fill="var(--fsm-select)" />}
+                <circle r={R} fill={lit ? "var(--fsm-lit)" : "var(--surface)"} stroke={INK} strokeWidth={lit ? 2.4 : 1.5} />
+                {q.accepting && <circle r={R - 4.5} fill="none" stroke={INK} strokeWidth={1.2} />}
+                {editor?.kind === "name" && editor.id === q.id ? null : (
+                  <text y={nameSize(q.name) * 0.36} fontSize={nameSize(q.name)} fontFamily={MONO} fontWeight={600} textAnchor="middle" fill={INK} style={{ pointerEvents: "none" }}>
+                    {q.name}
+                  </text>
+                )}
+                {bad && <circle r={R + 6} fill="none" stroke={WRONG} strokeWidth={1.8} strokeDasharray="4 3" />}
+                {endMark && endMark.state === q.id && (
+                  <>
+                    <circle r={R + 7} fill="none" stroke={WRONG} strokeWidth={1.8} strokeDasharray="4 3" />
+                    <text y={R + 21} fontSize={10.5} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={WRONG}>{endMark.text}</text>
+                  </>
+                )}
+              </g>
+            );
+          })}
+
+          {/* labels, on top of everything */}
+          {drawing.map((a) => {
+            const e = design.edges[a.index];
+            if (editor?.kind === "label" && editor.index === a.index) return null;
+            const w = chipW(e);
+            const none = e.label.length === 0;
+            const bad = markEdges.has(a.index);
+            return (
+              <g key={`l${a.index}`} transform={`translate(${a.mid.x},${a.mid.y})`} style={{ cursor: "pointer" }}>
+                <rect x={-w / 2} y={-9.5} width={w} height={19} rx={4} fill="var(--surface)"
+                  stroke={bad ? WRONG : none ? MUTED : "var(--fsm-edge)"} strokeWidth={1} strokeDasharray={none ? "3 2" : undefined} />
+                <text y={4.2} fontSize={12} fontFamily={MONO} fontWeight={600} textAnchor="middle" fill={none ? MUTED : INK} style={{ pointerEvents: "none" }}>
+                  {labelText(e)}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* the resize bar */}
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label={MSG.resize}
+          title={MSG.resize}
+          onPointerDown={onBarDown}
+          onPointerMove={onBarMove}
+          onPointerUp={onBarUp}
+          onPointerCancel={onBarUp}
+          style={{
+            height: 14,
+            cursor: "ns-resize",
+            touchAction: "none",
+            border: `1px solid ${verdict?.tone === "right" ? RIGHT : "var(--rule)"}`,
+            borderTop: "1px dashed var(--rule)",
+            borderRadius: "0 0 6px 6px",
+            background: "var(--surface)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg width={36} height={6} aria-hidden="true">
+            <line x1={2} y1={1.5} x2={34} y2={1.5} stroke={MUTED} strokeWidth={1.2} strokeLinecap="round" />
+            <line x1={8} y1={4.5} x2={28} y2={4.5} stroke={MUTED} strokeWidth={1.2} strokeLinecap="round" />
           </svg>
-          Add a state
-        </button>
-        <span style={{ display: "inline-flex", flexWrap: "wrap", gap: "4px 12px", fontSize: 12, color: "var(--muted)", marginLeft: "auto" }}>
-          {alphabet.map((a) => (
-            <span key={a} style={{ display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
-              <svg width={30} height={14} viewBox="0 0 30 14" aria-hidden="true">
-                <line x1={2} y1={7} x2={22} y2={7} stroke={symColor(a)} strokeWidth={2} />
-                <path d="M 28 7 L 20 3 L 20 11 Z" fill={symColor(a)} />
-              </svg>
-              arrow for <code style={{ fontFamily: MONO, color: symColor(a), fontWeight: 700 }}>{a}</code>
-            </span>
-          ))}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <svg width={18} height={18} viewBox="-10 -10 20 20" aria-hidden="true">
-              <circle r={8.5} fill="var(--fsm-state-accept)" stroke={GATE_INK} strokeWidth={1.2} />
-              <circle r={5.5} fill="none" stroke={GATE_INK} strokeWidth={1} />
-            </svg>
-            accepting
-          </span>
-        </span>
-      </div>
+        </div>
 
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${W} ${H}`}
-        tabIndex={0}
-        role="application"
-        aria-label="Machine canvas"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => { setDrag(null); setHot(null); }}
-        onPointerLeave={() => { if (!drag) setHot(null); }}
-        onKeyDown={onKeyDown}
-        style={{
-          width: "100%",
-          maxWidth: W * 1.1,
-          height: "auto",
-          display: "block",
-          margin: "0 auto",
-          background: "var(--surface)",
-          border: `1px solid ${result?.status === "ok" ? RIGHT : "var(--rule)"}`,
-          borderRadius: 6,
-          touchAction: "none",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          outline: "none",
-          cursor: drag?.kind === "move" ? "grabbing" : "default",
-        }}
-      >
-        <defs>
-          <pattern id={`mgrid-${id.replace(/[^\w-]/g, "_")}`} width={20} height={20} patternUnits="userSpaceOnUse">
-            <circle cx={10} cy={10} r={0.9} fill="var(--rule)" />
-          </pattern>
-        </defs>
-        <rect x={0} y={0} width={W} height={H} fill={`url(#mgrid-${id.replace(/[^\w-]/g, "_")})`} />
-
-        {/* arrows */}
-        {drawing.arrows.map((a) => {
-          const isSel = sel?.kind === "arrow" && sel.from === a.from && sel.sym === a.sym;
-          const isActive = activeArrow && activeArrow.from === a.from && activeArrow.sym === a.sym;
-          const lifted = dragKnob && dragKnob.state === a.from && dragKnob.sym === a.sym;
-          const c = symColor(a.sym);
-          return (
-            <g key={`${a.from}:${a.sym}`} style={{ pointerEvents: "none" }} opacity={lifted ? 0.25 : 1}>
-              {isSel && <path d={a.d} fill="none" stroke={HILITE} strokeOpacity={0.35} strokeWidth={10} strokeLinecap="round" />}
-              {isActive && <path d={a.d} fill="none" stroke="var(--bulb-glow)" strokeWidth={11} strokeLinecap="round" />}
-              <path d={a.d} fill="none" stroke={c} strokeWidth={isActive ? 3.2 : 1.9} />
-              <path d={a.head} fill={c} stroke={c} strokeWidth={isActive ? 1.5 : 0.6} strokeLinejoin="round" />
-            </g>
-          );
-        })}
-
-        {/* the start arrow */}
-        {design.start && stateById.get(design.start) && (() => {
-          const q = stateById.get(design.start!)!;
-          const x0 = q.x - R - START_LEN - 2, x1 = q.x - R - 1.5;
-          return (
-            <g style={{ pointerEvents: "none" }}>
-              <line x1={x0} y1={q.y} x2={x1 - 8} y2={q.y} stroke={GATE_INK} strokeWidth={1.8} />
-              <path d={`M ${x1} ${q.y} L ${x1 - 9} ${q.y - 4.5} L ${x1 - 9} ${q.y + 4.5} Z`} fill={GATE_INK} />
-              <text x={x0} y={q.y - 7} fontSize={10.5} fontFamily={SANS} fill="var(--muted)">start</text>
-            </g>
-          );
-        })()}
-
-        {/* states */}
-        {design.states.map((q) => {
-          const lit = current === q.id && !!design.start;
-          const isSel = sel?.kind === "state" && sel.id === q.id;
-          const isHot = hot === q.id && !!pending;
-          return (
-            <g key={q.id} transform={`translate(${q.x},${q.y})`} style={{ cursor: "grab" }}>
-              {isSel && <circle r={R + 7} fill="var(--accent-soft)" stroke={HILITE} strokeWidth={1.2} strokeDasharray="4 3" />}
-              {lit && <circle r={R + 9} fill="var(--bulb-glow)" />}
-              <circle r={R} fill={lit ? "var(--bulb-lit)" : q.accepting ? "var(--fsm-state-accept)" : "var(--fsm-state)"} stroke={GATE_INK} strokeWidth={1.5} />
-              {q.accepting && <circle r={R - 4.5} fill="none" stroke={lit ? "#1A1008" : GATE_INK} strokeWidth={1.3} />}
-              {isHot && <circle r={R + 5} fill="none" stroke={HILITE} strokeWidth={2.2} />}
-              <text y={5} fontSize={15} fontFamily={MONO} fontWeight={700} textAnchor="middle" fill={lit ? "#1A1008" : GATE_INK} style={{ pointerEvents: "none" }}>
-                {q.id}
-              </text>
-              {endMark && endMark.state === q.id && (
-                <>
-                  <circle r={R + 8} fill="none" stroke={WRONG} strokeWidth={2.2} strokeDasharray="4 3" />
-                  <text y={R + 22} fontSize={10.5} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={WRONG}>{endMark.text}</text>
-                </>
-              )}
-            </g>
-          );
-        })}
-
-        {/* knobs */}
-        {drawing.knobs.map((k) => {
-          const c = symColor(k.sym);
-          const isPending = pending && pending.state === k.state && pending.sym === k.sym;
-          const bad = badKnobs.has(`${k.state}:${k.sym}`);
-          return (
-            <g key={`k-${k.state}:${k.sym}`} transform={`translate(${k.x},${k.y})`} style={{ cursor: "crosshair" }}>
-              {(bad || isPending) && <circle r={KNOB + 4.5} fill="none" stroke={bad ? WRONG : HILITE} strokeWidth={2} />}
-              <circle r={KNOB} fill={k.filled ? c : "var(--surface)"} stroke={k.filled ? "var(--surface)" : c} strokeWidth={k.filled ? 1.3 : 1.7} />
-              <text y={3.4} fontSize={9.5} fontFamily={MONO} fontWeight={700} textAnchor="middle" fill={k.filled ? "var(--surface)" : c} style={{ pointerEvents: "none" }}>
-                {k.sym}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* the arrow being drawn */}
-        {pending && (() => {
-          const from = stateById.get(pending.state);
-          const k = drawing.knobs.find((x) => x.state === pending.state && x.sym === pending.sym);
-          if (!from || !k) return null;
-          const to = hot ? stateById.get(hot) ?? null : null;
-          const d = previewPath(from, k, to, dragKnob ? pointer : null);
-          return d ? <path d={d} fill="none" stroke={symColor(pending.sym)} strokeWidth={2} strokeDasharray="5 4" style={{ pointerEvents: "none" }} /> : null;
-        })()}
-
-        {/* delete badge */}
-        {badge && (
-          <g style={{ cursor: "pointer" }} aria-label="Delete the selected item">
-            <circle cx={badge.x} cy={badge.y} r={10} fill="var(--surface)" stroke={WRONG} strokeWidth={1.6} />
-            <path d={`M ${badge.x - 4} ${badge.y - 4} L ${badge.x + 4} ${badge.y + 4} M ${badge.x + 4} ${badge.y - 4} L ${badge.x - 4} ${badge.y + 4}`} stroke={WRONG} strokeWidth={1.8} />
-          </g>
+        {/* the name or label being typed */}
+        {editor && editorAt && (
+          <input
+            autoFocus
+            value={editor.value}
+            maxLength={editor.kind === "name" ? MAX_NAME : 12}
+            onChange={(e) => setEditor({ ...editor, value: e.target.value })}
+            onFocus={(e) => e.target.select()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); closeEditor(true); svgRef.current?.focus({ preventScroll: true }); }
+              else if (e.key === "Escape") { e.preventDefault(); closeEditor(false); svgRef.current?.focus({ preventScroll: true }); }
+            }}
+            onBlur={() => closeEditor(true)}
+            aria-label={editor.kind === "name" ? "Name of the state" : "Symbols this arrow reads, separated by commas"}
+            placeholder={editor.kind === "label" ? alphabet.join(", ") : ""}
+            style={{
+              position: "absolute",
+              left: editorAt.left,
+              top: editorAt.top,
+              transform: "translate(-50%, -50%)",
+              width: editor.kind === "name" ? 70 : 64,
+              textAlign: "center",
+              fontFamily: MONO,
+              fontSize: 14,
+              padding: "3px 4px",
+              border: `1.5px solid ${INK}`,
+              borderRadius: 5,
+              background: "var(--surface)",
+              color: INK,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+              outline: "none",
+            }}
+          />
         )}
-      </svg>
-
-      <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6, minHeight: 18 }}>
-        {armed ? MSG.armed : design.states.length === 0 ? MSG.emptyCanvas : MSG.hint}
       </div>
+
+      <div style={{ fontSize: 12.5, color: MUTED, marginTop: 6, minHeight: 18 }}>{hint}</div>
 
       {/* the tape */}
       <div style={{ marginTop: 10, padding: "10px 12px", border: "1px solid var(--rule)", borderRadius: 6, background: "var(--bg)" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-          <label style={{ fontSize: 12, color: "var(--muted)", letterSpacing: "0.04em" }}>
+          <label style={{ fontSize: 12, color: MUTED, letterSpacing: "0.04em" }}>
             {MSG.tryLabel}{" "}
             <input
               type="text"
@@ -572,7 +654,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
               }}
               style={{
                 fontFamily: MONO, fontSize: 14, padding: "3px 8px", width: 170, marginLeft: 4,
-                border: "1px solid var(--rule)", borderRadius: 5, background: "var(--surface)", color: "var(--ink)",
+                border: "1px solid var(--rule)", borderRadius: 5, background: "var(--surface)", color: INK,
               }}
               aria-label="A string to run through the machine"
             />
@@ -580,7 +662,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
           <Button onClick={() => { setPlaying(false); setPos(0); }} disabled={pos === 0}>Start</Button>
           <Button onClick={() => { setPlaying(false); setPos((p) => Math.max(0, p - 1)); }} disabled={pos === 0}>Back</Button>
           <Button onClick={() => { setPlaying(false); setPos((p) => Math.min(word.length, p + 1)); }} disabled={pos >= word.length}>Step</Button>
-          <Button onClick={() => { if (playing) setPlaying(false); else { setPos(0); setPlaying(true); } }} disabled={word.length === 0} pressed={playing}>
+          <Button onClick={() => { if (playing) setPlaying(false); else { setPos(0); setPlaying(true); } }} disabled={word.length === 0}>
             {playing ? "Pause" : "Play"}
           </Button>
         </div>
@@ -596,12 +678,12 @@ export default function MachineBuilder(props: MachineBuilderProps) {
                   onClick={() => { setPlaying(false); setPos(i + 1); }}
                   title={`Show the machine after reading ${i + 1} symbol${i === 0 ? "" : "s"}`}
                   style={{
-                    width: 24, height: 28, fontFamily: MONO, fontSize: 14, fontWeight: 700,
+                    width: 24, height: 28, fontFamily: MONO, fontSize: 14, fontWeight: 600,
                     borderRadius: 4,
-                    border: `1.5px solid ${next ? HILITE : read ? symColor(c) : "var(--rule)"}`,
-                    background: read ? "var(--surface)" : "transparent",
-                    color: read ? symColor(c) : "var(--muted)",
-                    boxShadow: next ? "0 3px 0 -1px var(--accent)" : undefined,
+                    border: `1.5px solid ${next ? INK : read ? "var(--fsm-edge)" : "var(--rule)"}`,
+                    background: read ? "var(--fsm-lit)" : "var(--surface)",
+                    color: read ? INK : MUTED,
+                    boxShadow: next ? `0 3px 0 -1px var(--ink)` : undefined,
                   }}
                 >
                   {c}
@@ -610,7 +692,7 @@ export default function MachineBuilder(props: MachineBuilderProps) {
             })}
           </div>
         )}
-        <div style={{ marginTop: 8, fontSize: 13, color: verdictTone === "right" ? RIGHT : verdictTone === "wrong" ? WRONG : "var(--ink)", fontWeight: verdictTone ? 600 : 400 }}>
+        <div style={{ marginTop: 8, fontSize: 13, color: verdictTone === "right" ? RIGHT : verdictTone === "wrong" ? WRONG : INK, fontWeight: verdictTone ? 600 : 400 }}>
           {tapeLine}
         </div>
       </div>
@@ -627,15 +709,16 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
       <Row>
         <Button main onClick={check}>Check</Button>
-        <Button onClick={doUndo} disabled={undo.current.length === 0}>Undo</Button>
+        <Button onClick={() => selState && toggleAccepting(selState.id)} disabled={!selState}>
+          {selState?.accepting ? "Not accepting" : "Accepting"}
+        </Button>
         <Button onClick={deleteSel} disabled={!sel}>Delete</Button>
-        <Button onClick={() => selState && toggleAccepting(selState.id)} disabled={!selState} pressed={!!selState?.accepting}>Accepting</Button>
-        <Button onClick={() => selState && makeStart(selState.id)} disabled={!selState || selState.id === design.start}>Make it the start</Button>
+        <Button onClick={doUndo} disabled={undo.current.length === 0}>Undo</Button>
         <Button onClick={reset}>Reset</Button>
       </Row>
 
       {notice && <Status tone="wrong">{notice}</Status>}
-      {result && !notice && <Status tone={statusText(result).tone}>{statusText(result).text}</Status>}
+      {verdict && !notice && <Status tone={verdict.tone}>{verdict.text}</Status>}
     </div>
   );
 }

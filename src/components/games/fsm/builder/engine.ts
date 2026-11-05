@@ -154,3 +154,42 @@ export function checkMachine(m: MachineSpec, alphabet: Sym[], target: Dfa): Chec
   if (bad) return { status: "wrong", word: bad.word, accepts: bad.accepts };
   return { status: "ok", states: m.states.length, fewest: target.n };
 }
+
+// ---- drawn arrows ----------------------------------------------------------------
+//
+// On the canvas an arrow joins two states and is labelled with the symbols it
+// reads, so a drawing can have an unlabelled arrow, or two arrows leaving one
+// state with the same symbol. specFromEdges turns the drawing into a machine
+// and reports both. An arrow for a symbol is entered in the machine only when
+// it is the one arrow leaving its state with that symbol.
+
+export interface DrawnEdge { from: string; to: string; label: string[] }
+
+export function specFromEdges(
+  states: string[],
+  start: string | null,
+  accepting: string[],
+  edges: DrawnEdge[],
+  alphabet: Sym[],
+): { spec: MachineSpec; unlabeled: number[]; clashes: { state: string; symbol: Sym; edges: number[] }[] } {
+  const arrows: MachineSpec["arrows"] = Object.fromEntries(states.map((s) => [s, {}]));
+  const unlabeled: number[] = [];
+  const clashes: { state: string; symbol: Sym; edges: number[] }[] = [];
+  edges.forEach((e, i) => { if (e.label.length === 0) unlabeled.push(i); });
+  for (const s of states)
+    for (const a of alphabet) {
+      const hits = edges.map((e, i) => (e.from === s && e.label.includes(a) ? i : -1)).filter((i) => i >= 0);
+      if (hits.length === 1) arrows[s][a] = edges[hits[0]].to;
+      else if (hits.length > 1) clashes.push({ state: s, symbol: a, edges: hits });
+    }
+  return { spec: { states, start, accepting, arrows }, unlabeled, clashes };
+}
+
+// What a student typed as a label, read as a list of symbols in alphabet
+// order. Commas and spaces are ignored. Returns null if anything else was
+// typed.
+export function parseLabel(text: string, alphabet: Sym[]): Sym[] | null {
+  const chars = [...text].filter((c) => c !== "," && c.trim() !== "");
+  if (chars.some((c) => !alphabet.includes(c))) return null;
+  return alphabet.filter((a) => chars.includes(a));
+}
