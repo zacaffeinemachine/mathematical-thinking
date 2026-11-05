@@ -482,6 +482,13 @@ export default function MachineBuilder(props: MachineBuilderProps) {
       <Row style={{ marginTop: 0, marginBottom: 8 }}>
         <Button onClick={() => addState(true)} disabled={!!design.start}>Add start state</Button>
         <Button onClick={() => addState(false)}>Add state</Button>
+        <Button onClick={() => selState && toggleAccepting(selState.id)} disabled={!selState}>
+          {selState?.accepting ? "Not accepting" : "Accepting"}
+        </Button>
+        <Button onClick={deleteSel} disabled={!sel}>Delete</Button>
+        <Button onClick={doUndo} disabled={undo.current.length === 0}>Undo</Button>
+        <Button onClick={reset}>Reset</Button>
+        <Button main onClick={check}>Check</Button>
       </Row>
 
       <div ref={wrapRef} style={{ position: "relative" }}>
@@ -658,6 +665,19 @@ export default function MachineBuilder(props: MachineBuilderProps) {
 
       <div style={{ fontSize: 12.5, color: MUTED, marginTop: 6, minHeight: 18 }}>{hint}</div>
 
+      {/* readout */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, fontSize: 13, marginTop: 4, alignItems: "baseline" }}>
+        <span>States: <strong>{design.states.length}</strong></span>
+        {saved.solved && (
+          <span style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", padding: "1px 8px", borderRadius: 999, border: `1px solid ${RIGHT}`, color: RIGHT }}>
+            solved
+          </span>
+        )}
+      </div>
+
+      {notice && <Status tone="wrong">{notice}</Status>}
+      {verdict && !notice && <Status tone={verdict.tone}>{verdict.text}</Status>}
+
       {/* the tape */}
       <div style={{ marginTop: 10, padding: "10px 12px", border: "1px solid var(--rule)", borderRadius: 6, background: "var(--bg)" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
@@ -717,28 +737,6 @@ export default function MachineBuilder(props: MachineBuilderProps) {
         </div>
       </div>
 
-      {/* readout */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, fontSize: 13, marginTop: 8, alignItems: "baseline" }}>
-        <span>States: <strong>{design.states.length}</strong></span>
-        {saved.solved && (
-          <span style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", padding: "1px 8px", borderRadius: 999, border: `1px solid ${RIGHT}`, color: RIGHT }}>
-            solved
-          </span>
-        )}
-      </div>
-
-      <Row>
-        <Button main onClick={check}>Check</Button>
-        <Button onClick={() => selState && toggleAccepting(selState.id)} disabled={!selState}>
-          {selState?.accepting ? "Not accepting" : "Accepting"}
-        </Button>
-        <Button onClick={deleteSel} disabled={!sel}>Delete</Button>
-        <Button onClick={doUndo} disabled={undo.current.length === 0}>Undo</Button>
-        <Button onClick={reset}>Reset</Button>
-      </Row>
-
-      {notice && <Status tone="wrong">{notice}</Status>}
-      {verdict && !notice && <Status tone={verdict.tone}>{verdict.text}</Status>}
     </div>
   );
 }
