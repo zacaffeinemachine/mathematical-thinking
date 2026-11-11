@@ -51,7 +51,7 @@ import {
   wirePath,
   wirePoint,
 } from "./layout";
-import { BoxGlyph, BulbGlyph, GateGlyph, GateIcon, HILITE, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
+import { BoxGlyph, BulbGlyph, GateGlyph, GateIcon, HILITE, MONO, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
 import { TableView } from "./helpers";
 import { MSG } from "./messages";
 import { usePersistent } from "./storage";
@@ -80,6 +80,15 @@ export interface BoxPart {
   required?: boolean;    // a right table is accepted only once a box of this kind is in use
 }
 
+// Switches in rows and bulbs in a row along the bottom, column by column, as
+// in written addition. Each switch and each bulb appears exactly once. A cell
+// is a switch id, null for an empty cell, or { text } for a sign such as "+".
+export type GridCell = string | null | { text: string };
+export interface BuilderGrid {
+  rows: GridCell[][];          // switch rows, top to bottom
+  bulbs: (string | null)[];    // the bulb row, in the same columns
+}
+
 export interface CircuitBuilderProps {
   id: string;                                  // unique on the page; work is saved under it
   inputs: Named[];                             // switches, top to bottom, in truth-table order
@@ -96,6 +105,7 @@ export interface CircuitBuilderProps {
   showTarget?: boolean;                        // print the target table above the canvas
   start?: StartDesign;                         // gates and wires already on the canvas at the start
   boxes?: BoxPart[];                           // sealed parts offered beside the gates
+  grid?: BuilderGrid;                          // switches and bulbs in aligned columns instead of two side columns
   width?: number;                              // logical canvas size (default 600 wide)
   height?: number;
 }
@@ -158,14 +168,50 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   }, []);
   const fullW = props.width ?? 600;
   const W = boxW !== null && boxW < fullW * 0.8 ? Math.min(fullW, Math.max(380, Math.round(boxW / 0.8))) : fullW;
-  const H = props.height ?? Math.max(240, 64 * Math.max(ins.length, outs.length) + 64);
+  const grid = props.grid;
+  const gCols = grid ? Math.max(1, grid.bulbs.length, ...grid.rows.map((r) => r.length)) : 0;
+  const GRID_ROW = 58;
+  const bandTop = grid ? 30 + grid.rows.length * GRID_ROW : 0;
+  const H = props.height ?? (grid ? bandTop + 130 + 40 * gCols + 74 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
   const inLabelW = Math.max(8, ...ins.map((i) => i.label.length * 8));
   const outLabelW = Math.max(8, ...outs.map((o) => o.label.length * 8));
   const switchX = Math.round(inLabelW + 30);
   const bulbX = Math.round(W - outLabelW - 30);
   const spread = (k: number, n: number) => (n === 1 ? H / 2 : 44 + (k * (H - 88)) / (n - 1));
-  const sw = useMemo(() => Object.fromEntries(ins.map((i, k) => [i.id, { x: switchX, y: Math.round(spread(k, ins.length)) }])), [ins, switchX, H]);
-  const bl = useMemo(() => Object.fromEntries(outs.map((o, k) => [o.id, { x: bulbX, y: Math.round(spread(k, outs.length)) }])), [outs, bulbX, H]);
+  // Grid mode: column centres, switch rows from the top, the bulb row at the bottom.
+  const bulbRowY = H - 44;
+  const colX = (c: number) => {
+    // Columns at most 150 apart, the grid centred, as a sum is set out on paper.
+    const L = inLabelW + 40, R = W - outLabelW - 34;
+    const gap = gCols === 1 ? 0 : Math.min(150, (R - L) / (gCols - 1));
+    return Math.round((L + R) / 2 - (gap * (gCols - 1)) / 2 + c * gap);
+  };
+  const rowY = (r: number) => 44 + r * GRID_ROW;
+  const sw = useMemo(() => {
+    if (!grid) return Object.fromEntries(ins.map((i, k) => [i.id, { x: switchX, y: Math.round(spread(k, ins.length)) }]));
+    const m: Record<string, { x: number; y: number }> = {};
+    grid.rows.forEach((row, r) => row.forEach((cell, c) => { if (typeof cell === "string") m[cell] = { x: colX(c), y: rowY(r) }; }));
+    return m;
+  }, [ins, switchX, H, W, JSON.stringify(grid ?? null)]);
+  const bl = useMemo(() => {
+    if (!grid) return Object.fromEntries(outs.map((o, k) => [o.id, { x: bulbX, y: Math.round(spread(k, outs.length)) }]));
+    const m: Record<string, { x: number; y: number }> = {};
+    grid.bulbs.forEach((id, c) => { if (id) m[id] = { x: colX(c), y: bulbRowY }; });
+    return m;
+  }, [outs, bulbX, H, W, JSON.stringify(grid ?? null)]);
+  // Where gates may sit: their left edge from x0, their body between y0 and y1.
+  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - 30 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
+  const gridError = (() => {
+    if (!grid) return null;
+    const cells = grid.rows.flat().filter((c): c is string => typeof c === "string");
+    for (const i of ins) if (cells.filter((c) => c === i.id).length !== 1) return `The grid must hold the switch "${i.id}" exactly once.`;
+    const stray = cells.find((c) => !ins.some((i) => i.id === c));
+    if (stray) return `The grid holds "${stray}", which is not a switch.`;
+    for (const o of outs) if (grid.bulbs.filter((b) => b === o.id).length !== 1) return `The grid's bulb row must hold the bulb "${o.id}" exactly once.`;
+    const strayB = grid.bulbs.find((b) => b && !outs.some((o) => o.id === b));
+    if (strayB) return `The grid's bulb row holds "${strayB}", which is not a bulb.`;
+    return null;
+  })();
 
   // ---- the target, resolved once ----
   const resolved = useMemo(() => resolveTarget(target, inIds, outIds), [JSON.stringify(target ?? null), inIds.join(","), outIds.join(",")]);
@@ -316,6 +362,30 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const { w, h } = sizeOf(g);
     return { x0: g.x - 2, y0: g.y - h / 2 - 4, x1: g.x + w + 8, y1: g.y + h / 2 + 4 };
   };
+  // In grid mode a wire from a switch with another switch below it would
+  // drop straight through that switch. It runs instead right into the lane
+  // between columns, down past the last switch row, and then curves to its
+  // pin. `pts` samples the route, for hit-testing and the delete badge.
+  const wireGeom = (from: string, a: { x: number; y: number }, b: { x: number; y: number }): { d: string; pts: { x: number; y: number }[] } | null => {
+    if (!grid || !sw[from]) return null;
+    const lastY = rowY(grid.rows.length - 1);
+    if (sw[from].y >= lastY - 1) return null;
+    const yExit = lastY + 24, lx = a.x + 22;
+    const k = Math.max(24, (b.y - yExit) * 0.5);
+    const dx = Math.max(18, Math.abs(b.x - lx) * 0.45);
+    const d = `M ${a.x} ${a.y} H ${lx - 6} Q ${lx} ${a.y} ${lx} ${a.y + 6} V ${yExit} C ${lx} ${yExit + k}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
+    const pts: { x: number; y: number }[] = [];
+    for (let i = 0; i <= 6; i++) pts.push({ x: a.x + ((lx - a.x) * i) / 6, y: a.y });
+    for (let i = 1; i <= 10; i++) pts.push({ x: lx, y: a.y + ((yExit - a.y) * i) / 10 });
+    for (let i = 1; i <= 24; i++) {
+      const t = i / 24, u = 1 - t;
+      pts.push({
+        x: u * u * u * lx + 3 * u * u * t * lx + 3 * u * t * t * (b.x - dx) + t * t * t * b.x,
+        y: u * u * u * yExit + 3 * u * u * t * (yExit + k) + 3 * u * t * t * b.y + t * t * t * b.y,
+      });
+    }
+    return { d, pts };
+  };
   const wireAt = (to: string, pin: number) => design.wires.find((w) => w.to === to && w.pin === pin);
 
   // ---- editing ----
@@ -333,16 +403,17 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   };
 
   const freeSpot = ({ w, h }: { w: number; h: number }): { x: number; y: number } => {
-    const xMin = switchX + 50, xMax = bulbX - 60 - w;
+    const xMin = grid ? 40 : switchX + 50, xMax = grid ? W - 40 - w : bulbX - 60 - w;
+    const yMin = grid ? gateArea.y0 + h / 2 + 4 : 30, yMax = grid ? gateArea.y1 - h / 2 - 4 : H - 30;
     const cands: { x: number; y: number; d: number }[] = [];
-    for (let x = xMin; x <= xMax; x += 20) for (let y = 30; y <= H - 30; y += 20)
-      cands.push({ x, y, d: Math.hypot(x - (xMin + xMax) / 2, (y - H / 2) * 1.6) });
+    for (let x = xMin; x <= xMax; x += 20) for (let y = yMin; y <= yMax; y += 20)
+      cands.push({ x, y, d: Math.hypot(x - (xMin + xMax) / 2, (y - (yMin + yMax) / 2) * 1.6) });
     cands.sort((a, b) => a.d - b.d);
     const clear = (c: { x: number; y: number }) => design.gates.every((g) => {
       const b = gateBox(g);
       return c.x + w + 30 < b.x0 || c.x > b.x1 + 30 || c.y + h / 2 + 14 < b.y0 || c.y - h / 2 - 14 > b.y1;
     });
-    const c = cands.find(clear) ?? cands[0] ?? { x: (xMin + xMax) / 2, y: H / 2 };
+    const c = cands.find(clear) ?? cands[0] ?? { x: (xMin + xMax) / 2, y: (yMin + yMax) / 2 };
     return { x: Math.round(c.x / SNAP) * SNAP, y: Math.round(c.y / SNAP) * SNAP };
   };
   const newGateId = () => {
@@ -436,7 +507,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     if (!w) return null;
     const a = srcPos(w.from), b = snkPos(w.to, w.pin);
     if (!a || !b) return null;
-    const m = wirePoint(a.x, a.y, b.x, b.y, 0.5);
+    const geom = wireGeom(w.from, a, b);
+    const m = geom ? geom.pts[Math.floor(geom.pts.length * 0.6)] : wirePoint(a.x, a.y, b.x, b.y, 0.5);
     return { x: m.x, y: m.y - 14 };
   };
 
@@ -497,7 +569,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     for (const w of design.wires) {
       const a = srcPos(w.from), b = snkPos(w.to, w.pin);
       if (!a || !b) continue;
-      const d = distToWire(x, y, a.x, a.y, b.x, b.y);
+      const geom = wireGeom(w.from, a, b);
+      const d = geom ? Math.min(...geom.pts.map((p) => Math.hypot(p.x - x, p.y - y))) : distToWire(x, y, a.x, a.y, b.x, b.y);
       if (d <= Math.max(6, R * 0.6) && (!bestW || d < bestW.d)) bestW = { w, d };
     }
     if (bestW) { setSel({ kind: "wire", to: bestW.w.to, pin: bestW.w.pin }); return; }
@@ -519,8 +592,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       const g = gateById.get(drag.id);
       if (!g) return;
       const { w, h } = sizeOf(g);
-      const nx = Math.min(Math.max(switchX + 34, Math.round((x - drag.offX) / SNAP) * SNAP), W - w - 20);
-      const ny = Math.min(Math.max(h / 2 + 6, Math.round((y - drag.offY) / SNAP) * SNAP), H - h / 2 - 6);
+      const nx = Math.min(Math.max(gateArea.x0, Math.round((x - drag.offX) / SNAP) * SNAP), W - w - 20);
+      const ny = Math.min(Math.max(gateArea.y0 + h / 2, Math.round((y - drag.offY) / SNAP) * SNAP), gateArea.y1 - h / 2);
       if (nx !== g.x || ny !== g.y)
         setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((q) => (q.id === g.id ? { ...q, x: nx, y: ny } : q)) } }));
       if (!drag.moved) setDrag({ ...drag, moved: true });
@@ -571,7 +644,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   useEffect(() => {
     const fix = (g: BGate) => Math.min(g.x, W - sizeOf(g).w - 20);
     if (design.gates.some((g) => fix(g) !== g.x))
-      setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((g) => ({ ...g, x: Math.max(switchX + 34, fix(g)) })) } }));
+      setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((g) => ({ ...g, x: Math.max(gateArea.x0, fix(g)) })) } }));
   }, [W, design]);
 
   // Clear a stale selection after undo or delete.
@@ -598,6 +671,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // ---- author errors ----
   if (!resolved.ok) return <AuthorError>{resolved.error}</AuthorError>;
   if (!boxTables.ok) return <AuthorError>{boxTables.error}</AuthorError>;
+  if (gridError) return <AuthorError>{gridError}</AuthorError>;
   if (!id) return <AuthorError>CircuitBuilder needs an id, unique on the page.</AuthorError>;
   if (ins.length === 0 || ins.length > 6) return <AuthorError>CircuitBuilder takes 1 to 6 switches.</AuthorError>;
   const clash = [...inIds, ...outIds].find((x, i, a) => a.indexOf(x) !== i);
@@ -736,7 +810,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
           const a = srcPos(w.from), b = snkPos(w.to, w.pin);
           if (!a || !b) return null;
           const isSel = sel?.kind === "wire" && sel.to === w.to && sel.pin === w.pin;
-          return <Wire key={`${w.to}:${w.pin}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} value={values[w.from]} selected={isSel} />;
+          return <Wire key={`${w.to}:${w.pin}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} value={values[w.from]} selected={isSel} path={wireGeom(w.from, a, b)?.d} />;
         })}
 
         {/* gates */}
@@ -754,6 +828,13 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
             <SwitchGlyph x={sw[i.id].x} y={sw[i.id].y} label={i.label} value={saved.switches[i.id]} />
           </g>
         ))}
+
+        {/* signs in the grid, such as the "+" of a written sum */}
+        {grid?.rows.map((row, r) => row.map((cell, c) => (cell && typeof cell === "object" ? (
+          <text key={`sign-${r}-${c}`} x={colX(c)} y={rowY(r) + 7} fontSize={22} fontFamily={MONO} fontWeight={700} textAnchor="middle" fill="var(--muted)" style={{ pointerEvents: "none" }}>
+            {cell.text}
+          </text>
+        ) : null)))}
 
         {/* bulbs */}
         {outs.map((o) => {

@@ -10,10 +10,10 @@ description: Circuit problems on adding numbers set on switches, from 1-bit numb
 import {
   CircuitProblem,
   CircuitBuilder,
-  SealedBox,
   Switch,
   Bulb,
 } from "../../components/games/circuits/problems/index.ts";
+import AdditionPicture from "../../components/games/circuits/problems/AdditionPicture.tsx";
 import * as B from "../../components/games/circuits/problems/banks/adders.ts";
 
 <p style={{display:'flex', flexWrap:'wrap', alignItems:'center', gap:'6px 14px'}}>
@@ -23,42 +23,45 @@ import * as B from "../../components/games/circuits/problems/banks/adders.ts";
   <span><Bulb /> dark is $\texttt{0}$</span>
 </p>
 
-On this page a number is set on switches, and each switch is worth a fixed
-amount. The switch $a_4$ is worth 4, the switch $a_2$ is worth 2, and so on.
-The number is the total of the switches that are up. A number set on $n$
-switches worth 1, 2, 4, 8, and so on, is an **$n$-bit number**. So a 1-bit
-number is 0 or 1, a 2-bit number is one of 0 to 3, and a 3-bit number is one of
-0 to 7.
+On this page a number is set on a row of switches, and each switch is worth a
+fixed amount. The switch $a_0$ is worth 1, the switch $a_1$ is worth 2, the
+switch $a_2$ is worth 4, and each switch is worth double the one before it. The
+number is the total of the switches that are up. A number set on $n$ switches
+in this way is an **$n$-bit number**. So a 1-bit number is 0 or 1, a 2-bit
+number is one of 0 to 3, and a 3-bit number is one of 0 to 7.
 
-Each bulb is worth the amount written beside it, and a row of bulbs shows the
-total of the ones that are lit.
+Two numbers are added the way you add on paper. One number sits on the row
+$a$, the other on the row $b$ below it, and the sum appears on the row of
+bulbs $s$ at the bottom, worth 1, 2, 4, 8 in the same way. The switches $a_0$
+and $b_0$ and the bulb $s_0$ share a column, and so do $a_1$, $b_1$ and $s_1$,
+and so on.
 
 <CircuitProblem n={1} title="Two 1-bit numbers">
-One number is set on switch $a_1$ and the other on switch $b_1$. Build two
-bulbs, worth 2 and 1, that show the sum of the two numbers.
+One number is set on switch $a_0$ and the other on switch $b_0$. Build the two
+bulbs $s_1$ and $s_0$ that show the sum of the two numbers.
 
-<SealedBox switches="11" bulbs="10" inputs={["a₁", "b₁"]} outputs={["2", "1"]} caption="1 + 1 = 2" />
+<AdditionPicture a="1" b="1" caption="1 + 1 = 2" />
 
-<CircuitBuilder client:visible id="add-1" inputs={B.one.inputs} outputs={B.one.outputs} target={B.one.target} gates={B.one.gates} fewest={B.one.fewest} width={520} />
+<CircuitBuilder client:visible id="sum-1" inputs={B.one.inputs} outputs={B.one.outputs} target={B.one.target} gates={B.one.gates} grid={B.one.grid} fewest={B.one.fewest} width={520} />
 </CircuitProblem>
 
 <CircuitProblem n={2} title="Two 2-bit numbers">
-One number is set on $a_2$ and $a_1$, and the other on $b_2$ and $b_1$. Build
-three bulbs, worth 4, 2 and 1, that show the sum of the two numbers.
+One number is set on $a_1$ and $a_0$, and the other on $b_1$ and $b_0$. Build
+the three bulbs $s_2$, $s_1$ and $s_0$ that show the sum of the two numbers.
 
-<SealedBox switches="1110" bulbs="101" inputs={["a₂", "a₁", "b₂", "b₁"]} outputs={["4", "2", "1"]} caption="3 + 2 = 5" />
+<AdditionPicture a="11" b="10" caption="3 + 2 = 5" />
 
-<CircuitBuilder client:visible id="add-2" inputs={B.two.inputs} outputs={B.two.outputs} target={B.two.target} gates={B.two.gates} fewest={B.two.fewest} />
+<CircuitBuilder client:visible id="sum-2" inputs={B.two.inputs} outputs={B.two.outputs} target={B.two.target} gates={B.two.gates} grid={B.two.grid} fewest={B.two.fewest} />
 </CircuitProblem>
 
 <CircuitProblem n={3} title="Two 3-bit numbers" hard>
-One number is set on $a_4$, $a_2$ and $a_1$, and the other on $b_4$, $b_2$ and
-$b_1$. Build four bulbs, worth 8, 4, 2 and 1, that show the sum of the two
-numbers.
+One number is set on $a_2$, $a_1$ and $a_0$, and the other on $b_2$, $b_1$ and
+$b_0$. Build the four bulbs $s_3$, $s_2$, $s_1$ and $s_0$ that show the sum of
+the two numbers.
 
-<SealedBox switches="110111" bulbs="1101" inputs={["a₄", "a₂", "a₁", "b₄", "b₂", "b₁"]} outputs={["8", "4", "2", "1"]} caption="6 + 7 = 13" />
+<AdditionPicture a="110" b="111" caption="6 + 7 = 13" />
 
-<CircuitBuilder client:visible id="add-3" inputs={B.three.inputs} outputs={B.three.outputs} target={B.three.target} gates={B.three.gates} />
+<CircuitBuilder client:visible id="sum-3" inputs={B.three.inputs} outputs={B.three.outputs} target={B.three.target} gates={B.three.gates} grid={B.three.grid} />
 </CircuitProblem>
 
 <CircuitProblem n={4} title="One bit more" hard>
@@ -67,13 +70,14 @@ ${n + 1}$ wires. Using one such box and as many gates as you like, build a
 circuit that adds two ${(n + 1)}$-bit numbers.
 
 Try it first for $n = 2$. The button *2-bit adder* above the canvas places a
-box that adds two 2-bit numbers. Its top two pins take one number and its
-bottom two pins take the other, and each pin is labelled with what it is worth.
-The sum comes out on the pins worth 4, 2 and 1. Use the box to add the number
-on $a_4$, $a_2$ and $a_1$ to the number on $b_4$, $b_2$ and $b_1$. Show the sum
-on four bulbs worth 8, 4, 2 and 1.
+box that adds two 2-bit numbers. It adds the number on its pins $x_1$ and $x_0$
+to the number on its pins $y_1$ and $y_0$, and shows the sum on its pins $z_2$,
+$z_1$ and $z_0$. Here $x_0$, $y_0$ and $z_0$ are worth 1, $x_1$, $y_1$ and
+$z_1$ are worth 2, and $z_2$ is worth 4. Use the box to add the number on $a_2$,
+$a_1$ and $a_0$ to the number on $b_2$, $b_1$ and $b_0$, and show the sum on the
+bulbs $s_3$, $s_2$, $s_1$ and $s_0$.
 
-<CircuitBuilder client:visible id="one-bit-more" inputs={B.stepUp.inputs} outputs={B.stepUp.outputs} target={B.stepUp.target} gates={B.stepUp.gates} boxes={[B.box2]} />
+<CircuitBuilder client:visible id="bit-more" inputs={B.stepUp.inputs} outputs={B.stepUp.outputs} target={B.stepUp.target} gates={B.stepUp.gates} grid={B.stepUp.grid} boxes={[B.box2]} />
 
 Once your circuit works, describe in words how to do the same with a box that
 adds numbers of any size. Then count how many gates your method adds for each

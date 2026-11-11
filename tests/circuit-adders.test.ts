@@ -67,34 +67,55 @@ function smallest(n: number, want0: string[], palette: GateType[], limit: number
 // ---------------------------------------------------------------------------
 //  Targets, from the rule
 // ---------------------------------------------------------------------------
+// a_i, b_i and s_i are worth 2 to the power i: a0 is worth 1, a1 is worth 2.
+const worth = (i: number) => 2 ** i;
 function expected(n: number): Record<string, string> {
-  const a = B.worths(n).map((w) => `a${w}`), b = B.worths(n).map((w) => `b${w}`);
+  const idx = Array.from({ length: n }, (_, k) => n - 1 - k);
+  const a = idx.map((i) => `a${i}`), b = idx.map((i) => `b${i}`);
   const sw = [...a, ...b];
   const cols: Record<string, string> = {};
-  for (const w of B.worths(n + 1)) {
+  for (let i = n; i >= 0; i--) {
     let col = "";
     for (let r = 0; r < rowCount(sw); r++) {
       const s = rowSetting(sw, r);
-      col += Math.floor((value(s, a) + value(s, b)) / w) % 2 ? "1" : "0";
+      col += Math.floor((value(s, a) + value(s, b)) / worth(i)) % 2 ? "1" : "0";
     }
-    cols[`s${w}`] = col;
+    cols[`s${i}`] = col;
   }
   return cols;
 }
 
 test("adders: switches and bulbs are the ones the page describes", () => {
-  assert.deepEqual(ids(B.one), ["a1", "b1"]);
-  assert.deepEqual(ids(B.two), ["a2", "a1", "b2", "b1"]);
-  assert.deepEqual(ids(B.three), ["a4", "a2", "a1", "b4", "b2", "b1"]);
+  assert.deepEqual(ids(B.one), ["a0", "b0"]);
+  assert.deepEqual(ids(B.two), ["a1", "a0", "b1", "b0"]);
+  assert.deepEqual(ids(B.three), ["a2", "a1", "a0", "b2", "b1", "b0"]);
   assert.deepEqual(ids(B.stepUp), ids(B.three));
-  assert.deepEqual(B.one.outputs.map((o) => o.label), ["2", "1"]);
-  assert.deepEqual(B.two.outputs.map((o) => o.label), ["4", "2", "1"]);
-  assert.deepEqual(B.three.outputs.map((o) => o.label), ["8", "4", "2", "1"]);
-  assert.deepEqual(B.three.inputs.map((i) => i.label), ["a₄", "a₂", "a₁", "b₄", "b₂", "b₁"]);
+  assert.deepEqual(B.one.outputs.map((o) => o.label), ["s₁", "s₀"]);
+  assert.deepEqual(B.two.outputs.map((o) => o.label), ["s₂", "s₁", "s₀"]);
+  assert.deepEqual(B.three.outputs.map((o) => o.label), ["s₃", "s₂", "s₁", "s₀"]);
+  assert.deepEqual(B.three.inputs.map((i) => i.label), ["a₂", "a₁", "a₀", "b₂", "b₁", "b₀"]);
   for (const b of [B.one, B.two, B.three, B.stepUp]) {
     const outs = b.outputs.map((o) => o.id);
     assert.equal(new Set([...ids(b), ...outs]).size, ids(b).length + outs.length);
     assert.deepEqual(Object.keys(b.target).sort(), [...outs].sort());
+  }
+});
+
+test("adders: the grid is a written sum, a_i, b_i and s_i in one column", () => {
+  for (const [n, b] of [[1, B.one], [2, B.two], [3, B.three], [3, B.stepUp]] as const) {
+    const [top, bottom] = b.grid.rows;
+    assert.equal(b.grid.rows.length, 2);
+    assert.equal(top[0], null);
+    assert.deepEqual(bottom[0], { text: "+" });
+    assert.equal(b.grid.bulbs[0], `s${n}`);
+    for (let i = 0; i < n; i++) {
+      const c = n - i;
+      assert.equal(top[c], `a${i}`);
+      assert.equal(bottom[c], `b${i}`);
+      assert.equal(b.grid.bulbs[c], `s${i}`);
+    }
+    assert.equal(top.length, n + 1);
+    assert.equal(b.grid.bulbs.length, n + 1);
   }
 });
 
@@ -107,8 +128,8 @@ test("adders: every target is the sum, bulb by bulb", () => {
 
 test("adders: the box adds two 2-bit numbers, pins as labelled", () => {
   const box = B.box2;
-  assert.deepEqual(box.inputs, ["2", "1", "2", "1"]);
-  assert.deepEqual(box.outputs, ["4", "2", "1"]);
+  assert.deepEqual(box.inputs, ["x₁", "x₀", "y₁", "y₀"]);
+  assert.deepEqual(box.outputs, ["z₂", "z₁", "z₀"]);
   assert.equal(box.gap, 2);
   assert.equal(box.max, 1);
   assert.equal(box.required, true);
@@ -116,7 +137,8 @@ test("adders: the box adds two 2-bit numbers, pins as labelled", () => {
   for (let r = 0; r < 16; r++) {
     const s = rowSetting(pins, r);
     const sum = value(s, ["x2", "x1"]) + value(s, ["y2", "y1"]);
-    box.outputs.forEach((label, k) => assert.equal(box.table[k][r], Math.floor(sum / Number(label)) % 2 ? "1" : "0", `row ${r} pin ${label}`));
+    // z_i is worth 2 to the power i, and the pins run z2, z1, z0.
+    box.outputs.forEach((label, k) => assert.equal(box.table[k][r], Math.floor(sum / worth(2 - k)) % 2 ? "1" : "0", `row ${r} pin ${label}`));
   }
 });
 

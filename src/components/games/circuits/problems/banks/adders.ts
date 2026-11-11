@@ -2,9 +2,14 @@
 // ("Adding Numbers"): circuits that add two numbers of 1, 2 and 3 bits, and
 // a 3-bit adder built from a box that adds 2-bit numbers.
 //
-// A number of n bits sits on n switches worth 2^(n-1), ..., 4, 2, 1. Switch
-// ids carry the letter and the worth (a4, a2, a1), labels use subscripts
-// (a₄, a₂, a₁). The sum sits on n + 1 bulbs labelled with their worth.
+// A number of n bits sits on n switches a_(n-1), ..., a_1, a_0, where a_i is
+// worth 2^i: a_0 is worth 1, a_1 is worth 2, a_2 is worth 4. Ids carry the
+// letter and the index (a2, a1, a0), labels use subscripts (a₂, a₁, a₀). The
+// sum sits on n + 1 bulbs s_n, ..., s_0, the same way.
+//
+// Every builder lays the switches and bulbs out as a written sum: the a row,
+// then the b row with a "+" in the carry column, and the bulb row along the
+// bottom, so that a_i, b_i and s_i share a column.
 //
 // tests/circuit-adders.test.ts rebuilds every target and the box's table from
 // the rule as the page words it, and proves the two `fewest` counts by
@@ -14,11 +19,14 @@
 
 import type { GateType } from "../../model.ts";
 
+type Cell = string | null | { text: string };
+
 export interface AdderBuild {
   inputs: { id: string; label: string }[];
   outputs: { id: string; label: string }[];
   target: Record<string, string>;
   gates: GateType[];
+  grid: { rows: Cell[][]; bulbs: (string | null)[] };
   fewest?: number;
 }
 
@@ -35,30 +43,37 @@ export interface AdderBox {
 }
 
 const PALETTE: GateType[] = ["NOT", "AND", "OR", "XOR"];
-const SUB: Record<number, string> = { 1: "₁", 2: "₂", 4: "₄", 8: "₈" };
+export const SUB = ["₀", "₁", "₂", "₃", "₄"];
 
-// Worths of an n-bit number, most valuable first: 3 -> [4, 2, 1].
-export const worths = (n: number) => Array.from({ length: n }, (_, i) => 2 ** (n - 1 - i));
+// Indices of an n-bit number, most valuable first: 3 -> [2, 1, 0].
+export const indices = (n: number) => Array.from({ length: n }, (_, k) => n - 1 - k);
 
-const switches = (letter: string, n: number) => worths(n).map((w) => ({ id: `${letter}${w}`, label: `${letter}${SUB[w]}` }));
-const sumBulbs = (n: number) => worths(n + 1).map((w) => ({ id: `s${w}`, label: String(w) }));
+const named = (letter: string, n: number) => indices(n).map((i) => ({ id: `${letter}${i}`, label: `${letter}${SUB[i]}` }));
 
 // Every row of the table: the a-switches then the b-switches, first slowest.
-function sumColumns(n: number): Record<string, string> {
+// Bit i of the sum goes to s_i.
+function sumColumns(n: number, out = "s"): Record<string, string> {
   const cols: Record<string, string> = {};
-  for (const w of worths(n + 1)) cols[`s${w}`] = "";
+  for (const i of indices(n + 1)) cols[`${out}${i}`] = "";
   for (let r = 0; r < 1 << (2 * n); r++) {
     const total = (r >> n) + (r & ((1 << n) - 1));
-    for (const w of worths(n + 1)) cols[`s${w}`] += total & w ? "1" : "0";
+    for (const i of indices(n + 1)) cols[`${out}${i}`] += (total >> i) & 1 ? "1" : "0";
   }
   return cols;
 }
 
 const adder = (n: number, fewest?: number): AdderBuild => ({
-  inputs: [...switches("a", n), ...switches("b", n)],
-  outputs: sumBulbs(n),
+  inputs: [...named("a", n), ...named("b", n)],
+  outputs: named("s", n + 1),
   target: sumColumns(n),
   gates: PALETTE,
+  grid: {
+    rows: [
+      [null, ...indices(n).map((i) => `a${i}`)],
+      [{ text: "+" }, ...indices(n).map((i) => `b${i}`)],
+    ],
+    bulbs: indices(n + 1).map((i) => `s${i}`),
+  },
   ...(fewest === undefined ? {} : { fewest }),
 });
 
@@ -67,16 +82,15 @@ export const one = adder(1, 2);
 export const two = adder(2, 7);
 export const three = adder(3);
 
-// 4. One step up. The box adds two 2-bit numbers: the top two pins take the
-// first number and the bottom two the second, each labelled with its worth,
-// and the sum comes out on pins worth 4, 2 and 1. One box, which must be used.
-const boxCols = sumColumns(2);
+// 4. One bit more. The box adds the 2-bit number on its pins x₁, x₀ to the
+// one on y₁, y₀ and shows the sum on z₂, z₁, z₀. One box, which must be used.
+const boxCols = sumColumns(2, "z");
 export const box2: AdderBox = {
   type: "adder2",
   title: "2-bit adder",
-  inputs: ["2", "1", "2", "1"],
-  outputs: ["4", "2", "1"],
-  table: worths(3).map((w) => boxCols[`s${w}`]),
+  inputs: ["x₁", "x₀", "y₁", "y₀"],
+  outputs: ["z₂", "z₁", "z₀"],
+  table: indices(3).map((i) => boxCols[`z${i}`]),
   gap: 2,
   max: 1,
   required: true,
