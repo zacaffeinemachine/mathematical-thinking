@@ -18,10 +18,19 @@ export const ALL_GATES: GateType[] = ["NOT", "AND", "OR", "XOR", "NAND", "NOR"];
 // ---------------------------------------------------------------------------
 
 // One gate. A pin that has no wire yet holds null.
+//
+// A box (a part with several output wires, such as a sealed adder) enters the
+// net as one NetGate per output wire, each reading all of the box's pins. Such
+// a node carries `lut`, its output column over its inputs in the usual row
+// order (first input slowest), and `part`, the id of the box on the canvas.
+// Its `type` is then ignored. Box nodes are not gates: they do not count
+// toward size, type limits or fan-in. See boxCount and boxesUsed.
 export interface NetGate {
   id: string;
   type: GateType;
   inputs: (string | null)[];
+  lut?: Bit[];
+  part?: string;
 }
 
 export interface Net {
@@ -90,7 +99,7 @@ export function evaluateNet(net: Net, setting: Record<string, Bit>): Record<stri
       if (b === undefined) { floating = true; break; }
       bits.push(b);
     }
-    v[g.id] = floating ? undefined : evalGateN(g.type, bits);
+    v[g.id] = floating ? undefined : g.lut ? g.lut[bits.reduce<number>((r, b) => (r << 1) | b, 0)] : evalGateN(g.type, bits);
   }
   return v;
 }
@@ -104,7 +113,7 @@ export function outputsOf(net: Net, setting: Record<string, Bit>): Record<string
 }
 
 // Depth of every node: a switch is 0, a gate is one more than the deepest
-// gate feeding it. Empty pins count as 0. Undefined if the net has a loop.
+// gate feeding it. A box counts as one step, like a gate. Empty pins count as 0. Undefined if the net has a loop.
 export function nodeDepths(net: Net): Record<string, number> | undefined {
   const order = topoOrder(net);
   if (!order) return undefined;
@@ -131,14 +140,29 @@ export function circuitDepth(net: Net): number {
 
 // The size of the circuit: every gate counts, NOT included, and so does a
 // gate that is not wired to any bulb. A gate on the canvas is a gate built.
+// Boxes are not gates and do not count.
 export function gateCount(net: Net): number {
-  return net.gates.length;
+  return net.gates.filter((g) => !g.part).length;
 }
 
 export function countByType(net: Net): Partial<Record<GateType, number>> {
   const r: Partial<Record<GateType, number>> = {};
-  for (const g of net.gates) r[g.type] = (r[g.type] ?? 0) + 1;
+  for (const g of net.gates) if (!g.part) r[g.type] = (r[g.type] ?? 0) + 1;
   return r;
+}
+
+// The number of boxes on the canvas.
+export function boxCount(net: Net): number {
+  return new Set(net.gates.filter((g) => g.part).map((g) => g.part)).size;
+}
+
+// The number of boxes at least one of whose output wires feeds a gate, a box
+// or a bulb.
+export function boxesUsed(net: Net): number {
+  const read = new Set<string>();
+  for (const g of net.gates) for (const s of g.inputs) if (s != null) read.add(s);
+  for (const o of net.outputs) if (o.source != null) read.add(o.source);
+  return new Set(net.gates.filter((g) => g.part && read.has(g.id)).map((g) => g.part)).size;
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +335,8 @@ export interface Limits {
   maxDepth?: number;
   maxPerType?: Partial<Record<GateType, number>>;
   maxFanIn?: number;                             // most inputs on one gate (default 2)
+  needBox?: boolean;                             // at least one box must be used
+  maxBoxes?: number;                             // most boxes on the canvas
 }
 
 export type CheckResult =
@@ -323,13 +349,16 @@ export type CheckResult =
   | { status: "too-many-inputs"; gate: string; inputs: number; limit: number }
   | { status: "too-many-gates"; gates: number; limit: number }
   | { status: "too-deep"; depth: number; limit: number }
-  | { status: "too-many-of-type"; type: GateType; count: number; limit: number };
+  | { status: "too-many-of-type"; type: GateType; count: number; limit: number }
+  | { status: "box-unused" }
+  | { status: "too-many-boxes"; boxes: number; limit: number };
 
 // The whole check, in a fixed order so that two students with the same
 // circuit always get the same message:
 //   1. every bulb is wired, every gate pin is filled, there is no loop;
 //   2. the full truth table matches, and the first wrong row is reported;
-//   3. only then the limits: allowed types, fan-in, size, depth, per type.
+//   3. only then the limits: allowed types, fan-in, size, depth, per type,
+//      and for a problem with a box, how many boxes and whether one is used.
 // Limits come last on purpose: "the table is right but it is too big" is the
 // more useful thing to hear than "too big", which says nothing about the table.
 export function checkNet(net: Net, target: Record<string, Bit[]>, limits: Limits = {}): CheckResult {
@@ -354,12 +383,12 @@ export function checkNet(net: Net, target: Record<string, Bit[]>, limits: Limits
   }
 
   if (limits.allowed) {
-    const bad = net.gates.find((g) => !limits.allowed!.includes(g.type));
+    const bad = net.gates.find((g) => !g.part && !limits.allowed!.includes(g.type));
     if (bad) return { status: "not-allowed", type: bad.type };
   }
   const fan = limits.maxFanIn ?? 2;
   for (const g of net.gates) {
-    if (g.type !== "NOT" && g.inputs.length > fan) return { status: "too-many-inputs", gate: g.id, inputs: g.inputs.length, limit: fan };
+    if (!g.part && g.type !== "NOT" && g.inputs.length > fan) return { status: "too-many-inputs", gate: g.id, inputs: g.inputs.length, limit: fan };
   }
   const size = gateCount(net);
   if (limits.maxGates !== undefined && size > limits.maxGates) return { status: "too-many-gates", gates: size, limit: limits.maxGates };
@@ -372,6 +401,8 @@ export function checkNet(net: Net, target: Record<string, Bit[]>, limits: Limits
       if (lim !== undefined && (counts[t] ?? 0) > lim) return { status: "too-many-of-type", type: t, count: counts[t] ?? 0, limit: lim };
     }
   }
+  if (limits.maxBoxes !== undefined && boxCount(net) > limits.maxBoxes) return { status: "too-many-boxes", boxes: boxCount(net), limit: limits.maxBoxes };
+  if (limits.needBox && boxesUsed(net) === 0) return { status: "box-unused" };
   return { status: "ok", rows, gates: size, depth };
 }
 

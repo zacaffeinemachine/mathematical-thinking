@@ -12,6 +12,11 @@
 //   drag a wire's input end     move it to another pin, or drop it to delete
 //   tap a gate or a wire        select it, then tap its x badge (or Delete)
 //   tap a switch                flip it
+//
+// A problem may also offer boxes (the `boxes` prop): sealed parts with several
+// labelled pins in and out, such as an adder, placed and wired like gates. A
+// box is not a gate and does not count toward the gate count. Each output pin
+// of a box is a source whose id is "<box id>.<k>".
 // Work is saved in localStorage under the id prop (see storage.ts).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,6 +24,7 @@ import type { Bit, GateType } from "../model";
 import {
   ALL_GATES,
   checkNet,
+  parseColumn,
   circuitDepth,
   evaluateNet,
   resolveTarget,
@@ -27,12 +33,17 @@ import {
   tableOfNet,
   wouldLoop,
   type CheckResult,
+  type Column,
   type Net,
+  type NetGate,
   type TargetSpec,
 } from "./engine";
 import {
   BULB_PIN,
   SWITCH_PIN,
+  boxInputPin,
+  boxOutputPin,
+  boxSize,
   distToWire,
   gateInputPin,
   gateOutputPin,
@@ -40,7 +51,7 @@ import {
   wirePath,
   wirePoint,
 } from "./layout";
-import { BulbGlyph, GateGlyph, GateIcon, HILITE, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
+import { BoxGlyph, BulbGlyph, GateGlyph, GateIcon, HILITE, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
 import { TableView } from "./helpers";
 import { MSG } from "./messages";
 import { usePersistent } from "./storage";
@@ -53,6 +64,20 @@ type Named = string | { id: string; label?: string };
 export interface StartDesign {
   gates: { id: string; type: GateType; x: number; y: number; inputs?: number }[];
   wires: { from: string; to: string; pin?: number }[];
+}
+
+// A sealed part with several pins in and out. Its behaviour is a table: one
+// column per output pin, over every setting of its input pins in the usual
+// row order (the first input pin listed changes slowest).
+export interface BoxPart {
+  type: string;          // key, unique among the boxes of one problem; saved work refers to it
+  title: string;         // drawn in the box's title band and on its palette button
+  inputs: string[];      // input pin labels, top to bottom
+  outputs: string[];     // output pin labels, top to bottom
+  table: Column[];       // one column per output pin
+  gap?: number;          // leave a small space after this many input pins (default none)
+  max?: number;          // most of these on the canvas at once (default 1)
+  required?: boolean;    // a right table is accepted only once a box of this kind is in use
 }
 
 export interface CircuitBuilderProps {
@@ -70,11 +95,12 @@ export interface CircuitBuilderProps {
   showDepth?: boolean;                         // show the depth even with no depth limit
   showTarget?: boolean;                        // print the target table above the canvas
   start?: StartDesign;                         // gates and wires already on the canvas at the start
+  boxes?: BoxPart[];                           // sealed parts offered beside the gates
   width?: number;                              // logical canvas size (default 600 wide)
   height?: number;
 }
 
-interface BGate { id: string; type: GateType; x: number; y: number; n: number }
+interface BGate { id: string; type: GateType | "BOX"; x: number; y: number; n: number; box?: string }
 interface BWire { from: string; to: string; pin: number }
 interface Design { gates: BGate[]; wires: BWire[] }
 interface Saved { design: Design; switches: Record<string, Bit>; solved: boolean }
@@ -96,6 +122,11 @@ const TAP_PX = 6;
 const SNAP = 5;
 
 const named = (x: Named) => (typeof x === "string" ? { id: x, label: x } : { id: x.id, label: x.label ?? x.id });
+// "g3" is gate g3's output. "g3.1" is output pin 1 of box g3.
+const splitSrc = (sid: string): { gid: string; k: number } => {
+  const i = sid.indexOf(".");
+  return i < 0 ? { gid: sid, k: 0 } : { gid: sid.slice(0, i), k: Number(sid.slice(i + 1)) };
+};
 const sameEnd = (a: End | null, b: End | null) =>
   !!a && !!b && (a.kind === "src" && b.kind === "src" ? a.id === b.id : a.kind === "snk" && b.kind === "snk" ? a.to === b.to && a.pin === b.pin : false);
 
@@ -139,6 +170,46 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // ---- the target, resolved once ----
   const resolved = useMemo(() => resolveTarget(target, inIds, outIds), [JSON.stringify(target ?? null), inIds.join(","), outIds.join(",")]);
 
+  // ---- boxes ----
+  const boxList = props.boxes ?? [];
+  const boxKey = JSON.stringify(boxList);
+  const parts = useMemo(() => new Map(boxList.map((b) => [b.type, b])), [boxKey]);
+  const boxTables = useMemo((): { ok: true; luts: Map<string, Bit[][]> } | { ok: false; error: string } => {
+    const luts = new Map<string, Bit[][]>();
+    for (const b of boxList) {
+      if (!b.type || b.type.includes(".")) return { ok: false, error: `A box needs a type with no dot in it, got "${b.type}".` };
+      if (luts.has(b.type)) return { ok: false, error: `Two boxes have the type "${b.type}".` };
+      if (b.inputs.length < 1 || b.inputs.length > 8) return { ok: false, error: `The box "${b.type}" needs 1 to 8 input pins.` };
+      if (b.table.length !== b.outputs.length) return { ok: false, error: `The box "${b.type}" has ${b.outputs.length} output pins but ${b.table.length} table columns.` };
+      const cols: Bit[][] = [];
+      for (let k = 0; k < b.table.length; k++) {
+        const c = parseColumn(b.table[k], 1 << b.inputs.length, `${b.type} pin ${b.outputs[k]}`);
+        if (typeof c === "string") return { ok: false, error: c };
+        cols.push(c);
+      }
+      luts.set(b.type, cols);
+    }
+    return { ok: true, luts };
+  }, [boxKey]);
+  const partOf = (g: BGate): BoxPart | undefined => (g.type === "BOX" && g.box ? parts.get(g.box) : undefined);
+  const sizeOf = (g: BGate) => {
+    const p = partOf(g);
+    return p ? boxSize(p.inputs.length, p.outputs.length, p.gap ?? 0) : gateSize(g.type as GateType, g.n);
+  };
+  const inPinOf = (g: BGate, pin: number) => {
+    const p = partOf(g);
+    return p ? boxInputPin(p.inputs.length, p.outputs.length, p.gap ?? 0, pin) : gateInputPin(g.type as GateType, g.n, pin);
+  };
+  const outPinOf = (g: BGate, k: number) => {
+    const p = partOf(g);
+    return p ? boxOutputPin(p.inputs.length, p.outputs.length, p.gap ?? 0, k) : gateOutputPin(g.type as GateType, g.n);
+  };
+  // The source ids a gate or box drives.
+  const srcIdsOf = (g: BGate): string[] => {
+    const p = partOf(g);
+    return p ? p.outputs.map((_, k) => `${g.id}.${k}`) : [g.id];
+  };
+
   // ---- saved state ----
   const startDesign = useCallback((): Design => ({
     gates: (start?.gates ?? []).map((g) => ({ id: g.id, type: g.type, x: g.x, y: g.y, n: g.type === "NOT" ? 1 : Math.max(2, g.inputs ?? 2) })),
@@ -148,11 +219,30 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const revive = (s: unknown): Saved | null => {
     const v = s as Saved;
     if (!v || !v.design || !Array.isArray(v.design.gates) || !Array.isArray(v.design.wires)) return null;
-    const gates = v.design.gates.filter((g) => g && typeof g.id === "string" && ALL_GATES.includes(g.type) && Number.isFinite(g.x) && Number.isFinite(g.y))
-      .map((g) => ({ ...g, n: g.type === "NOT" ? 1 : Math.min(Math.max(2, g.n | 0), Math.max(2, maxFanIn)) }));
+    const seen = new Map<string, number>();
+    const gates = v.design.gates.filter((g) => {
+      if (!g || typeof g.id !== "string" || g.id.includes(".") || !Number.isFinite(g.x) || !Number.isFinite(g.y)) return false;
+      if (g.type !== "BOX") return ALL_GATES.includes(g.type);
+      const p = typeof g.box === "string" ? parts.get(g.box) : undefined;
+      if (!p) return false;
+      const k = (seen.get(p.type) ?? 0) + 1;
+      seen.set(p.type, k);
+      return k <= (p.max ?? 1);
+    }).map((g) => (g.type === "BOX"
+      ? { id: g.id, type: "BOX" as const, x: g.x, y: g.y, box: g.box, n: parts.get(g.box!)!.inputs.length }
+      : { ...g, n: g.type === "NOT" ? 1 : Math.min(Math.max(2, g.n | 0), Math.max(2, maxFanIn)) }));
     const gIds = new Map(gates.map((g) => [g.id, g]));
+    const validSrc = (from: unknown) => {
+      if (typeof from !== "string") return false;
+      if (inIds.includes(from)) return true;
+      const { gid, k } = splitSrc(from);
+      const g = gIds.get(gid);
+      if (!g) return false;
+      if (g.type !== "BOX") return from === gid;
+      return from !== gid && Number.isInteger(k) && k >= 0 && k < parts.get(g.box!)!.outputs.length;
+    };
     const wires = v.design.wires.filter((w) =>
-      w && (inIds.includes(w.from) || gIds.has(w.from)) &&
+      w && validSrc(w.from) &&
       ((outIds.includes(w.to) && w.pin === 0) || (gIds.has(w.to) && w.pin >= 0 && w.pin < gIds.get(w.to)!.n)));
     const switches = Object.fromEntries(inIds.map((i) => [i, (v.switches?.[i] === 1 ? 1 : 0) as Bit]));
     return { design: { gates, wires }, switches, solved: !!v.solved };
@@ -181,12 +271,18 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       if (ins[w.to]) ins[w.to][w.pin] = w.from;
       else if (w.to in outSrc) outSrc[w.to] = w.from;
     }
+    const luts = boxTables.ok ? boxTables.luts : new Map<string, Bit[][]>();
     return {
       inputs: inIds,
-      gates: design.gates.map((g) => ({ id: g.id, type: g.type, inputs: ins[g.id] })),
+      gates: design.gates.flatMap((g): NetGate[] => {
+        const p = partOf(g);
+        if (!p) return [{ id: g.id, type: g.type as GateType, inputs: ins[g.id] }];
+        const cols = luts.get(p.type) ?? [];
+        return p.outputs.map((_, k) => ({ id: `${g.id}.${k}`, type: "AND" as GateType, inputs: [...ins[g.id]], lut: cols[k], part: g.id }));
+      }),
       outputs: outIds.map((o) => ({ id: o, source: outSrc[o] })),
     };
-  }, [design, inIds.join(","), outIds.join(",")]);
+  }, [design, inIds.join(","), outIds.join(","), boxTables, parts]);
   const values = useMemo(() => evaluateNet(net, saved.switches), [net, saved.switches]);
   const depth = useMemo(() => circuitDepth(net), [net]);
 
@@ -194,14 +290,15 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const gateById = useMemo(() => new Map(design.gates.map((g) => [g.id, g])), [design]);
   const srcPos = (sid: string): { x: number; y: number } | null => {
     if (sw[sid]) return { x: sw[sid].x + SWITCH_PIN, y: sw[sid].y };
-    const g = gateById.get(sid);
-    if (g) return { x: g.x + gateOutputPin(g.type, g.n).x, y: g.y };
+    const { gid, k } = splitSrc(sid);
+    const g = gateById.get(gid);
+    if (g) { const p = outPinOf(g, k); return { x: g.x + p.x, y: g.y + p.y }; }
     return null;
   };
   const snkPos = (to: string, pin: number): { x: number; y: number } | null => {
     if (bl[to]) return { x: bl[to].x - BULB_PIN, y: bl[to].y };
     const g = gateById.get(to);
-    if (g) { const p = gateInputPin(g.type, g.n, pin); return { x: g.x + p.x, y: g.y + p.y }; }
+    if (g) { const p = inPinOf(g, pin); return { x: g.x + p.x, y: g.y + p.y }; }
     return null;
   };
   const endPos = (e: End) => (e.kind === "src" ? srcPos(e.id) : snkPos(e.to, e.pin));
@@ -209,14 +306,14 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const r: End[] = [];
     for (const i of inIds) r.push({ kind: "src", id: i });
     for (const g of design.gates) {
-      r.push({ kind: "src", id: g.id });
+      for (const sid of srcIdsOf(g)) r.push({ kind: "src", id: sid });
       for (let p = 0; p < g.n; p++) r.push({ kind: "snk", to: g.id, pin: p });
     }
     for (const o of outIds) r.push({ kind: "snk", to: o, pin: 0 });
     return r;
   };
   const gateBox = (g: BGate) => {
-    const { w, h } = gateSize(g.type, g.n);
+    const { w, h } = sizeOf(g);
     return { x0: g.x - 2, y0: g.y - h / 2 - 4, x1: g.x + w + 8, y1: g.y + h / 2 + 4 };
   };
   const wireAt = (to: string, pin: number) => design.wires.find((w) => w.to === to && w.pin === pin);
@@ -235,8 +332,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     setSel(null); setArmed(null); setResult(null); setNotice(null);
   };
 
-  const freeSpot = (type: GateType): { x: number; y: number } => {
-    const { w, h } = gateSize(type, type === "NOT" ? 1 : 2);
+  const freeSpot = ({ w, h }: { w: number; h: number }): { x: number; y: number } => {
     const xMin = switchX + 50, xMax = bulbX - 60 - w;
     const cands: { x: number; y: number; d: number }[] = [];
     for (let x = xMin; x <= xMax; x += 20) for (let y = 30; y <= H - 30; y += 20)
@@ -249,20 +345,32 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const c = cands.find(clear) ?? cands[0] ?? { x: (xMin + xMax) / 2, y: H / 2 };
     return { x: Math.round(c.x / SNAP) * SNAP, y: Math.round(c.y / SNAP) * SNAP };
   };
-  const addGate = (type: GateType) => {
+  const newGateId = () => {
     const taken = new Set([...inIds, ...outIds, ...design.gates.map((g) => g.id)]);
     let k = 1;
     while (taken.has(`g${k}`)) k++;
-    const p = freeSpot(type);
-    const g: BGate = { id: `g${k}`, type, x: p.x, y: p.y, n: type === "NOT" ? 1 : 2 };
+    return `g${k}`;
+  };
+  const place = (g: BGate) => {
     commit({ ...design, gates: [...design.gates, g] });
     setSel({ kind: "gate", id: g.id });
     setArmed(null); setNotice(null);
   };
+  const addGate = (type: GateType) => {
+    const n = type === "NOT" ? 1 : 2;
+    const p = freeSpot(gateSize(type, n));
+    place({ id: newGateId(), type, x: p.x, y: p.y, n });
+  };
+  const boxesOf = (t: string) => design.gates.filter((g) => g.type === "BOX" && g.box === t).length;
+  const addBox = (b: BoxPart) => {
+    if (boxesOf(b.type) >= (b.max ?? 1)) return;
+    const p = freeSpot(boxSize(b.inputs.length, b.outputs.length, b.gap ?? 0));
+    place({ id: newGateId(), type: "BOX", box: b.type, x: p.x, y: p.y, n: b.inputs.length });
+  };
   const deleteSel = () => {
     if (!sel) return;
     if (sel.kind === "gate") {
-      commit({ gates: design.gates.filter((g) => g.id !== sel.id), wires: design.wires.filter((w) => w.from !== sel.id && w.to !== sel.id) });
+      commit({ gates: design.gates.filter((g) => g.id !== sel.id), wires: design.wires.filter((w) => splitSrc(w.from).gid !== sel.id && w.to !== sel.id) });
     } else {
       commit({ ...design, wires: design.wires.filter((w) => !(w.to === sel.to && w.pin === sel.pin)) });
     }
@@ -270,7 +378,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   };
   const setFanIn = (gid: string, n: number) => {
     const g = gateById.get(gid);
-    if (!g || g.type === "NOT") return;
+    if (!g || g.type === "NOT" || g.type === "BOX") return;
     const m = Math.min(Math.max(2, n), Math.max(2, maxFanIn));
     if (m === g.n) return;
     commit({
@@ -282,7 +390,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const src = a.kind === "src" ? a : b.kind === "src" ? b : null;
     const snk = a.kind === "snk" ? a : b.kind === "snk" ? b : null;
     if (!src || !snk) return false;
-    if (gateById.has(snk.to) && wouldLoop(net, src.id, snk.to)) { setNotice(MSG.loop); return false; }
+    const sinkGate = gateById.get(snk.to);
+    if (sinkGate && srcIdsOf(sinkGate).some((t) => wouldLoop(net, src.id, t))) { setNotice(MSG.loop); return false; }
     const wires = design.wires.filter((w) => !(w.to === snk.to && w.pin === snk.pin));
     wires.push({ from: src.id, to: snk.to, pin: snk.pin });
     commit({ ...design, wires });
@@ -409,7 +518,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       if (!drag.moved && !far(drag)) return;
       const g = gateById.get(drag.id);
       if (!g) return;
-      const { w, h } = gateSize(g.type, g.n);
+      const { w, h } = sizeOf(g);
       const nx = Math.min(Math.max(switchX + 34, Math.round((x - drag.offX) / SNAP) * SNAP), W - w - 20);
       const ny = Math.min(Math.max(h / 2 + 6, Math.round((y - drag.offY) / SNAP) * SNAP), H - h / 2 - 6);
       if (nx !== g.x || ny !== g.y)
@@ -460,7 +569,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
 
   // Keep every gate inside the canvas when the canvas narrows.
   useEffect(() => {
-    const fix = (g: BGate) => Math.min(g.x, W - gateSize(g.type, g.n).w - 20);
+    const fix = (g: BGate) => Math.min(g.x, W - sizeOf(g).w - 20);
     if (design.gates.some((g) => fix(g) !== g.x))
       setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((g) => ({ ...g, x: Math.max(switchX + 34, fix(g)) })) } }));
   }, [W, design]);
@@ -475,7 +584,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const check = () => {
     if (!resolved.ok) return;
     setArmed(null); setSel(null); setNotice(null);
-    const r = checkNet(net, resolved.cols, { allowed: palette, maxGates, maxDepth, maxPerType, maxFanIn });
+    const r = checkNet(net, resolved.cols, { allowed: palette, maxGates, maxDepth, maxPerType, maxFanIn, needBox: boxList.some((b) => b.required) });
     setResult(r);
     if (r.status === "wrong") setSaved((s) => ({ ...s, switches: r.setting }));
     if (r.status === "ok") setSaved((s) => ({ ...s, solved: true }));
@@ -488,6 +597,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
 
   // ---- author errors ----
   if (!resolved.ok) return <AuthorError>{resolved.error}</AuthorError>;
+  if (!boxTables.ok) return <AuthorError>{boxTables.error}</AuthorError>;
   if (!id) return <AuthorError>CircuitBuilder needs an id, unique on the page.</AuthorError>;
   if (ins.length === 0 || ins.length > 6) return <AuthorError>CircuitBuilder takes 1 to 6 switches.</AuthorError>;
   const clash = [...inIds, ...outIds].find((x, i, a) => a.indexOf(x) !== i);
@@ -498,7 +608,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const badPins = new Set<string>();
   if (result?.status === "wrong") for (const w of result.wrong) bulbMarks[w.output] = { text: MSG.shouldBe(w.want), tone: "wrong" };
   if (result?.status === "unwired-output") for (const o of result.outputs) bulbMarks[o] = { text: "not wired", tone: "wrong" };
-  if (result?.status === "empty-pin") for (const g of net.gates) if (result.gates.includes(g.id)) g.inputs.forEach((s, p) => { if (s == null) badPins.add(`${g.id}:${p}`); });
+  if (result?.status === "empty-pin") for (const g of net.gates) if (result.gates.includes(g.id)) g.inputs.forEach((s, p) => { if (s == null) badPins.add(`${g.part ?? g.id}:${p}`); });
   if (result?.status === "ok") for (const o of outIds) bulbMarks[o] = { text: "", tone: "right" };
 
   const labelOf = (x: string) => ins.find((i) => i.id === x)?.label ?? outs.find((o) => o.id === x)?.label ?? x;
@@ -506,7 +616,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     switch (r.status) {
       case "ok": return { tone: "right", text: MSG.builderRight(r.rows) + (fewest === undefined ? "" : r.gates > fewest ? ` ${MSG.fewerPossible}` : ` ${MSG.fewestReached}`) };
       case "unwired-output": return { tone: "wrong", text: MSG.unwired(r.outputs.map(labelOf)) };
-      case "empty-pin": return { tone: "wrong", text: MSG.emptyPin };
+      case "empty-pin": return { tone: "wrong", text: boxList.length ? MSG.emptyPinBox : MSG.emptyPin };
       case "loop": return { tone: "wrong", text: MSG.loop };
       case "wrong": return { tone: "wrong", text: MSG.counterexample(ins.map((i) => `${i.label} = ${r.setting[i.id]}`).join(", ")) };
       case "not-allowed": return { tone: "wrong", text: MSG.notAllowed(r.type) };
@@ -514,6 +624,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       case "too-many-gates": return { tone: "wrong", text: MSG.tooManyGates(r.gates, r.limit) };
       case "too-deep": return { tone: "wrong", text: MSG.tooDeep(r.depth, r.limit) };
       case "too-many-of-type": return { tone: "wrong", text: MSG.tooManyOfType(r.type, r.count, r.limit) };
+      case "box-unused": return { tone: "wrong", text: MSG.boxUnused };
+      case "too-many-boxes": return { tone: "wrong", text: MSG.tooManyBoxes(r.boxes, r.limit) };
     }
   };
 
@@ -531,7 +643,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const selGate = sel?.kind === "gate" ? gateById.get(sel.id) : undefined;
   const badge = badgePos();
   const rowNow = rowIndex(inIds, saved.switches);
-  const count = design.gates.length;
+  const count = design.gates.filter((g) => g.type !== "BOX").length;
 
   return (
     <div ref={boxRef} className="not-prose circuit-builder" style={{ margin: "12px 0" }}>
@@ -562,6 +674,24 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
           >
             <GateIcon type={t} size={0.9} />
             {t}
+          </button>
+        ))}
+        {boxList.map((b) => (
+          <button
+            key={`box-${b.type}`}
+            type="button"
+            onClick={() => addBox(b)}
+            disabled={boxesOf(b.type) >= (b.max ?? 1)}
+            aria-label={`Add the box ${b.title}`}
+            title={boxesOf(b.type) >= (b.max ?? 1) ? MSG.boxPlaced : undefined}
+            className="rounded-md border border-[var(--rule)] hover:border-[var(--accent)] transition-colors disabled:opacity-50 disabled:hover:border-[var(--rule)]"
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 8px 2px 6px", background: "var(--surface)", fontSize: 12, fontWeight: 600, color: "var(--ink)" }}
+          >
+            <svg width={16} height={14} viewBox="0 0 16 14" aria-hidden="true">
+              <rect x={1} y={1} width={14} height={12} rx={2} fill="var(--surface)" stroke="var(--gate-ink)" strokeWidth={1.3} />
+              <path d="M 1 5 H 15" stroke="var(--gate-ink)" strokeWidth={1} />
+            </svg>
+            {b.title}
           </button>
         ))}
       </div>
@@ -610,9 +740,13 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         })}
 
         {/* gates */}
-        {design.gates.map((g) => (
-          <GateGlyph key={g.id} type={g.type} n={g.n} x={g.x} y={g.y} selected={sel?.kind === "gate" && sel.id === g.id} />
-        ))}
+        {design.gates.map((g) => {
+          const isSel = sel?.kind === "gate" && sel.id === g.id;
+          const p = partOf(g);
+          return p
+            ? <BoxGlyph key={g.id} title={p.title} inputs={p.inputs} outputs={p.outputs} gap={p.gap ?? 0} x={g.x} y={g.y} selected={isSel} />
+            : <GateGlyph key={g.id} type={g.type as GateType} n={g.n} x={g.x} y={g.y} selected={isSel} />;
+        })}
 
         {/* switches */}
         {ins.map((i) => (
@@ -628,7 +762,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         })}
 
         {/* live digits */}
-        {[...inIds, ...design.gates.map((g) => g.id)].map((sid) => {
+        {[...inIds, ...design.gates.flatMap(srcIdsOf)].map((sid) => {
           const p = srcPos(sid)!;
           return <ValueDigit key={`v-${sid}`} x={p.x} y={p.y} value={values[sid]} />;
         })}
@@ -685,7 +819,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         <Button main onClick={check}>Check</Button>
         <Button onClick={doUndo} disabled={undo.current.length === 0}>Undo</Button>
         <Button onClick={deleteSel} disabled={!sel}>Delete</Button>
-        {selGate && selGate.type !== "NOT" && maxFanIn > 2 && (
+        {selGate && selGate.type !== "NOT" && selGate.type !== "BOX" && maxFanIn > 2 && (
           <>
             <Button onClick={() => setFanIn(selGate.id, selGate.n + 1)} disabled={selGate.n >= maxFanIn}>More inputs</Button>
             <Button onClick={() => setFanIn(selGate.id, selGate.n - 1)} disabled={selGate.n <= 2}>Fewer inputs</Button>

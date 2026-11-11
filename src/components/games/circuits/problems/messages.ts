@@ -10,6 +10,7 @@ export const MSG = {
   unwired: (labels: string[]) =>
     labels.length === 1 ? `The bulb ${labels[0]} is not wired to anything yet.` : `The bulbs ${labels.join(", ")} are not wired to anything yet.`,
   emptyPin: "A gate has an empty input. It is marked in red.",
+  emptyPinBox: "A gate or a box has an empty input. It is marked in red.",
   loop: "That wire would make a loop. Circuits here have no loops.",
   counterexample: (row: string) => `Not yet. Your circuit is wrong on the row ${row}. The switches are now set to that row, and the marked bulb shows what it should do.`,
   shouldBe: (want: 0 | 1) => (want ? "should be lit" : "should be dark"),
@@ -19,6 +20,9 @@ export const MSG = {
   tooDeep: (d: number, lim: number) => `The table is right, but the depth is ${d}. The limit is ${lim}.`,
   tooManyOfType: (t: string, n: number, lim: number) =>
     `The table is right, but the circuit uses ${n} ${t} gates. The limit is ${lim}.`,
+  boxUnused: "The table is right, but this problem asks you to use the box. Wire at least one of its outputs into your circuit.",
+  tooManyBoxes: (n: number, lim: number) => `The table is right, but the circuit uses ${n} boxes. The limit is ${lim}.`,
+  boxPlaced: "The box is already on the canvas.",
   wireHint: "Now tap a pin to connect to, or tap empty space to cancel.",
   builderHint: "Drag a gate to move it. Drag from pin to pin to draw a wire. Tap a gate or wire, then the x, to delete it.",
   emptyCanvas: "Tap a gate above the canvas to add it. Then drag from a pin to a pin to draw a wire.",

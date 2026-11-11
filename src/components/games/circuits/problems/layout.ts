@@ -41,6 +41,40 @@ export function gateOutputPin(type: GateType, n: number): { x: number; y: number
   return { x: w + bubble + PIN_STUB, y: 0 };
 }
 
+// ---- boxes ---------------------------------------------------------------
+//
+// A box is a rectangle with a title band on top, input pins down its left
+// edge and output pins down its right edge. Its anchor is the middle of its
+// left edge, as for a gate. `gap` is the number of pins after which a small
+// space is left on the input side (an adder leaves one between the two
+// numbers), or 0 for none.
+
+export const BOX_W = 96;
+export const BOX_TITLE = 20;
+export const BOX_PIN_GAP = 22;
+export const BOX_SPLIT = 10;
+
+export function boxSize(nIn: number, nOut: number, gap = 0): { w: number; h: number } {
+  const inH = nIn * BOX_PIN_GAP + (gap > 0 && gap < nIn ? BOX_SPLIT : 0);
+  return { w: BOX_W, h: BOX_TITLE + Math.max(inH, nOut * BOX_PIN_GAP) + 8 };
+}
+
+// Relative to the box anchor.
+export function boxInputPin(nIn: number, nOut: number, gap: number, idx: number): { x: number; y: number } {
+  const { h } = boxSize(nIn, nOut, gap);
+  const inH = nIn * BOX_PIN_GAP + (gap > 0 && gap < nIn ? BOX_SPLIT : 0);
+  const top = -h / 2 + BOX_TITLE + (h - BOX_TITLE - 8 - inH) / 2 + 4;
+  const split = gap > 0 && idx >= gap ? BOX_SPLIT : 0;
+  return { x: -PIN_STUB, y: top + BOX_PIN_GAP * (idx + 0.5) + split };
+}
+
+export function boxOutputPin(nIn: number, nOut: number, gap: number, idx: number): { x: number; y: number } {
+  const { h } = boxSize(nIn, nOut, gap);
+  const outH = nOut * BOX_PIN_GAP;
+  const top = -h / 2 + BOX_TITLE + (h - BOX_TITLE - 8 - outH) / 2 + 4;
+  return { x: BOX_W + PIN_STUB, y: top + BOX_PIN_GAP * (idx + 0.5) };
+}
+
 // ---- wires ---------------------------------------------------------------
 
 // A smooth S-curve from a source pin to a sink pin.

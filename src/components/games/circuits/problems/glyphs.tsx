@@ -19,6 +19,10 @@ import {
   SWITCH_H,
   SWITCH_PIN,
   SWITCH_W,
+  BOX_TITLE,
+  boxInputPin,
+  boxOutputPin,
+  boxSize,
   gateInputPin,
   gateOutputPin,
   gateSize,
@@ -139,6 +143,42 @@ export function GateGlyph({
           {label}
         </text>
       )}
+    </g>
+  );
+}
+
+// ---- boxes -------------------------------------------------------------------
+
+// A box with labelled pins, anchored at (x, y) like a gate (the middle of its
+// left edge). See boxSize in layout.ts for the geometry.
+export function BoxGlyph({
+  title, inputs, outputs, gap = 0, x, y, selected = false,
+}: {
+  title: string; inputs: string[]; outputs: string[]; gap?: number;
+  x: number; y: number; selected?: boolean;
+}) {
+  const nI = inputs.length, nO = outputs.length;
+  const { w, h } = boxSize(nI, nO, gap);
+  const ins = inputs.map((_, i) => boxInputPin(nI, nO, gap, i));
+  const outs = outputs.map((_, k) => boxOutputPin(nI, nO, gap, k));
+  return (
+    <g transform={`translate(${x},${y})`}>
+      {selected && (
+        <rect x={-14} y={-h / 2 - 8} width={w + 28} height={h + 16} rx={8} fill="var(--accent-soft)" stroke={HILITE} strokeWidth={1.2} strokeDasharray="4 3" />
+      )}
+      {ins.map((p, i) => <line key={`i${i}`} x1={p.x} y1={p.y} x2={0} y2={p.y} stroke={GATE_INK} strokeWidth={1.4} />)}
+      {outs.map((p, k) => <line key={`o${k}`} x1={w} y1={p.y} x2={p.x} y2={p.y} stroke={GATE_INK} strokeWidth={1.4} />)}
+      <rect x={0} y={-h / 2} width={w} height={h} rx={6} fill="var(--surface)" stroke={GATE_INK} strokeWidth={1.6} />
+      <path d={`M 0 ${-h / 2 + BOX_TITLE} H ${w}`} stroke={GATE_INK} strokeWidth={1} />
+      <text x={w / 2} y={-h / 2 + 14} fontSize={11} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={GATE_INK} style={{ pointerEvents: "none" }}>
+        {title}
+      </text>
+      {ins.map((p, i) => (
+        <text key={`li${i}`} x={6} y={p.y + 4} fontSize={11} fontFamily={MONO} fill={GATE_INK} style={{ pointerEvents: "none" }}>{inputs[i]}</text>
+      ))}
+      {outs.map((p, k) => (
+        <text key={`lo${k}`} x={w - 6} y={p.y + 4} fontSize={11} fontFamily={MONO} textAnchor="end" fill={GATE_INK} style={{ pointerEvents: "none" }}>{outputs[k]}</text>
+      ))}
     </g>
   );
 }
