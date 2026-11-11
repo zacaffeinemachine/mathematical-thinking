@@ -20,6 +20,11 @@ import {
   SWITCH_PIN,
   SWITCH_W,
   BOX_TITLE,
+  BULB_PIN_DOWN,
+  SWITCH_PIN_DOWN,
+  boxInputPinDown,
+  boxOutputPinDown,
+  boxSizeDown,
   boxInputPin,
   boxOutputPin,
   boxSize,
@@ -67,12 +72,14 @@ export function Wire({
 }
 
 // The little 0 / 1 printed just after a source pin.
-export function ValueDigit({ x, y, value }: { x: number; y: number; value: Bit | undefined }) {
+// down: the pin is at the bottom of a part and its wire runs down, so the
+// digit sits to the right of the pin instead.
+export function ValueDigit({ x, y, value, down = false }: { x: number; y: number; value: Bit | undefined; down?: boolean }) {
   if (value === undefined) return null;
   return (
     <text
-      x={x + 3}
-      y={y - 5}
+      x={down ? x + 6 : x + 3}
+      y={down ? y + 4 : y - 5}
       fontSize={11}
       fontFamily={MONO}
       fontWeight={700}
@@ -99,19 +106,36 @@ export function PinDot({ x, y, filled, hot = false, bad = false }: { x: number; 
 
 // A gate with n input pins, anchored at (x, y) as in model.ts. Stubs run from
 // each pin to the body, so a wire ending at the pin meets the gate.
+// down: drawn top to bottom (see layout.ts), anchored at the middle of its
+// top edge. The shape is transposed and the type is written upright.
 export function GateGlyph({
-  type, n, x, y, label, selected = false, showType = true,
+  type, n, x, y, label, selected = false, showType = true, down = false,
 }: {
   type: GateType; n: number; x: number; y: number;
-  label?: string; selected?: boolean; showType?: boolean;
+  label?: string; selected?: boolean; showType?: boolean; down?: boolean;
 }) {
   const { w, h } = gateSize(type, n);
   const out = gateOutputPin(type, n);
   const bubble = hasBubble(type);
   const pins = Array.from({ length: type === "NOT" ? 1 : n }, (_, i) => gateInputPin(type, n, i));
   const bodyX = (py: number) => (type === "OR" || type === "NOR" || type === "XOR" ? orBackX(w, h, py) : 0);
-  return (
-    <g transform={`translate(${x},${y})`}>
+  const typeAt = type === "OR" || type === "NOR" || type === "XOR" ? w * 0.47 : w / 2 - 2;
+  const typeText = (tx: number, ty: number) => showType && type !== "NOT" && (
+    <text
+      x={tx}
+      y={ty}
+      fontSize={type === "NAND" ? 10 : 11}
+      fontFamily={SANS}
+      fontWeight={600}
+      textAnchor="middle"
+      fill={GATE_INK}
+      style={{ pointerEvents: "none" }}
+    >
+      {type}
+    </text>
+  );
+  const shape = (
+    <>
       {selected && (
         <rect x={-14} y={-h / 2 - 8} width={out.x + 20} height={h + 16} rx={8} fill="var(--accent-soft)" stroke={HILITE} strokeWidth={1.2} strokeDasharray="4 3" />
       )}
@@ -124,20 +148,20 @@ export function GateGlyph({
       )}
       <path d={gatePathSized(type, w, h)} fill={GATE_FILL[type]} stroke={GATE_INK} strokeWidth={1.5} />
       {bubble && <circle cx={w + 3} cy={0} r={3} fill="var(--surface)" stroke={GATE_INK} strokeWidth={1.4} />}
-      {showType && type !== "NOT" && (
-        <text
-          x={type === "OR" || type === "NOR" || type === "XOR" ? w * 0.47 : w / 2 - 2}
-          y={4}
-          fontSize={type === "NAND" ? 10 : 11}
-          fontFamily={SANS}
-          fontWeight={600}
-          textAnchor="middle"
-          fill={GATE_INK}
-          style={{ pointerEvents: "none" }}
-        >
-          {type}
-        </text>
-      )}
+    </>
+  );
+  if (down) {
+    return (
+      <g>
+        <g transform={`matrix(0 1 1 0 ${x} ${y})`}>{shape}</g>
+        {typeText(x, y + typeAt + 4)}
+      </g>
+    );
+  }
+  return (
+    <g transform={`translate(${x},${y})`}>
+      {shape}
+      {typeText(typeAt, 4)}
       {label && (
         <text x={w / 2} y={h / 2 + 14} fontSize={10} fontFamily={MONO} textAnchor="middle" fill="var(--muted)">
           {label}
@@ -183,19 +207,56 @@ export function BoxGlyph({
   );
 }
 
+// The same box drawn top to bottom (see layout.ts): anchored at the middle
+// of its top edge, input pins along the top, output pins along the bottom,
+// each labelled just inside the edge.
+export function BoxGlyphDown({
+  title, inputs, outputs, gap = 0, x, y, selected = false,
+}: {
+  title: string; inputs: string[]; outputs: string[]; gap?: number;
+  x: number; y: number; selected?: boolean;
+}) {
+  const nI = inputs.length, nO = outputs.length;
+  const { w: len, h: across } = boxSizeDown(nI, nO, gap);
+  const ins = inputs.map((_, i) => boxInputPinDown(nI, nO, gap, i));
+  const outs = outputs.map((_, k) => boxOutputPinDown(nI, nO, gap, k));
+  return (
+    <g transform={`translate(${x},${y})`}>
+      {selected && (
+        <rect x={-across / 2 - 8} y={-PIN_STUB - 8} width={across + 16} height={len + 2 * PIN_STUB + 16} rx={8} fill="var(--accent-soft)" stroke={HILITE} strokeWidth={1.2} strokeDasharray="4 3" />
+      )}
+      {ins.map((p, i) => <line key={`i${i}`} x1={p.y} y1={p.x} x2={p.y} y2={0} stroke={GATE_INK} strokeWidth={1.4} />)}
+      {outs.map((p, k) => <line key={`o${k}`} x1={p.y} y1={len} x2={p.y} y2={p.x} stroke={GATE_INK} strokeWidth={1.4} />)}
+      <rect x={-across / 2} y={0} width={across} height={len} rx={6} fill="var(--surface)" stroke={GATE_INK} strokeWidth={1.6} />
+      <text x={0} y={len / 2 + 4} fontSize={11} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={GATE_INK} style={{ pointerEvents: "none" }}>
+        {title}
+      </text>
+      {ins.map((p, i) => (
+        <text key={`li${i}`} x={p.y} y={15} fontSize={11} fontFamily={MONO} textAnchor="middle" fill={GATE_INK} style={{ pointerEvents: "none" }}>{inputs[i]}</text>
+      ))}
+      {outs.map((p, k) => (
+        <text key={`lo${k}`} x={p.y} y={len - 7} fontSize={11} fontFamily={MONO} textAnchor="middle" fill={GATE_INK} style={{ pointerEvents: "none" }}>{outputs[k]}</text>
+      ))}
+    </g>
+  );
+}
+
 // ---- switches ----------------------------------------------------------------
 
 // A toggle switch: up is 1, down is 0. value null shows the knob in the
 // middle, for a switch whose position is not yet on show.
 export function SwitchGlyph({
-  x, y, label, value, locked = false, bad = false, stub = true,
+  x, y, label, value, locked = false, bad = false, stub = true, down = false,
 }: {
   x: number; y: number; label?: string; value: Bit | null; locked?: boolean; bad?: boolean; stub?: boolean;
+  down?: boolean;   // the output pin is below the switch, not to its right
 }) {
   const ky = value === 1 ? -SWITCH_H / 2 + 8 : value === 0 ? SWITCH_H / 2 - 8 : 0;
   return (
     <g transform={`translate(${x},${y})`}>
-      {stub && <line x1={SWITCH_W / 2} y1={0} x2={SWITCH_PIN} y2={0} stroke={GATE_INK} strokeWidth={1.4} />}
+      {stub && (down
+        ? <line x1={0} y1={SWITCH_H / 2} x2={0} y2={SWITCH_PIN_DOWN} stroke={GATE_INK} strokeWidth={1.4} />
+        : <line x1={SWITCH_W / 2} y1={0} x2={SWITCH_PIN} y2={0} stroke={GATE_INK} strokeWidth={1.4} />)}
       <rect
         x={-SWITCH_W / 2}
         y={-SWITCH_H / 2}
@@ -229,20 +290,25 @@ export interface BulbMark { text: string; tone: "wrong" | "right" }
 // A bulb with its base on the left, where the wire comes in. value 1 is lit,
 // 0 is dark, null is a question mark, undefined is "not wired" (dashed).
 export function BulbGlyph({
-  x, y, label, value, mark, digit = false, stub = true,
+  x, y, label, value, mark, digit = false, stub = true, down = false,
 }: {
   x: number; y: number; label?: string;
   value: Bit | null | undefined;
   mark?: BulbMark;
   digit?: boolean;
   stub?: boolean;
+  down?: boolean;   // the base is on top, where the wire comes in from above
 }) {
   const lit = value === 1;
   return (
     <g transform={`translate(${x},${y})`}>
-      {stub && <line x1={-BULB_PIN} y1={0} x2={-BULB_R - 5} y2={0} stroke={GATE_INK} strokeWidth={1.4} />}
+      {stub && (down
+        ? <line x1={0} y1={-BULB_PIN_DOWN} x2={0} y2={-BULB_R - 5} stroke={GATE_INK} strokeWidth={1.4} />
+        : <line x1={-BULB_PIN} y1={0} x2={-BULB_R - 5} y2={0} stroke={GATE_INK} strokeWidth={1.4} />)}
       {lit && <circle r={BULB_R + 8} fill="var(--bulb-glow)" />}
-      <rect x={-BULB_R - 6} y={-5} width={7} height={10} rx={1.5} fill="var(--muted)" stroke={GATE_INK} strokeWidth={1} />
+      {down
+        ? <rect x={-5} y={-BULB_R - 6} width={10} height={7} rx={1.5} fill="var(--muted)" stroke={GATE_INK} strokeWidth={1} />
+        : <rect x={-BULB_R - 6} y={-5} width={7} height={10} rx={1.5} fill="var(--muted)" stroke={GATE_INK} strokeWidth={1} />}
       <circle
         r={BULB_R}
         fill={lit ? "var(--bulb-lit)" : "var(--surface)"}

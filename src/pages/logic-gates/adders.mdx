@@ -4,8 +4,8 @@ title: Adding Numbers
 order: 7.6
 chapter: logic-gates
 chapterTitle: Circuits
-blurb: Build circuits that add two numbers of one, two and three bits, and then use a box that adds smaller numbers to add bigger ones.
-description: Circuit problems on adding numbers set on switches, from 1-bit numbers to 3-bit numbers, and a bigger adder built from a smaller one.
+blurb: Build circuits that add two numbers of one and two bits, and then use a box that adds smaller numbers to add bigger ones.
+description: Circuit problems on adding numbers set on switches, for 1-bit and 2-bit numbers, and a bigger adder built from a smaller one.
 ---
 import {
   CircuitProblem,
@@ -54,17 +54,7 @@ the three bulbs $s_2$, $s_1$ and $s_0$ that show the sum of the two numbers.
 <CircuitBuilder client:visible id="sum-2" inputs={B.two.inputs} outputs={B.two.outputs} target={B.two.target} gates={B.two.gates} grid={B.two.grid} fewest={B.two.fewest} />
 </CircuitProblem>
 
-<CircuitProblem n={3} title="Two 3-bit numbers" hard>
-One number is set on $a_2$, $a_1$ and $a_0$, and the other on $b_2$, $b_1$ and
-$b_0$. Build the four bulbs $s_3$, $s_2$, $s_1$ and $s_0$ that show the sum of
-the two numbers.
-
-<AdditionPicture a="110" b="111" caption="6 + 7 = 13" />
-
-<CircuitBuilder client:visible id="sum-3" inputs={B.three.inputs} outputs={B.three.outputs} target={B.three.target} gates={B.three.gates} grid={B.three.grid} />
-</CircuitProblem>
-
-<CircuitProblem n={4} title="One bit more" hard>
+<CircuitProblem n={3} title="One bit more" hard>
 You are given a sealed box that adds two $n$-bit numbers and shows the sum on
 ${n + 1}$ wires. Using one such box and as many gates as you like, build a
 circuit that adds two ${(n + 1)}$-bit numbers.

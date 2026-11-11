@@ -75,6 +75,56 @@ export function boxOutputPin(nIn: number, nOut: number, gap: number, idx: number
   return { x: BOX_W + PIN_STUB, y: top + BOX_PIN_GAP * (idx + 0.5) };
 }
 
+// ---- drawn top to bottom ---------------------------------------------------
+//
+// A builder with a grid (CircuitBuilder's `grid` prop) runs top to bottom:
+// switches along the top, bulbs along the bottom, and every gate and box
+// turned so that its inputs come in at the top and its outputs leave at the
+// bottom. A gate keeps its own frame (along the flow, then across it) and is
+// drawn transposed, so its anchor is the middle of its top edge and a point
+// (u, v) of its frame sits at (x + v, y + u) on the canvas. The first input
+// pin is then the leftmost.
+
+export const SWITCH_PIN_DOWN = SWITCH_H / 2 + 6;  // switch output pin, below centre
+export const BULB_PIN_DOWN = BULB_PIN;           // bulb input pin, above centre
+
+// A box drawn top to bottom: input pins along the top edge, output pins
+// along the bottom edge, in the frame of a gate (x along the flow, y across).
+export const BOXD_LEN = 64;
+export const BOXD_PIN = 30;
+
+const boxDownSpan = (n: number, gap: number) => n * BOXD_PIN + (gap > 0 && gap < n ? BOX_SPLIT : 0);
+
+export function boxSizeDown(nIn: number, nOut: number, gap = 0): { w: number; h: number } {
+  return { w: BOXD_LEN, h: Math.max(boxDownSpan(nIn, gap), boxDownSpan(nOut, 0)) + 12 };
+}
+
+export function boxInputPinDown(nIn: number, _nOut: number, gap: number, idx: number): { x: number; y: number } {
+  const split = gap > 0 && idx >= gap ? BOX_SPLIT : 0;
+  return { x: -PIN_STUB, y: -boxDownSpan(nIn, gap) / 2 + BOXD_PIN * (idx + 0.5) + split };
+}
+
+export function boxOutputPinDown(_nIn: number, nOut: number, _gap: number, idx: number): { x: number; y: number } {
+  return { x: BOXD_LEN + PIN_STUB, y: -boxDownSpan(nOut, 0) / 2 + BOXD_PIN * (idx + 0.5) };
+}
+
+// The S-curve of wirePath turned on its side: it leaves its source going
+// down and enters its sink going down. It is wirePath with x and y swapped,
+// so its points and its distance come from the functions below for free.
+export function wirePathDown(x1: number, y1: number, x2: number, y2: number): string {
+  const dy = Math.max(18, Math.abs(y2 - y1) * 0.45);
+  return `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`;
+}
+
+export function wirePointDown(x1: number, y1: number, x2: number, y2: number, t: number): { x: number; y: number } {
+  const p = wirePoint(y1, x1, y2, x2, t);
+  return { x: p.y, y: p.x };
+}
+
+export function distToWireDown(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+  return distToWire(py, px, y1, x1, y2, x2);
+}
+
 // ---- wires ---------------------------------------------------------------
 
 // A smooth S-curve from a source pin to a sink pin.

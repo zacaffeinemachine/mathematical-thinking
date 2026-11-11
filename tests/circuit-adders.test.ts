@@ -88,13 +88,12 @@ function expected(n: number): Record<string, string> {
 test("adders: switches and bulbs are the ones the page describes", () => {
   assert.deepEqual(ids(B.one), ["a0", "b0"]);
   assert.deepEqual(ids(B.two), ["a1", "a0", "b1", "b0"]);
-  assert.deepEqual(ids(B.three), ["a2", "a1", "a0", "b2", "b1", "b0"]);
-  assert.deepEqual(ids(B.stepUp), ids(B.three));
+  assert.deepEqual(ids(B.stepUp), ["a2", "a1", "a0", "b2", "b1", "b0"]);
   assert.deepEqual(B.one.outputs.map((o) => o.label), ["s₁", "s₀"]);
   assert.deepEqual(B.two.outputs.map((o) => o.label), ["s₂", "s₁", "s₀"]);
-  assert.deepEqual(B.three.outputs.map((o) => o.label), ["s₃", "s₂", "s₁", "s₀"]);
-  assert.deepEqual(B.three.inputs.map((i) => i.label), ["a₂", "a₁", "a₀", "b₂", "b₁", "b₀"]);
-  for (const b of [B.one, B.two, B.three, B.stepUp]) {
+  assert.deepEqual(B.stepUp.outputs.map((o) => o.label), ["s₃", "s₂", "s₁", "s₀"]);
+  assert.deepEqual(B.stepUp.inputs.map((i) => i.label), ["a₂", "a₁", "a₀", "b₂", "b₁", "b₀"]);
+  for (const b of [B.one, B.two, B.stepUp]) {
     const outs = b.outputs.map((o) => o.id);
     assert.equal(new Set([...ids(b), ...outs]).size, ids(b).length + outs.length);
     assert.deepEqual(Object.keys(b.target).sort(), [...outs].sort());
@@ -102,7 +101,7 @@ test("adders: switches and bulbs are the ones the page describes", () => {
 });
 
 test("adders: the grid is a written sum, a_i, b_i and s_i in one column", () => {
-  for (const [n, b] of [[1, B.one], [2, B.two], [3, B.three], [3, B.stepUp]] as const) {
+  for (const [n, b] of [[1, B.one], [2, B.two], [3, B.stepUp]] as const) {
     const [top, bottom] = b.grid.rows;
     assert.equal(b.grid.rows.length, 2);
     assert.equal(top[0], null);
@@ -122,7 +121,6 @@ test("adders: the grid is a written sum, a_i, b_i and s_i in one column", () => 
 test("adders: every target is the sum, bulb by bulb", () => {
   assert.deepEqual(B.one.target, expected(1));
   assert.deepEqual(B.two.target, expected(2));
-  assert.deepEqual(B.three.target, expected(3));
   assert.deepEqual(B.stepUp.target, expected(3));
 });
 
@@ -156,7 +154,6 @@ test("adders: every fewest count is exactly the fewest gates possible", () => {
   }
   assert.equal(B.one.fewest, 2);
   assert.equal(B.two.fewest, 7);
-  assert.equal(B.three.fewest, undefined);
   assert.equal(B.stepUp.fewest, undefined);
 });
 

@@ -1,6 +1,7 @@
 // Switches, bulbs, targets and the sealed adder box for logic-gates/adders.mdx
-// ("Adding Numbers"): circuits that add two numbers of 1, 2 and 3 bits, and
-// a 3-bit adder built from a box that adds 2-bit numbers.
+// ("Adding Numbers"): circuits that add two numbers of 1 and 2 bits, and a
+// 3-bit adder built from a box that adds 2-bit numbers. (A 3-bit adder built
+// from gates alone was dropped: it takes too many gates to be a good exercise.)
 //
 // A number of n bits sits on n switches a_(n-1), ..., a_1, a_0, where a_i is
 // worth 2^i: a_0 is worth 1, a_1 is worth 2, a_2 is worth 4. Ids carry the
@@ -13,8 +14,8 @@
 //
 // tests/circuit-adders.test.ts rebuilds every target and the box's table from
 // the rule as the page words it, and proves the two `fewest` counts by
-// searching every smaller circuit. The 3-bit problems have six switches, too
-// many for the search (its tables are 32-bit masks), so they carry no
+// searching every smaller circuit. The 3-bit problem has six switches, too
+// many for the search (its tables are 32-bit masks), so it carries no
 // `fewest`. No solution circuit is written down anywhere.
 
 import type { GateType } from "../../model.ts";
@@ -77,12 +78,11 @@ const adder = (n: number, fewest?: number): AdderBuild => ({
   ...(fewest === undefined ? {} : { fewest }),
 });
 
-// 1. Two 1-bit numbers. 2. Two 2-bit numbers. 3. Two 3-bit numbers.
+// 1. Two 1-bit numbers. 2. Two 2-bit numbers.
 export const one = adder(1, 2);
 export const two = adder(2, 7);
-export const three = adder(3);
 
-// 4. One bit more. The box adds the 2-bit number on its pins x₁, x₀ to the
+// 3. One bit more. The box adds the 2-bit number on its pins x₁, x₀ to the
 // one on y₁, y₀ and shows the sum on z₂, z₁, z₀. One box, which must be used.
 const boxCols = sumColumns(2, "z");
 export const box2: AdderBox = {

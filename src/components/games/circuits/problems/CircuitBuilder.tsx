@@ -1,5 +1,6 @@
 // The student builds a circuit on a canvas: switches on the left, bulbs on
-// the right, gates from a palette in between. Every wire shows its live value
+// the right, gates from a palette in between (with a `grid`, switches on top,
+// bulbs along the bottom, and gates turned to run top to bottom). Every wire shows its live value
 // as the switches are flipped. Check compares the complete truth table with
 // the target, then the limits. On a wrong table the switches jump to the
 // first wrong row and the wrong bulb is marked.
@@ -40,18 +41,26 @@ import {
 } from "./engine";
 import {
   BULB_PIN,
+  BULB_PIN_DOWN,
   SWITCH_PIN,
+  SWITCH_PIN_DOWN,
   boxInputPin,
+  boxInputPinDown,
   boxOutputPin,
+  boxOutputPinDown,
   boxSize,
+  boxSizeDown,
   distToWire,
+  distToWireDown,
   gateInputPin,
   gateOutputPin,
   gateSize,
   wirePath,
+  wirePathDown,
   wirePoint,
+  wirePointDown,
 } from "./layout";
-import { BoxGlyph, BulbGlyph, GateGlyph, GateIcon, HILITE, MONO, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
+import { BoxGlyph, BoxGlyphDown, BulbGlyph, GateGlyph, GateIcon, HILITE, MONO, PinDot, SwitchGlyph, ValueDigit, Wire, WRONG, type BulbMark } from "./glyphs";
 import { TableView } from "./helpers";
 import { MSG } from "./messages";
 import { usePersistent } from "./storage";
@@ -105,7 +114,8 @@ export interface CircuitBuilderProps {
   showTarget?: boolean;                        // print the target table above the canvas
   start?: StartDesign;                         // gates and wires already on the canvas at the start
   boxes?: BoxPart[];                           // sealed parts offered beside the gates
-  grid?: BuilderGrid;                          // switches and bulbs in aligned columns instead of two side columns
+  grid?: BuilderGrid;                          // switches and bulbs in aligned columns instead of two side columns;
+                                               // the canvas then runs top to bottom, gates turned to match
   width?: number;                              // logical canvas size (default 600 wide)
   height?: number;
 }
@@ -171,8 +181,12 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const grid = props.grid;
   const gCols = grid ? Math.max(1, grid.bulbs.length, ...grid.rows.map((r) => r.length)) : 0;
   const GRID_ROW = 58;
-  const bandTop = grid ? 30 + grid.rows.length * GRID_ROW : 0;
-  const H = props.height ?? (grid ? bandTop + 130 + 40 * gCols + 74 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
+  // A grid runs top to bottom (layout.ts): the gates sit in a band between
+  // the last switch row and the bulb row, tall enough for a few gates
+  // stacked per column of the sum.
+  const down = !!grid;
+  const bandTop = grid ? 44 + grid.rows.length * GRID_ROW : 0;
+  const H = props.height ?? (grid ? bandTop + Math.max(200, 160 * (gCols - 1)) + 90 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
   const inLabelW = Math.max(8, ...ins.map((i) => i.label.length * 8));
   const outLabelW = Math.max(8, ...outs.map((o) => o.label.length * 8));
   const switchX = Math.round(inLabelW + 30);
@@ -200,7 +214,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     return m;
   }, [outs, bulbX, H, W, JSON.stringify(grid ?? null)]);
   // Where gates may sit: their left edge from x0, their body between y0 and y1.
-  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - 30 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
+  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - BULB_PIN_DOWN - 24 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
   const gridError = (() => {
     if (!grid) return null;
     const cells = grid.rows.flat().filter((c): c is string => typeof c === "string");
@@ -238,17 +252,24 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     return { ok: true, luts };
   }, [boxKey]);
   const partOf = (g: BGate): BoxPart | undefined => (g.type === "BOX" && g.box ? parts.get(g.box) : undefined);
+  // Sizes and pins in the part's own frame (along the flow, then across it).
+  const boxSz = (b: BoxPart) => (down ? boxSizeDown : boxSize)(b.inputs.length, b.outputs.length, b.gap ?? 0);
   const sizeOf = (g: BGate) => {
     const p = partOf(g);
-    return p ? boxSize(p.inputs.length, p.outputs.length, p.gap ?? 0) : gateSize(g.type as GateType, g.n);
+    return p ? boxSz(p) : gateSize(g.type as GateType, g.n);
   };
+  // Where a part of size { w, h } reaches on the canvas, relative to its
+  // anchor: left, right, top, bottom of its body.
+  const ext = ({ w, h }: { w: number; h: number }) => (down ? { l: -h / 2, r: h / 2, t: 0, b: w } : { l: 0, r: w, t: -h / 2, b: h / 2 });
+  // A pin offset on the canvas: the part's frame, transposed when drawn top to bottom.
+  const orient = (q: { x: number; y: number }) => (down ? { x: q.y, y: q.x } : q);
   const inPinOf = (g: BGate, pin: number) => {
     const p = partOf(g);
-    return p ? boxInputPin(p.inputs.length, p.outputs.length, p.gap ?? 0, pin) : gateInputPin(g.type as GateType, g.n, pin);
+    return orient(p ? (down ? boxInputPinDown : boxInputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, pin) : gateInputPin(g.type as GateType, g.n, pin));
   };
   const outPinOf = (g: BGate, k: number) => {
     const p = partOf(g);
-    return p ? boxOutputPin(p.inputs.length, p.outputs.length, p.gap ?? 0, k) : gateOutputPin(g.type as GateType, g.n);
+    return orient(p ? (down ? boxOutputPinDown : boxOutputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, k) : gateOutputPin(g.type as GateType, g.n));
   };
   // The source ids a gate or box drives.
   const srcIdsOf = (g: BGate): string[] => {
@@ -335,14 +356,14 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // ---- geometry of pins ----
   const gateById = useMemo(() => new Map(design.gates.map((g) => [g.id, g])), [design]);
   const srcPos = (sid: string): { x: number; y: number } | null => {
-    if (sw[sid]) return { x: sw[sid].x + SWITCH_PIN, y: sw[sid].y };
+    if (sw[sid]) return down ? { x: sw[sid].x, y: sw[sid].y + SWITCH_PIN_DOWN } : { x: sw[sid].x + SWITCH_PIN, y: sw[sid].y };
     const { gid, k } = splitSrc(sid);
     const g = gateById.get(gid);
     if (g) { const p = outPinOf(g, k); return { x: g.x + p.x, y: g.y + p.y }; }
     return null;
   };
   const snkPos = (to: string, pin: number): { x: number; y: number } | null => {
-    if (bl[to]) return { x: bl[to].x - BULB_PIN, y: bl[to].y };
+    if (bl[to]) return down ? { x: bl[to].x, y: bl[to].y - BULB_PIN_DOWN } : { x: bl[to].x - BULB_PIN, y: bl[to].y };
     const g = gateById.get(to);
     if (g) { const p = inPinOf(g, pin); return { x: g.x + p.x, y: g.y + p.y }; }
     return null;
@@ -358,34 +379,35 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     for (const o of outIds) r.push({ kind: "snk", to: o, pin: 0 });
     return r;
   };
+  // The body of a part with its output stub, for hit-testing and spacing.
   const gateBox = (g: BGate) => {
-    const { w, h } = sizeOf(g);
-    return { x0: g.x - 2, y0: g.y - h / 2 - 4, x1: g.x + w + 8, y1: g.y + h / 2 + 4 };
+    const e = ext(sizeOf(g));
+    return down
+      ? { x0: g.x + e.l - 4, y0: g.y + e.t - 2, x1: g.x + e.r + 4, y1: g.y + e.b + 8 }
+      : { x0: g.x + e.l - 2, y0: g.y + e.t - 4, x1: g.x + e.r + 8, y1: g.y + e.b + 4 };
   };
   // In grid mode a wire from a switch with another switch below it would
-  // drop straight through that switch. It runs instead right into the lane
-  // between columns, down past the last switch row, and then curves to its
-  // pin. `pts` samples the route, for hit-testing and the delete badge.
+  // drop straight through that switch. It steps instead right into the lane
+  // between columns, runs down past the last switch row, and then curves
+  // down to its pin. Every other wire is the plain curve, drawn top to bottom
+  // in grid mode. `pts` samples the wire, for hit-testing and the delete badge.
   const wireGeom = (from: string, a: { x: number; y: number }, b: { x: number; y: number }): { d: string; pts: { x: number; y: number }[] } | null => {
     if (!grid || !sw[from]) return null;
     const lastY = rowY(grid.rows.length - 1);
     if (sw[from].y >= lastY - 1) return null;
-    const yExit = lastY + 24, lx = a.x + 22;
-    const k = Math.max(24, (b.y - yExit) * 0.5);
-    const dx = Math.max(18, Math.abs(b.x - lx) * 0.45);
-    const d = `M ${a.x} ${a.y} H ${lx - 6} Q ${lx} ${a.y} ${lx} ${a.y + 6} V ${yExit} C ${lx} ${yExit + k}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
+    const yExit = lastY + SWITCH_PIN_DOWN + 14, lx = a.x + 20, jy = a.y + 8;
+    const k = Math.max(18, Math.abs(b.y - yExit) * 0.45);
+    const d = `M ${a.x} ${a.y} Q ${a.x} ${jy} ${a.x + 8} ${jy} H ${lx - 8} Q ${lx} ${jy} ${lx} ${jy + 8} V ${yExit} C ${lx} ${yExit + k}, ${b.x} ${b.y - k}, ${b.x} ${b.y}`;
     const pts: { x: number; y: number }[] = [];
-    for (let i = 0; i <= 6; i++) pts.push({ x: a.x + ((lx - a.x) * i) / 6, y: a.y });
-    for (let i = 1; i <= 10; i++) pts.push({ x: lx, y: a.y + ((yExit - a.y) * i) / 10 });
-    for (let i = 1; i <= 24; i++) {
-      const t = i / 24, u = 1 - t;
-      pts.push({
-        x: u * u * u * lx + 3 * u * u * t * lx + 3 * u * t * t * (b.x - dx) + t * t * t * b.x,
-        y: u * u * u * yExit + 3 * u * u * t * (yExit + k) + 3 * u * t * t * b.y + t * t * t * b.y,
-      });
-    }
+    for (let i = 0; i <= 4; i++) pts.push({ x: a.x, y: a.y + ((jy - a.y) * i) / 4 });
+    for (let i = 1; i <= 6; i++) pts.push({ x: a.x + ((lx - a.x) * i) / 6, y: jy });
+    for (let i = 1; i <= 10; i++) pts.push({ x: lx, y: jy + ((yExit - jy) * i) / 10 });
+    for (let i = 1; i <= 24; i++) pts.push(wirePointDown(lx, yExit, b.x, b.y, i / 24));
     return { d, pts };
   };
+  const curve = down ? wirePathDown : wirePath;
+  const curvePoint = down ? wirePointDown : wirePoint;
+  const curveDist = down ? distToWireDown : distToWire;
   const wireAt = (to: string, pin: number) => design.wires.find((w) => w.to === to && w.pin === pin);
 
   // ---- editing ----
@@ -402,16 +424,17 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     setSel(null); setArmed(null); setResult(null); setNotice(null);
   };
 
-  const freeSpot = ({ w, h }: { w: number; h: number }): { x: number; y: number } => {
-    const xMin = grid ? 40 : switchX + 50, xMax = grid ? W - 40 - w : bulbX - 60 - w;
-    const yMin = grid ? gateArea.y0 + h / 2 + 4 : 30, yMax = grid ? gateArea.y1 - h / 2 - 4 : H - 30;
+  const freeSpot = (size: { w: number; h: number }): { x: number; y: number } => {
+    const e = ext(size);
+    const xMin = grid ? 40 - e.l : switchX + 50, xMax = grid ? W - 40 - e.r : bulbX - 60 - e.r;
+    const yMin = grid ? gateArea.y0 - e.t + 4 : 30, yMax = grid ? gateArea.y1 - e.b - 4 : H - 30;
     const cands: { x: number; y: number; d: number }[] = [];
     for (let x = xMin; x <= xMax; x += 20) for (let y = yMin; y <= yMax; y += 20)
       cands.push({ x, y, d: Math.hypot(x - (xMin + xMax) / 2, (y - (yMin + yMax) / 2) * 1.6) });
     cands.sort((a, b) => a.d - b.d);
     const clear = (c: { x: number; y: number }) => design.gates.every((g) => {
       const b = gateBox(g);
-      return c.x + w + 30 < b.x0 || c.x > b.x1 + 30 || c.y + h / 2 + 14 < b.y0 || c.y - h / 2 - 14 > b.y1;
+      return c.x + e.r + 30 < b.x0 || c.x + e.l > b.x1 + 30 || c.y + e.b + 14 < b.y0 || c.y + e.t - 14 > b.y1;
     });
     const c = cands.find(clear) ?? cands[0] ?? { x: (xMin + xMax) / 2, y: (yMin + yMax) / 2 };
     return { x: Math.round(c.x / SNAP) * SNAP, y: Math.round(c.y / SNAP) * SNAP };
@@ -435,7 +458,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const boxesOf = (t: string) => design.gates.filter((g) => g.type === "BOX" && g.box === t).length;
   const addBox = (b: BoxPart) => {
     if (boxesOf(b.type) >= (b.max ?? 1)) return;
-    const p = freeSpot(boxSize(b.inputs.length, b.outputs.length, b.gap ?? 0));
+    const p = freeSpot(boxSz(b));
     place({ id: newGateId(), type: "BOX", box: b.type, x: p.x, y: p.y, n: b.inputs.length });
   };
   const deleteSel = () => {
@@ -508,7 +531,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const a = srcPos(w.from), b = snkPos(w.to, w.pin);
     if (!a || !b) return null;
     const geom = wireGeom(w.from, a, b);
-    const m = geom ? geom.pts[Math.floor(geom.pts.length * 0.6)] : wirePoint(a.x, a.y, b.x, b.y, 0.5);
+    const m = geom ? geom.pts[Math.floor(geom.pts.length * 0.6)] : curvePoint(a.x, a.y, b.x, b.y, 0.5);
     return { x: m.x, y: m.y - 14 };
   };
 
@@ -570,7 +593,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       const a = srcPos(w.from), b = snkPos(w.to, w.pin);
       if (!a || !b) continue;
       const geom = wireGeom(w.from, a, b);
-      const d = geom ? Math.min(...geom.pts.map((p) => Math.hypot(p.x - x, p.y - y))) : distToWire(x, y, a.x, a.y, b.x, b.y);
+      const d = geom ? Math.min(...geom.pts.map((p) => Math.hypot(p.x - x, p.y - y))) : curveDist(x, y, a.x, a.y, b.x, b.y);
       if (d <= Math.max(6, R * 0.6) && (!bestW || d < bestW.d)) bestW = { w, d };
     }
     if (bestW) { setSel({ kind: "wire", to: bestW.w.to, pin: bestW.w.pin }); return; }
@@ -591,9 +614,9 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       if (!drag.moved && !far(drag)) return;
       const g = gateById.get(drag.id);
       if (!g) return;
-      const { w, h } = sizeOf(g);
-      const nx = Math.min(Math.max(gateArea.x0, Math.round((x - drag.offX) / SNAP) * SNAP), W - w - 20);
-      const ny = Math.min(Math.max(gateArea.y0 + h / 2, Math.round((y - drag.offY) / SNAP) * SNAP), gateArea.y1 - h / 2);
+      const e = ext(sizeOf(g));
+      const nx = Math.min(Math.max(gateArea.x0 - e.l, Math.round((x - drag.offX) / SNAP) * SNAP), W - e.r - 20);
+      const ny = Math.min(Math.max(gateArea.y0 - e.t, Math.round((y - drag.offY) / SNAP) * SNAP), gateArea.y1 - e.b);
       if (nx !== g.x || ny !== g.y)
         setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((q) => (q.id === g.id ? { ...q, x: nx, y: ny } : q)) } }));
       if (!drag.moved) setDrag({ ...drag, moved: true });
@@ -640,11 +663,18 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); doUndo(); }
   };
 
-  // Keep every gate inside the canvas when the canvas narrows.
+  // Keep every gate inside the canvas when the canvas narrows, and inside
+  // the band of a grid (a gate saved before the grid ran top to bottom may
+  // sit too low).
   useEffect(() => {
-    const fix = (g: BGate) => Math.min(g.x, W - sizeOf(g).w - 20);
-    if (design.gates.some((g) => fix(g) !== g.x))
-      setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map((g) => ({ ...g, x: Math.max(gateArea.x0, fix(g)) })) } }));
+    const fix = (g: BGate) => {
+      const e = ext(sizeOf(g));
+      const x = Math.max(gateArea.x0 - e.l, Math.min(g.x, W - e.r - 20));
+      const y = grid ? Math.max(gateArea.y0 - e.t, Math.min(g.y, gateArea.y1 - e.b)) : g.y;
+      return { ...g, x, y };
+    };
+    if (design.gates.some((g) => { const f = fix(g); return f.x !== g.x || f.y !== g.y; }))
+      setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map(fix) } }));
   }, [W, design]);
 
   // Clear a stale selection after undo or delete.
@@ -712,7 +742,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const p = endPos(end);
     const q = hot ? endPos(hot) : pointer;
     if (!p || !q) return null;
-    return end.kind === "src" ? wirePath(p.x, p.y, q.x, q.y) : wirePath(q.x, q.y, p.x, p.y);
+    return end.kind === "src" ? curve(p.x, p.y, q.x, q.y) : curve(q.x, q.y, p.x, p.y);
   })();
   const selGate = sel?.kind === "gate" ? gateById.get(sel.id) : undefined;
   const badge = badgePos();
@@ -810,22 +840,23 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
           const a = srcPos(w.from), b = snkPos(w.to, w.pin);
           if (!a || !b) return null;
           const isSel = sel?.kind === "wire" && sel.to === w.to && sel.pin === w.pin;
-          return <Wire key={`${w.to}:${w.pin}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} value={values[w.from]} selected={isSel} path={wireGeom(w.from, a, b)?.d} />;
+          return <Wire key={`${w.to}:${w.pin}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} value={values[w.from]} selected={isSel} path={wireGeom(w.from, a, b)?.d ?? curve(a.x, a.y, b.x, b.y)} />;
         })}
 
         {/* gates */}
         {design.gates.map((g) => {
           const isSel = sel?.kind === "gate" && sel.id === g.id;
           const p = partOf(g);
+          const Box = down ? BoxGlyphDown : BoxGlyph;
           return p
-            ? <BoxGlyph key={g.id} title={p.title} inputs={p.inputs} outputs={p.outputs} gap={p.gap ?? 0} x={g.x} y={g.y} selected={isSel} />
-            : <GateGlyph key={g.id} type={g.type as GateType} n={g.n} x={g.x} y={g.y} selected={isSel} />;
+            ? <Box key={g.id} title={p.title} inputs={p.inputs} outputs={p.outputs} gap={p.gap ?? 0} x={g.x} y={g.y} selected={isSel} />
+            : <GateGlyph key={g.id} type={g.type as GateType} n={g.n} x={g.x} y={g.y} selected={isSel} down={down} />;
         })}
 
         {/* switches */}
         {ins.map((i) => (
           <g key={i.id} style={{ cursor: "pointer" }}>
-            <SwitchGlyph x={sw[i.id].x} y={sw[i.id].y} label={i.label} value={saved.switches[i.id]} />
+            <SwitchGlyph x={sw[i.id].x} y={sw[i.id].y} label={i.label} value={saved.switches[i.id]} down={down} />
           </g>
         ))}
 
@@ -839,13 +870,14 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         {/* bulbs */}
         {outs.map((o) => {
           const src = net.outputs.find((x) => x.id === o.id)!.source;
-          return <BulbGlyph key={o.id} x={bl[o.id].x} y={bl[o.id].y} label={o.label} value={src == null ? undefined : values[src]} mark={bulbMarks[o.id]} />;
+          return <BulbGlyph key={o.id} x={bl[o.id].x} y={bl[o.id].y} label={o.label} value={src == null ? undefined : values[src]} mark={bulbMarks[o.id]} down={down} />;
         })}
 
         {/* live digits */}
-        {[...inIds, ...design.gates.flatMap(srcIdsOf)].map((sid) => {
+        {/* (top to bottom, a switch shows its value on its knob alone) */}
+        {[...(down ? [] : inIds), ...design.gates.flatMap(srcIdsOf)].map((sid) => {
           const p = srcPos(sid)!;
-          return <ValueDigit key={`v-${sid}`} x={p.x} y={p.y} value={values[sid]} />;
+          return <ValueDigit key={`v-${sid}`} x={p.x} y={p.y} value={values[sid]} down={down} />;
         })}
 
         {/* pins */}
