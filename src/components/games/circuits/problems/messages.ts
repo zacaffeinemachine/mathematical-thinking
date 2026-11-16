@@ -26,6 +26,18 @@ export const MSG = {
   wireHint: "Now tap a pin to connect to, or tap empty space to cancel.",
   builderHint: "Drag a gate to move it. Drag from pin to pin to draw a wire. Tap a gate or wire, then the x, to delete it.",
   emptyCanvas: "Tap a gate above the canvas to add it. Then drag from a pin to a pin to draw a wire.",
+  // The builder's view of its canvas.
+  resize: "Drag to make the canvas taller or shorter",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  fit: "Fit canvas",
+  fitShort: "Fit",
+  fitTitle: "Show the whole canvas",
+  fullScreen: "Full screen",
+  fullScreenTitle: "Open the canvas on the whole screen",
+  done: "Done",
+  doneTitle: "Close full screen (Esc)",
+  zoomHint: "Pinch with two fingers, or use + and −, to zoom. Drag empty space to move around.",
   // Drawn circuits whose gates can be moved.
   dragGates: "Drag a gate to move it, if the wires are hard to follow.",
   dragReset: "Put the gates back.",

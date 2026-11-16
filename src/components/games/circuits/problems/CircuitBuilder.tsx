@@ -13,6 +13,11 @@
 //   drag a wire's input end     move it to another pin, or drop it to delete
 //   tap a gate or a wire        select it, then tap its x badge (or Delete)
 //   tap a switch                flip it
+//   drag the bar under the canvas  make the canvas taller or shorter
+//   - / + / Fit canvas          zoom out, zoom in, show the whole canvas
+//   pinch with two fingers      zoom
+//   drag empty canvas           move the view (when zoomed in)
+//   Full screen                 open the builder over the whole page (Esc or Done to close)
 //
 // A problem may also offer boxes (the `boxes` prop): sealed parts with several
 // labelled pins in and out, such as an adder, placed and wired like gates. A
@@ -64,7 +69,7 @@ import { BoxGlyph, BoxGlyphDown, BulbGlyph, GateGlyph, GateIcon, HILITE, MONO, P
 import { TableView } from "./helpers";
 import { MSG } from "./messages";
 import { usePersistent } from "./storage";
-import { AuthorError, Button, Row, Status } from "./ui";
+import { AuthorError, Button, Row, Status, ViewButton } from "./ui";
 
 // ---- types -------------------------------------------------------------------
 
@@ -123,7 +128,8 @@ export interface CircuitBuilderProps {
 interface BGate { id: string; type: GateType | "BOX"; x: number; y: number; n: number; box?: string }
 interface BWire { from: string; to: string; pin: number }
 interface Design { gates: BGate[]; wires: BWire[] }
-interface Saved { design: Design; switches: Record<string, Bit>; solved: boolean }
+interface View { cx: number; cy: number; z: number }      // centre of the view and zoom (1 = the whole canvas)
+interface Saved { design: Design; switches: Record<string, Bit>; solved: boolean; height: number | null; view: View | null }
 
 type Src = { kind: "src"; id: string };
 type Snk = { kind: "snk"; to: string; pin: number };
@@ -133,13 +139,17 @@ type Drag =
   | { kind: "move"; id: string; offX: number; offY: number; cx: number; cy: number; moved: boolean; before: Design }
   | { kind: "wire"; end: End; cx: number; cy: number; moved: boolean }
   | { kind: "grab"; wire: BWire; cx: number; cy: number }   // pressed on a wired input pin
-  | { kind: "switch"; id: string; cx: number; cy: number; moved: boolean };
+  | { kind: "switch"; id: string; cx: number; cy: number; moved: boolean }
+  | { kind: "pan"; cx: number; cy: number; moved: boolean; from: View; scale: number };
 
 type Sel = { kind: "gate"; id: string } | { kind: "wire"; to: string; pin: number } | null;
 
 const DEFAULT_PALETTE: GateType[] = ["NOT", "AND", "OR", "XOR"];
 const TAP_PX = 6;
 const SNAP = 5;
+const H_MAX = 1200;
+const Z_MIN = 1, Z_MAX = 4;
+const clampZ = (z: number) => Math.min(Z_MAX, Math.max(Z_MIN, z));
 
 const named = (x: Named) => (typeof x === "string" ? { id: x, label: x } : { id: x.id, label: x.label ?? x.id });
 // "g3" is gate g3's output. "g3.1" is output pin 1 of box g3.
@@ -166,14 +176,29 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // On a narrow screen the canvas gets fewer logical units across, so the
   // gates are drawn bigger instead of being shrunk to fit. Gates that would
   // fall off the right edge are pulled back in (see the effect below).
+  // Full screen keeps the width the page gave the canvas, so a circuit built
+  // there is not squeezed when the student comes back to the page.
   const boxRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const expandedRef = useRef(false);
+  expandedRef.current = expanded;
   const [boxW, setBoxW] = useState<number | null>(null);
   useEffect(() => {
     const el = boxRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => setBoxW(el.clientWidth));
+    const ro = new ResizeObserver(() => { if (!expandedRef.current) setBoxW(el.clientWidth); });
     ro.observe(el);
     setBoxW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+  // The area the canvas fills on full screen, in pixels.
+  const areaRef = useRef<HTMLDivElement>(null);
+  const [area, setArea] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setArea({ w: el.clientWidth, h: el.clientHeight }));
+    ro.observe(el);
     return () => ro.disconnect();
   }, []);
   const fullW = props.width ?? 600;
@@ -186,14 +211,15 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // stacked per column of the sum.
   const down = !!grid;
   const bandTop = grid ? 44 + grid.rows.length * GRID_ROW : 0;
-  const H = props.height ?? (grid ? bandTop + Math.max(200, 160 * (gCols - 1)) + 90 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
+  // The height the problem asks for. The student may drag the canvas taller
+  // or shorter (saved with the work), down to hMin: room for the switches and
+  // bulbs to sit 44 units apart, or in a grid for a band of gates.
+  const H0 = props.height ?? (grid ? bandTop + Math.max(200, 160 * (gCols - 1)) + 90 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
+  const hMin = Math.min(H0, grid ? bandTop + 290 : Math.max(160, 44 * (Math.max(ins.length, outs.length) - 1) + 88));
   const inLabelW = Math.max(8, ...ins.map((i) => i.label.length * 8));
   const outLabelW = Math.max(8, ...outs.map((o) => o.label.length * 8));
   const switchX = Math.round(inLabelW + 30);
   const bulbX = Math.round(W - outLabelW - 30);
-  const spread = (k: number, n: number) => (n === 1 ? H / 2 : 44 + (k * (H - 88)) / (n - 1));
-  // Grid mode: column centres, switch rows from the top, the bulb row at the bottom.
-  const bulbRowY = H - 44;
   const colX = (c: number) => {
     // Columns at most 150 apart, the grid centred, as a sum is set out on paper.
     const L = inLabelW + 40, R = W - outLabelW - 34;
@@ -201,31 +227,6 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     return Math.round((L + R) / 2 - (gap * (gCols - 1)) / 2 + c * gap);
   };
   const rowY = (r: number) => 44 + r * GRID_ROW;
-  const sw = useMemo(() => {
-    if (!grid) return Object.fromEntries(ins.map((i, k) => [i.id, { x: switchX, y: Math.round(spread(k, ins.length)) }]));
-    const m: Record<string, { x: number; y: number }> = {};
-    grid.rows.forEach((row, r) => row.forEach((cell, c) => { if (typeof cell === "string") m[cell] = { x: colX(c), y: rowY(r) }; }));
-    return m;
-  }, [ins, switchX, H, W, JSON.stringify(grid ?? null)]);
-  const bl = useMemo(() => {
-    if (!grid) return Object.fromEntries(outs.map((o, k) => [o.id, { x: bulbX, y: Math.round(spread(k, outs.length)) }]));
-    const m: Record<string, { x: number; y: number }> = {};
-    grid.bulbs.forEach((id, c) => { if (id) m[id] = { x: colX(c), y: bulbRowY }; });
-    return m;
-  }, [outs, bulbX, H, W, JSON.stringify(grid ?? null)]);
-  // Where gates may sit: their left edge from x0, their body between y0 and y1.
-  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - BULB_PIN_DOWN - 24 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
-  const gridError = (() => {
-    if (!grid) return null;
-    const cells = grid.rows.flat().filter((c): c is string => typeof c === "string");
-    for (const i of ins) if (cells.filter((c) => c === i.id).length !== 1) return `The grid must hold the switch "${i.id}" exactly once.`;
-    const stray = cells.find((c) => !ins.some((i) => i.id === c));
-    if (stray) return `The grid holds "${stray}", which is not a switch.`;
-    for (const o of outs) if (grid.bulbs.filter((b) => b === o.id).length !== 1) return `The grid's bulb row must hold the bulb "${o.id}" exactly once.`;
-    const strayB = grid.bulbs.find((b) => b && !outs.some((o) => o.id === b));
-    if (strayB) return `The grid's bulb row holds "${strayB}", which is not a bulb.`;
-    return null;
-  })();
 
   // ---- the target, resolved once ----
   const resolved = useMemo(() => resolveTarget(target, inIds, outIds), [JSON.stringify(target ?? null), inIds.join(","), outIds.join(",")]);
@@ -251,38 +252,13 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     }
     return { ok: true, luts };
   }, [boxKey]);
-  const partOf = (g: BGate): BoxPart | undefined => (g.type === "BOX" && g.box ? parts.get(g.box) : undefined);
-  // Sizes and pins in the part's own frame (along the flow, then across it).
-  const boxSz = (b: BoxPart) => (down ? boxSizeDown : boxSize)(b.inputs.length, b.outputs.length, b.gap ?? 0);
-  const sizeOf = (g: BGate) => {
-    const p = partOf(g);
-    return p ? boxSz(p) : gateSize(g.type as GateType, g.n);
-  };
-  // Where a part of size { w, h } reaches on the canvas, relative to its
-  // anchor: left, right, top, bottom of its body.
-  const ext = ({ w, h }: { w: number; h: number }) => (down ? { l: -h / 2, r: h / 2, t: 0, b: w } : { l: 0, r: w, t: -h / 2, b: h / 2 });
-  // A pin offset on the canvas: the part's frame, transposed when drawn top to bottom.
-  const orient = (q: { x: number; y: number }) => (down ? { x: q.y, y: q.x } : q);
-  const inPinOf = (g: BGate, pin: number) => {
-    const p = partOf(g);
-    return orient(p ? (down ? boxInputPinDown : boxInputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, pin) : gateInputPin(g.type as GateType, g.n, pin));
-  };
-  const outPinOf = (g: BGate, k: number) => {
-    const p = partOf(g);
-    return orient(p ? (down ? boxOutputPinDown : boxOutputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, k) : gateOutputPin(g.type as GateType, g.n));
-  };
-  // The source ids a gate or box drives.
-  const srcIdsOf = (g: BGate): string[] => {
-    const p = partOf(g);
-    return p ? p.outputs.map((_, k) => `${g.id}.${k}`) : [g.id];
-  };
 
   // ---- saved state ----
   const startDesign = useCallback((): Design => ({
     gates: (start?.gates ?? []).map((g) => ({ id: g.id, type: g.type, x: g.x, y: g.y, n: g.type === "NOT" ? 1 : Math.max(2, g.inputs ?? 2) })),
     wires: (start?.wires ?? []).map((w) => ({ from: w.from, to: w.to, pin: w.pin ?? 0 })),
   }), [start]);
-  const fresh = (): Saved => ({ design: startDesign(), switches: Object.fromEntries(inIds.map((i) => [i, 0 as Bit])), solved: false });
+  const fresh = (): Saved => ({ design: startDesign(), switches: Object.fromEntries(inIds.map((i) => [i, 0 as Bit])), solved: false, height: null, view: null });
   const revive = (s: unknown): Saved | null => {
     const v = s as Saved;
     if (!v || !v.design || !Array.isArray(v.design.gates) || !Array.isArray(v.design.wires)) return null;
@@ -312,10 +288,94 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       w && validSrc(w.from) &&
       ((outIds.includes(w.to) && w.pin === 0) || (gIds.has(w.to) && w.pin >= 0 && w.pin < gIds.get(w.to)!.n)));
     const switches = Object.fromEntries(inIds.map((i) => [i, (v.switches?.[i] === 1 ? 1 : 0) as Bit]));
-    return { design: { gates, wires }, switches, solved: !!v.solved };
+    // Work saved before the canvas could be resized or zoomed has neither.
+    const height = Number.isFinite(v.height) ? (v.height as number) : null;
+    const vw = v.view;
+    const view = vw && Number.isFinite(vw.cx) && Number.isFinite(vw.cy) && Number.isFinite(vw.z) ? { cx: vw.cx, cy: vw.cy, z: clampZ(vw.z) } : null;
+    return { design: { gates, wires }, switches, solved: !!v.solved, height, view };
   };
   const [saved, setSaved, resetSaved] = usePersistent<Saved>(id, "builder", fresh, revive);
   const design = saved.design;
+
+  // On full screen the canvas grows downward to fill a tall screen (a phone
+  // held upright). The width never changes, so nothing moves sideways.
+  const hPage = Math.min(H_MAX, Math.max(hMin, saved.height ?? H0));
+  const H = expanded && area && area.w > 0 && area.h > 0 ? Math.min(H_MAX, Math.max(hPage, Math.floor((W * area.h) / area.w))) : hPage;
+  const spread = (k: number, n: number) => (n === 1 ? H / 2 : 44 + (k * (H - 88)) / (n - 1));
+  // Grid mode: column centres, switch rows from the top, the bulb row at the bottom.
+  const bulbRowY = H - 44;
+  const sw = useMemo(() => {
+    if (!grid) return Object.fromEntries(ins.map((i, k) => [i.id, { x: switchX, y: Math.round(spread(k, ins.length)) }]));
+    const m: Record<string, { x: number; y: number }> = {};
+    grid.rows.forEach((row, r) => row.forEach((cell, c) => { if (typeof cell === "string") m[cell] = { x: colX(c), y: rowY(r) }; }));
+    return m;
+  }, [ins, switchX, H, W, JSON.stringify(grid ?? null)]);
+  const bl = useMemo(() => {
+    if (!grid) return Object.fromEntries(outs.map((o, k) => [o.id, { x: bulbX, y: Math.round(spread(k, outs.length)) }]));
+    const m: Record<string, { x: number; y: number }> = {};
+    grid.bulbs.forEach((id, c) => { if (id) m[id] = { x: colX(c), y: bulbRowY }; });
+    return m;
+  }, [outs, bulbX, H, W, JSON.stringify(grid ?? null)]);
+  // Where gates may sit: their left edge from x0, their body between y0 and y1.
+  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - BULB_PIN_DOWN - 24 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
+  const gridError = (() => {
+    if (!grid) return null;
+    const cells = grid.rows.flat().filter((c): c is string => typeof c === "string");
+    for (const i of ins) if (cells.filter((c) => c === i.id).length !== 1) return `The grid must hold the switch "${i.id}" exactly once.`;
+    const stray = cells.find((c) => !ins.some((i) => i.id === c));
+    if (stray) return `The grid holds "${stray}", which is not a switch.`;
+    for (const o of outs) if (grid.bulbs.filter((b) => b === o.id).length !== 1) return `The grid's bulb row must hold the bulb "${o.id}" exactly once.`;
+    const strayB = grid.bulbs.find((b) => b && !outs.some((o) => o.id === b));
+    if (strayB) return `The grid's bulb row holds "${strayB}", which is not a bulb.`;
+    return null;
+  })();
+
+  // ---- the view: which part of the canvas is on screen ----
+  // At zoom 1 the whole canvas shows. Zooming in shows part of it, and the
+  // view is moved by dragging empty canvas or with two fingers; it is kept
+  // inside the canvas. On full screen the area is usually a different shape
+  // from the canvas, so zoom 1 shows the whole canvas with a margin round it.
+  const shape = expanded && area && area.w > 0 && area.h > 0 ? area.h / area.w : H / W;   // height over width on screen
+  const frame = (v: View) => {
+    const w1 = Math.max(W, H / shape), h1 = w1 * shape;
+    const w = w1 / v.z, h = h1 / v.z;
+    const cx = w >= W ? W / 2 : Math.min(W - w / 2, Math.max(w / 2, v.cx));
+    const cy = h >= H ? H / 2 : Math.min(H - h / 2, Math.max(h / 2, v.cy));
+    return { cx, cy, z: v.z, x: cx - w / 2, y: cy - h / 2, w, h };
+  };
+  const view = frame(saved.view ?? { cx: W / 2, cy: H / 2, z: 1 });
+  const setView = (v: View) => {
+    const f = frame({ ...v, z: clampZ(v.z) });
+    setSaved((s) => ({ ...s, view: { cx: f.cx, cy: f.cy, z: f.z } }));
+  };
+  const zoomBy = (k: number) => setView({ cx: view.cx, cy: view.cy, z: view.z * k });
+  const fit = () => setSaved((s) => ({ ...s, view: null }));
+
+  const partOf =(g: BGate): BoxPart | undefined => (g.type === "BOX" && g.box ? parts.get(g.box) : undefined);
+  // Sizes and pins in the part's own frame (along the flow, then across it).
+  const boxSz = (b: BoxPart) => (down ? boxSizeDown : boxSize)(b.inputs.length, b.outputs.length, b.gap ?? 0);
+  const sizeOf = (g: BGate) => {
+    const p = partOf(g);
+    return p ? boxSz(p) : gateSize(g.type as GateType, g.n);
+  };
+  // Where a part of size { w, h } reaches on the canvas, relative to its
+  // anchor: left, right, top, bottom of its body.
+  const ext = ({ w, h }: { w: number; h: number }) => (down ? { l: -h / 2, r: h / 2, t: 0, b: w } : { l: 0, r: w, t: -h / 2, b: h / 2 });
+  // A pin offset on the canvas: the part's frame, transposed when drawn top to bottom.
+  const orient = (q: { x: number; y: number }) => (down ? { x: q.y, y: q.x } : q);
+  const inPinOf = (g: BGate, pin: number) => {
+    const p = partOf(g);
+    return orient(p ? (down ? boxInputPinDown : boxInputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, pin) : gateInputPin(g.type as GateType, g.n, pin));
+  };
+  const outPinOf = (g: BGate, k: number) => {
+    const p = partOf(g);
+    return orient(p ? (down ? boxOutputPinDown : boxOutputPin)(p.inputs.length, p.outputs.length, p.gap ?? 0, k) : gateOutputPin(g.type as GateType, g.n));
+  };
+  // The source ids a gate or box drives.
+  const srcIdsOf = (g: BGate): string[] => {
+    const p = partOf(g);
+    return p ? p.outputs.map((_, k) => `${g.id}.${k}`) : [g.id];
+  };
 
   // ---- UI state ----
   const [sel, setSel] = useState<Sel>(null);
@@ -328,6 +388,9 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const [showMine, setShowMine] = useState(false);
   const undo = useRef<Design[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
+  // Fingers on the canvas, and the pinch they make when there are two.
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ d0: number; z0: number; wx: number; wy: number } | null>(null);
 
   // ---- the net and its live values ----
   const net: Net = useMemo(() => {
@@ -426,8 +489,12 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
 
   const freeSpot = (size: { w: number; h: number }): { x: number; y: number } => {
     const e = ext(size);
-    const xMin = grid ? 40 - e.l : switchX + 50, xMax = grid ? W - 40 - e.r : bulbX - 60 - e.r;
-    const yMin = grid ? gateArea.y0 - e.t + 4 : 30, yMax = grid ? gateArea.y1 - e.b - 4 : H - 30;
+    let xMin = grid ? 40 - e.l : switchX + 50, xMax = grid ? W - 40 - e.r : bulbX - 60 - e.r;
+    let yMin = grid ? gateArea.y0 - e.t + 4 : 30, yMax = grid ? gateArea.y1 - e.b - 4 : H - 30;
+    // When zoomed in, put the new gate where the student can see it.
+    const vx0 = Math.max(xMin, view.x - e.l + 10), vx1 = Math.min(xMax, view.x + view.w - e.r - 10);
+    const vy0 = Math.max(yMin, view.y - e.t + 10), vy1 = Math.min(yMax, view.y + view.h - e.b - 10);
+    if (vx1 >= vx0 && vy1 >= vy0) { xMin = vx0; xMax = vx1; yMin = vy0; yMax = vy1; }
     const cands: { x: number; y: number; d: number }[] = [];
     for (let x = xMin; x <= xMax; x += 20) for (let y = yMin; y <= yMax; y += 20)
       cands.push({ x, y, d: Math.hypot(x - (xMin + xMax) / 2, (y - (yMin + yMax) / 2) * 1.6) });
@@ -535,11 +602,35 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     return { x: m.x, y: m.y - 14 };
   };
 
+  // Two fingers: zoom about the point between them, which stays under them.
+  const startPinch = () => {
+    const [a, b] = [...touches.current.values()];
+    const w = toLocal({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+    pinch.current = { d0: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), z0: view.z, wx: w.x, wy: w.y };
+    if (drag?.kind === "move" && drag.moved) { undo.current.push(drag.before); setResult(null); }
+    setDrag(null); setHot(null);
+  };
+  const doPinch = () => {
+    const p = pinch.current, svg = svgRef.current;
+    if (!p || !svg) return;
+    const [a, b] = [...touches.current.values()];
+    const z = clampZ((p.z0 * Math.hypot(a.x - b.x, a.y - b.y)) / p.d0);
+    const f = frame({ cx: W / 2, cy: H / 2, z });
+    const r = svg.getBoundingClientRect();
+    const fx = ((a.x + b.x) / 2 - r.left) / r.width, fy = ((a.y + b.y) / 2 - r.top) / r.height;
+    setView({ cx: p.wx - fx * f.w + f.w / 2, cy: p.wy - fy * f.h + f.h / 2, z });
+  };
+
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
+    svgRef.current?.setPointerCapture(e.pointerId);
+    if (e.pointerType === "touch") {
+      touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touches.current.size === 2) { startPinch(); return; }
+      if (touches.current.size > 2) return;
+    }
     const { x, y, s } = toLocal(e);
     const R = radius(e, s);
-    svgRef.current?.setPointerCapture(e.pointerId);
     svgRef.current?.focus({ preventScroll: true });
     setPointer({ x, y });
     setNotice(null);
@@ -548,18 +639,21 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const bp = badgePos();
     if (bp && Math.hypot(bp.x - x, bp.y - y) <= Math.max(11, R * 0.8)) { deleteSel(); return; }
 
-    // 2. pins, unless the press is well inside a gate body
+    // 2. pins, unless the press is well inside a gate body or on a switch (a
+    //    finger's reach would otherwise take a tap on a switch for its pin)
     const near = nearestEnd(x, y, R);
     const inBody = design.gates.find((g) => { const b = gateBox(g); return x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1; });
-    const pinWins = near && (!inBody || near.d <= 9);
-    if (armed) {
-      if (pinWins && near) {
-        if (sameEnd(near.end, armed)) { setArmed(null); return; }
-        if (near.end.kind !== armed.kind) { connect(armed, near.end); setArmed(null); return; }
-      }
-      setArmed(null);
+    const onSwitch = inIds.some((i) => { const p = sw[i]; return x >= p.x - 22 && x <= p.x + 13 && y >= p.y - 20 && y <= p.y + 20; });
+    const pinWins = near && ((!inBody && !onSwitch) || near.d <= 9);
+    if (armed && pinWins && near) {
+      if (sameEnd(near.end, armed)) { setArmed(null); return; }
+      if (near.end.kind !== armed.kind) { connect(armed, near.end); setArmed(null); return; }
     }
+    // A press on anything but empty canvas drops a half-drawn wire. On empty
+    // canvas it survives a drag of the view, so a wire can be finished on a
+    // pin that was out of sight.
     if (pinWins && near) {
+      setArmed(null);
       setSel(null);
       const end = near.end;
       if (end.kind === "snk") {
@@ -574,6 +668,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     for (const i of inIds) {
       const p = sw[i];
       if (x >= p.x - 22 && x <= p.x + 13 && y >= p.y - 20 && y <= p.y + 20) {
+        setArmed(null);
         setDrag({ kind: "switch", id: i, cx: e.clientX, cy: e.clientY, moved: false });
         return;
       }
@@ -582,6 +677,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     // 4. a gate body (topmost first)
     if (inBody) {
       const g = [...design.gates].reverse().find((g) => { const b = gateBox(g); return x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1; })!;
+      setArmed(null);
       setSel({ kind: "gate", id: g.id });
       setDrag({ kind: "move", id: g.id, offX: x - g.x, offY: y - g.y, cx: e.clientX, cy: e.clientY, moved: false, before: design });
       return;
@@ -596,13 +692,15 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       const d = geom ? Math.min(...geom.pts.map((p) => Math.hypot(p.x - x, p.y - y))) : curveDist(x, y, a.x, a.y, b.x, b.y);
       if (d <= Math.max(6, R * 0.6) && (!bestW || d < bestW.d)) bestW = { w, d };
     }
-    if (bestW) { setSel({ kind: "wire", to: bestW.w.to, pin: bestW.w.pin }); return; }
+    if (bestW) { setArmed(null); setSel({ kind: "wire", to: bestW.w.to, pin: bestW.w.pin }); return; }
 
-    // 6. empty canvas
-    setSel(null);
+    // 6. empty canvas: a drag moves the view, a tap clears the selection
+    setDrag({ kind: "pan", cx: e.clientX, cy: e.clientY, moved: false, from: { cx: view.cx, cy: view.cy, z: view.z }, scale: s });
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (touches.current.has(e.pointerId)) touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.current) { if (touches.current.size >= 2) doPinch(); return; }
     const { x, y, s } = toLocal(e);
     setPointer({ x, y });
     const far = (d: { cx: number; cy: number }) => Math.hypot(e.clientX - d.cx, e.clientY - d.cy) > TAP_PX;
@@ -635,14 +733,28 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
       setHot(n ? n.end : null);
       return;
     }
+    if (drag.kind === "pan") {
+      if (!drag.moved && !far(drag)) return;
+      setView({ ...drag.from, cx: drag.from.cx - (e.clientX - drag.cx) / drag.scale, cy: drag.from.cy - (e.clientY - drag.cy) / drag.scale });
+      if (!drag.moved) setDrag({ ...drag, moved: true });
+      return;
+    }
     if (drag.kind === "switch" && !drag.moved && far(drag)) setDrag({ ...drag, moved: true });
   };
 
   const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    touches.current.delete(e.pointerId);
+    if (pinch.current) {
+      // The pinch ends when a finger lifts. The other finger does nothing more.
+      if (touches.current.size < 2) pinch.current = null;
+      setDrag(null); setHot(null);
+      return;
+    }
     const d = drag;
     setDrag(null);
     setHot(null);
     if (!d) return;
+    if (d.kind === "pan") { if (!d.moved) { setSel(null); setArmed(null); } return; }
     const { x, y, s } = toLocal(e);
     if (d.kind === "move") {
       if (d.moved) { undo.current.push(d.before); setResult(null); }
@@ -657,25 +769,71 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     }
   };
 
+  const onPointerCancel = (e: React.PointerEvent<SVGSVGElement>) => {
+    touches.current.delete(e.pointerId);
+    if (touches.current.size < 2) pinch.current = null;
+    setDrag(null); setHot(null);
+  };
+
   const onKeyDown = (e: React.KeyboardEvent) => {
     if ((e.key === "Delete" || e.key === "Backspace") && sel) { e.preventDefault(); deleteSel(); }
-    else if (e.key === "Escape") { setArmed(null); setSel(null); }
+    else if (e.key === "Escape" && (armed || sel)) { e.stopPropagation(); setArmed(null); setSel(null); }
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); doUndo(); }
   };
 
-  // Keep every gate inside the canvas when the canvas narrows, and inside
-  // the band of a grid (a gate saved before the grid ran top to bottom may
-  // sit too low).
+  // ---- the resize bar ----
+  const resizing = useRef<{ y: number; h: number; scale: number } | null>(null);
+  const onBarDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    resizing.current = { y: e.clientY, h: H, scale: svg.clientWidth / W || 1 };
+  };
+  const onBarMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = resizing.current;
+    if (!r) return;
+    const h = Math.min(H_MAX, Math.max(hMin, Math.round((r.h + (e.clientY - r.y) / r.scale) / 10) * 10));
+    if (h !== H) setSaved((s) => ({ ...s, height: h }));
+  };
+  const onBarUp = () => { resizing.current = null; };
+
+  // ---- full screen ----
+  // A layer over the whole page, not the browser's fullscreen mode, which
+  // iPhones do not offer. The page underneath does not scroll meanwhile.
+  // Closing keeps the page canvas tall enough for every gate placed in the
+  // extra room, so nothing is squeezed on the way back.
+  const closeFull = () => {
+    let low = 0;
+    for (const g of design.gates) low = Math.max(low, g.y + ext(sizeOf(g)).b);
+    const need = Math.ceil((grid ? low + (H - gateArea.y1) : low + 6) / 10) * 10;
+    if (need > hPage) setSaved((s) => ({ ...s, height: Math.min(H_MAX, need) }));
+    setExpanded(false);
+    setArmed(null);
+  };
+  const closeRef = useRef(closeFull);
+  closeRef.current = closeFull;
+  useEffect(() => {
+    if (!expanded) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeRef.current(); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [expanded]);
+
+  // Keep every gate inside the canvas when the canvas narrows or is made
+  // shorter, and inside the band of a grid (a gate saved before the grid ran
+  // top to bottom may sit too low).
   useEffect(() => {
     const fix = (g: BGate) => {
       const e = ext(sizeOf(g));
       const x = Math.max(gateArea.x0 - e.l, Math.min(g.x, W - e.r - 20));
-      const y = grid ? Math.max(gateArea.y0 - e.t, Math.min(g.y, gateArea.y1 - e.b)) : g.y;
+      const y = Math.max(gateArea.y0 - e.t, Math.min(g.y, gateArea.y1 - e.b));
       return { ...g, x, y };
     };
     if (design.gates.some((g) => { const f = fix(g); return f.x !== g.x || f.y !== g.y; }))
       setSaved((st) => ({ ...st, design: { ...st.design, gates: st.design.gates.map(fix) } }));
-  }, [W, design]);
+  }, [W, H, design]);
 
   // Clear a stale selection after undo or delete.
   useEffect(() => {
@@ -749,8 +907,20 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const rowNow = rowIndex(inIds, saved.switches);
   const count = design.gates.filter((g) => g.type !== "BOX").length;
 
+  const narrow = boxW !== null && boxW < 480;
+  const border = `1px solid ${result?.status === "ok" ? "var(--mcq-right)" : "var(--rule)"}`;
+
   return (
-    <div ref={boxRef} className="not-prose circuit-builder" style={{ margin: "12px 0" }}>
+    <div
+      ref={boxRef}
+      className="not-prose circuit-builder"
+      role={expanded ? "dialog" : undefined}
+      aria-modal={expanded ? true : undefined}
+      aria-label={expanded ? "Circuit builder, full screen" : undefined}
+      style={expanded
+        ? { position: "fixed", inset: 0, zIndex: 1000, margin: 0, padding: "10px 12px 14px", background: "var(--bg)", display: "flex", flexDirection: "column", overflowY: "auto" }
+        : { margin: "12px 0" }}
+    >
       {showTarget && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
           <TableView
@@ -798,34 +968,49 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
             {b.title}
           </button>
         ))}
+        {/* the view controls */}
+        <span style={{ marginLeft: "auto", display: "inline-flex", gap: 4, alignItems: "center" }}>
+          <ViewButton onClick={() => zoomBy(1 / 1.25)} disabled={view.z <= Z_MIN + 1e-6} title={MSG.zoomOut}>−</ViewButton>
+          <ViewButton onClick={() => zoomBy(1.25)} disabled={view.z >= Z_MAX - 1e-6} title={MSG.zoomIn}>+</ViewButton>
+          <ViewButton onClick={fit} disabled={view.z <= Z_MIN + 1e-6} title={MSG.fitTitle}>{narrow ? MSG.fitShort : MSG.fit}</ViewButton>
+          <ViewButton onClick={() => { if (expanded) closeFull(); else { setExpanded(true); setArmed(null); } }} pressed={expanded} title={expanded ? MSG.doneTitle : MSG.fullScreenTitle}>
+            <FullScreenIcon collapse={expanded} />
+            {expanded ? MSG.done : narrow ? null : MSG.fullScreen}
+          </ViewButton>
+        </span>
       </div>
 
+      <div
+        ref={areaRef}
+        style={expanded
+          ? { position: "relative", flex: "1 1 0", minHeight: 240 }
+          : { position: "relative", maxWidth: W * 1.1, margin: "0 auto" }}
+      >
       <svg
         ref={svgRef}
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
         tabIndex={0}
         role="application"
         aria-label="Circuit canvas"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={() => { setDrag(null); setHot(null); }}
+        onPointerCancel={onPointerCancel}
         onPointerLeave={() => { if (!drag) setHot(null); }}
         onKeyDown={onKeyDown}
         style={{
-          width: "100%",
-          maxWidth: W * 1.1,
-          height: "auto",
+          ...(expanded
+            ? { position: "absolute", inset: 0, width: "100%", height: "100%", background: "var(--bg)", borderTop: border, borderLeft: border, borderRight: border, borderBottom: border, borderRadius: 6 }
+            : { width: "100%", height: "auto", background: "var(--surface)", borderTop: border, borderLeft: border, borderRight: border, borderBottom: "none", borderRadius: "6px 6px 0 0" }),
           display: "block",
-          margin: "0 auto",
-          background: "var(--surface)",
-          border: `1px solid ${result?.status === "ok" ? "var(--mcq-right)" : "var(--rule)"}`,
-          borderRadius: 6,
+          boxSizing: "border-box",
           touchAction: "none",
           userSelect: "none",
           WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
+          WebkitTapHighlightColor: "transparent",
           outline: "none",
-          cursor: drag?.kind === "move" ? "grabbing" : "default",
+          cursor: drag?.kind === "move" || (drag?.kind === "pan" && drag.moved) ? "grabbing" : "default",
         }}
       >
         <defs>
@@ -833,6 +1018,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
             <circle cx={10} cy={10} r={0.9} fill="var(--rule)" />
           </pattern>
         </defs>
+        <rect x={0} y={0} width={W} height={H} fill="var(--surface)" stroke={expanded ? "var(--rule)" : "none"} strokeWidth={1} />
         <rect x={0} y={0} width={W} height={H} fill={`url(#grid-${id})`} />
 
         {/* wires */}
@@ -902,8 +1088,55 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         )}
       </svg>
 
+      {/* the resize bar (not on full screen, where the canvas fills the screen) */}
+      {!expanded && (
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label={MSG.resize}
+          aria-valuenow={H}
+          aria-valuemin={hMin}
+          aria-valuemax={H_MAX}
+          title={MSG.resize}
+          // Focusable, so a touch on the thin bar is not handed to the canvas
+          // above it by the browser's touch adjustment. Arrow keys resize too.
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const k = e.key === "ArrowDown" ? 20 : e.key === "ArrowUp" ? -20 : 0;
+            if (!k) return;
+            e.preventDefault();
+            setSaved((s) => ({ ...s, height: Math.min(H_MAX, Math.max(hMin, H + k)) }));
+          }}
+          onPointerDown={onBarDown}
+          onPointerMove={onBarMove}
+          onPointerUp={onBarUp}
+          onPointerCancel={onBarUp}
+          style={{
+            height: 14,
+            cursor: "ns-resize",
+            touchAction: "none",
+            borderLeft: border,
+            borderRight: border,
+            borderBottom: border,
+            borderTop: "1px dashed var(--rule)",
+            borderRadius: "0 0 6px 6px",
+            background: "var(--surface)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg width={36} height={6} aria-hidden="true">
+            <line x1={2} y1={1.5} x2={34} y2={1.5} stroke="var(--muted)" strokeWidth={1.2} strokeLinecap="round" />
+            <line x1={8} y1={4.5} x2={28} y2={4.5} stroke="var(--muted)" strokeWidth={1.2} strokeLinecap="round" />
+          </svg>
+        </div>
+      )}
+      </div>
+
       <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6, minHeight: 18 }}>
         {armed ? MSG.wireHint : count === 0 ? MSG.emptyCanvas : MSG.builderHint}
+        {expanded && !armed && <> {MSG.zoomHint}</>}
       </div>
 
       {/* readouts */}
@@ -951,6 +1184,18 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// Four corner marks: outward to open full screen, inward to close it.
+function FullScreenIcon({ collapse }: { collapse: boolean }) {
+  const d = collapse
+    ? "M 5 1 V 5 H 1 M 9 1 V 5 H 13 M 5 13 V 9 H 1 M 9 13 V 9 H 13"
+    : "M 1 5 V 1 H 5 M 13 5 V 1 H 9 M 1 9 V 13 H 5 M 13 9 V 13 H 9";
+  return (
+    <svg width={14} height={14} viewBox="0 0 14 14" aria-hidden="true">
+      <path d={d} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

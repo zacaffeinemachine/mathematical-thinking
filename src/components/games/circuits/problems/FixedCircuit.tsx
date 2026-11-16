@@ -4,7 +4,7 @@
 // reader has dragged the gates to, when `movable` is set: the circuit itself
 // never changes, only the picture, and the positions are forgotten on reload.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Bit, Circuit } from "../model";
 import { BULB_PIN, gateBox, gateInputPin, gateSize, routeSegments, segmentsPath, sourcePin } from "./layout";
 import { MSG } from "./messages";
@@ -86,6 +86,19 @@ export default function FixedCircuit({
   const drop = (e: React.PointerEvent) => {
     if (drag.current?.pointer === e.pointerId) drag.current = null;
   };
+  // A finger on a gate must move the gate, not scroll the page. Browsers
+  // ignore touch-action on the shapes inside an SVG, so the scroll is stopped
+  // here, and only for a touch that starts on a gate: the rest of the
+  // picture still scrolls the page as usual.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!movable || !svg) return;
+    const stop = (e: TouchEvent) => {
+      if (e.touches.length === 1 && (e.target as Element | null)?.closest?.("[data-gate-drag]")) e.preventDefault();
+    };
+    svg.addEventListener("touchstart", stop, { passive: false });
+    return () => svg.removeEventListener("touchstart", stop);
+  }, [movable]);
 
   const wireVal = (src: string): Bit | undefined | null => (values ? values[src] : null);
   // Room above the top row and below the bottom row for tags and marks.
@@ -111,7 +124,7 @@ export default function FixedCircuit({
     segmentsPath(routeSegments(x1, y1, x2, y2, boxes.filter((b) => b.id !== from && b.id !== to).map((b) => b.box), 4, c.height - 4));
 
   const picture = (
-    <svg ref={svgRef} viewBox={vb} style={svgBox(c.width, scale)} role="group" aria-label={label}>
+    <svg ref={svgRef} viewBox={vb} style={{ ...svgBox(c.width, scale), touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }} role="group" aria-label={label}>
       {/* wires into gates, each routed round the gates it does not touch */}
       {c.gates.map((g) =>
         g.inputs.map((src, i) => {
@@ -134,7 +147,7 @@ export default function FixedCircuit({
         if (!movable) return <GateGlyph key={g.id} type={g.type} n={g.inputs.length} x={g.x} y={g.y} label={g.label} />;
         const { w, h } = gateSize(g.type, g.inputs.length);
         return (
-          <g key={g.id} onPointerDown={grab(g.id, g.x, g.y)} onPointerMove={move} onPointerUp={drop} onPointerCancel={drop}
+          <g key={g.id} data-gate-drag="" onPointerDown={grab(g.id, g.x, g.y)} onPointerMove={move} onPointerUp={drop} onPointerCancel={drop}
             style={{ cursor: drag.current?.id === g.id ? "grabbing" : "grab", touchAction: "none" }}>
             <rect x={g.x - 4} y={g.y - h / 2 - 4} width={w + 12} height={h + 8} fill="transparent" />
             <GateGlyph type={g.type} n={g.inputs.length} x={g.x} y={g.y} label={g.label} />

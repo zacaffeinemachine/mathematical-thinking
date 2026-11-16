@@ -833,7 +833,19 @@ export default function MachineBuilder(props: MachineBuilderProps) {
           role="separator"
           aria-orientation="horizontal"
           aria-label={MSG.resize}
+          aria-valuenow={H}
+          aria-valuemin={H_MIN}
+          aria-valuemax={H_MAX}
           title={MSG.resize}
+          // Focusable, so a touch on the thin bar is not handed to the canvas
+          // above it by the browser's touch adjustment. Arrow keys resize too.
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const k = e.key === "ArrowDown" ? 20 : e.key === "ArrowUp" ? -20 : 0;
+            if (!k) return;
+            e.preventDefault();
+            setSaved((s) => ({ ...s, height: Math.min(H_MAX, Math.max(H_MIN, H + k)) }));
+          }}
           onPointerDown={onBarDown}
           onPointerMove={onBarMove}
           onPointerUp={onBarUp}
