@@ -267,10 +267,21 @@ at most five gates.
 </CircuitProblem>
 
 <CircuitProblem n={9} title="The toy-packing inspector">
-A robot checks toys against orders. Switches $a$ and $b$ say whether the order
-asks for a hat and for a flag. Switches $c$ and $d$ say whether the packed toy
-has a hat and a flag. A mistake is a part that is asked for and missing, or
-not asked for and there.
+A toy shop sells a teddy bear that can come with a hat, a flag, both or
+neither. Each order says which of the two the bear should have. Before a parcel
+is sealed, an inspector compares the bear inside with the order.
+
+Switch $a$ is $\texttt{1}$ when the order asks for a hat, and $b$ is
+$\texttt{1}$ when it asks for a flag. Switch $c$ is $\texttt{1}$ when the packed
+bear has a hat, and $d$ is $\texttt{1}$ when it has a flag.
+
+The hat is a mistake when $a$ and $c$ differ. That happens when a hat was
+ordered and is missing, or when no hat was ordered and one is there. In the
+same way, the flag is a mistake when $b$ and $d$ differ. So every parcel has
+no mistakes, one mistake or two mistakes. For example, if the order asks for a
+hat only and the bear has a flag only, both parts are mistakes.
+
+Exactly one of the three lamps lights, to show how many mistakes there are.
 
 <div style={{display:'flex', flexDirection:'column', gap:4, margin:'10px 0'}}>
 <span>no mistakes: <LampRow lamps="100" labels={["green", "amber", "red"]} /></span>
