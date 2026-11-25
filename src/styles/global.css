@@ -190,6 +190,23 @@ body {
 .chapter-nav a { color: var(--muted); transition: color 120ms; }
 .chapter-nav a:hover { color: var(--ink); }
 
+/* "Optional" tag for pages flagged `optional: true` in frontmatter. */
+.optional-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  vertical-align: 0.1em;
+}
+.optional-note { color: var(--muted); font-size: 0.95rem; }
+.optional-note .optional-tag { margin-left: 0; margin-right: 0.5rem; }
+
 /* Theme toggle icons */
 :root[data-theme="light"] .theme-icon-dark { display: none; }
 :root[data-theme="dark"]  .theme-icon-light { display: none; }

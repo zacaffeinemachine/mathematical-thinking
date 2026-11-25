@@ -8,11 +8,12 @@ interface Frontmatter {
   chapterTitle: string;   // display name, e.g. "Guarini's Puzzle"
   order: number;          // sub-page order within chapter
   description?: string;
+  optional?: boolean;     // shows an "Optional" tag in listings and under the title
 }
 
 // MDX layouts receive frontmatter under Astro.props.frontmatter.
 const fm = (Astro.props as { frontmatter: Frontmatter }).frontmatter;
-const { title, chapter, chapterTitle, order, description } = fm;
+const { title, chapter, chapterTitle, order, description, optional } = fm;
 const base = import.meta.env.BASE_URL;
 
 // Derive the current page's slug from the URL so we can consult the
@@ -31,7 +32,7 @@ const pageVisible = releasedPage || previewHidden;
 // filtered to those the student is currently allowed to see.
 const allPages = import.meta.glob("../pages/**/*.mdx", { eager: true }) as Record<
   string,
-  { frontmatter?: { title: string; order: number; chapter?: string } }
+  { frontmatter?: { title: string; order: number; chapter?: string; optional?: boolean } }
 >;
 
 const siblings = Object.entries(allPages)
@@ -41,6 +42,7 @@ const siblings = Object.entries(allPages)
     slug: path.split(`/pages/${chapter}/`)[1].replace(/\.mdx$/, ""),
     title: mod.frontmatter?.title ?? "",
     order: mod.frontmatter?.order ?? 0,
+    optional: mod.frontmatter?.optional === true,
   }))
   .filter((s) => isPageVisible(chapter, s.slug))
   .sort((a, b) => a.order - b.order);
@@ -107,6 +109,7 @@ const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[curr
                   {s.title}
                 </a>
               )}
+              {s.optional && <span class="optional-tag">Optional</span>}
             </li>
           );
         })}
@@ -121,6 +124,12 @@ const next = currentIdx >= 0 && currentIdx < siblings.length - 1 ? siblings[curr
   )}
   <article class="prose">
     <h1>{title}</h1>
+    {optional && (
+      <p class="optional-note">
+        <span class="optional-tag">Optional</span>
+        This page goes beyond the core of the chapter. You may skip it.
+      </p>
+    )}
     <slot />
   </article>
 
