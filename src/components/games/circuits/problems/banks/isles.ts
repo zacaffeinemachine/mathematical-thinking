@@ -111,6 +111,22 @@ export const exactlyOneOracle = {
   gates: ["NOT", "AND", "OR", "XOR"] as GateType[],
   fewest: 4,
 };
+// The hint under the problem, shown on the page at the author's request (Nov
+// 2026): two XORs light the bulb when one or three of them are oracles, and
+// then the one setting with three oracles is ruled out, the only one of
+// those in which Ariadne and Clio are both oracles. Five gates, one more than
+// the fewest.
+export const exactlyOneOracleHint: CircuitSpec = one(
+  ["a", "c", "d"],
+  [
+    g("ac", "XOR", ["a", "c"]),
+    g("odd", "XOR", ["ac", "d"]),
+    g("both", "AND", ["a", "c"]),
+    g("notBoth", "NOT", ["both"]),
+    g("o", "AND", ["odd", "notBoth"]),
+  ],
+  "o",
+);
 
 // ===========================================================================
 //  The bash

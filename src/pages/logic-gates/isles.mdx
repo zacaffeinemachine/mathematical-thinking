@@ -16,6 +16,8 @@ import {
   Switch,
   Bulb,
   GateIcon,
+  CircuitPicture,
+  Hint,
 } from "../../components/games/circuits/problems/index.ts";
 import * as B from "../../components/games/circuits/problems/banks/isles.ts";
 import { Islanders, Ring, Radios, RubyBoxes } from "../../components/games/circuits/problems/IslesPictures.tsx";
@@ -106,6 +108,22 @@ Build a box whose bulb is lit exactly when Thalia fits.
 Build a box whose bulb is lit exactly when Ariadne's claim is true.
 
 <CircuitBuilder client:visible id="exactly-one-oracle" inputs={B.exactlyOneOracle.inputs} target={B.exactlyOneOracle.target} gates={B.exactlyOneOracle.gates} fewest={B.exactlyOneOracle.fewest} />
+
+<Hint client:visible>
+Start with two XOR gates in a row: $a$ XOR $c$, and then that wire XOR $d$.
+This wire is $\texttt{1}$ exactly when an odd number of the three are oracles,
+so when one of them is, or all three are.
+
+That leaves one setting to rule out: all three oracles.
+Among the settings where this wire is $\texttt{1}$, it is the only one in which
+Ariadne and Clio are both oracles.
+So feed $a$ and $c$ into an AND gate, pass its output through a NOT gate,
+and AND the result with the odd-count wire.
+
+<CircuitPicture circuit={B.exactlyOneOracleHint} />
+
+This uses five gates. It can be done with four.
+</Hint>
 </CircuitProblem>
 
 ## The bash

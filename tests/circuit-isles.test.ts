@@ -7,7 +7,8 @@
 // row by row. Each "fewest" count (the builder has no gate limit, but tells a right
 // answer with more gates that fewer will do) is checked to be exactly the fewest possible
 // with fewestGates from circuit-search.ts, which tries every circuit up to
-// the limit; no solution circuit is written down anywhere.
+// the limit. The one solution written down is the hint under problem 6, which
+// the author asked to show on the page; it is checked below.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -113,6 +114,17 @@ test("isles 4-6: each fits or claim target is the stated rule, and its fewest co
   for (const p of [B.phoebeFits, B.thaliaFits, B.exactlyOneOracle]) {
     assert.equal(fewestGates(p.inputs, [p.target], p.gates, p.fewest), p.fewest, p.target);
   }
+});
+
+test("isles 6: the hint circuit is right, uses only the palette, has the five gates the hint says, and lays out", () => {
+  const h = B.exactlyOneOracleHint;
+  assert.deepEqual(h.inputs.map((i) => i.id), B.exactlyOneOracle.inputs);
+  assert.equal(out(h), B.exactlyOneOracle.target);
+  assert.equal(h.gates.length, 5);
+  assert.ok(h.gates.every((x) => B.exactlyOneOracle.gates.includes(x.type)));
+  // The two XORs alone light the bulb for one oracle or three.
+  assert.equal(wireColumn(netOf(h), "odd").join(""), tableOf(["a", "c", "d"], (w) => oracles(w, ["a", "c", "d"]) % 2 === 1));
+  layoutCircuit(h);
 });
 
 // ---------------------------------------------------------------------------

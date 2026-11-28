@@ -17,6 +17,7 @@ export { default as PredictOutput } from "./PredictOutput";
 export { default as FillTable } from "./FillTable";
 export { default as FindSetting } from "./FindSetting";
 export { default as PickCircuit } from "./PickCircuit";
+export { default as Hint } from "./Hint";
 export { Switch, Bulb, SwitchRow, LampRow, SealedBox, TruthTable, GateIcon, CircuitPicture } from "./helpers";
 export { tableOf, columnsOf } from "./engine";
 

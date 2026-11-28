@@ -37,6 +37,9 @@ export const MSG = {
   fullScreenTitle: "Open the canvas on the whole screen",
   done: "Done",
   doneTitle: "Close full screen (Esc)",
+  upright: "Vertical",
+  uprightTitle: "Turn the canvas so the circuit runs from top to bottom",
+  flatTitle: "Turn the canvas back so the circuit runs from left to right",
   zoomHint: "Pinch with two fingers, or use + and −, to zoom. Drag empty space to move around.",
   // Drawn circuits whose gates can be moved.
   dragGates: "Drag a gate to move it, if the wires are hard to follow.",

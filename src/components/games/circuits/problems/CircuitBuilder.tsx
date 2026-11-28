@@ -18,6 +18,8 @@
 //   pinch with two fingers      zoom
 //   drag empty canvas           move the view (when zoomed in)
 //   Full screen                 open the builder over the whole page (Esc or Done to close)
+//   Vertical                    turn the canvas: switches along the top, bulbs along the
+//                               bottom, gates pointing down (the canvas grows downward)
 //
 // A problem may also offer boxes (the `boxes` prop): sealed parts with several
 // labelled pins in and out, such as an adder, placed and wired like gates. A
@@ -129,7 +131,9 @@ interface BGate { id: string; type: GateType | "BOX"; x: number; y: number; n: n
 interface BWire { from: string; to: string; pin: number }
 interface Design { gates: BGate[]; wires: BWire[] }
 interface View { cx: number; cy: number; z: number }      // centre of the view and zoom (1 = the whole canvas)
-interface Saved { design: Design; switches: Record<string, Bit>; solved: boolean; height: number | null; view: View | null }
+// vertical: the student turned the canvas to run top to bottom. height is the
+// canvas height in whichever way it currently runs.
+interface Saved { design: Design; switches: Record<string, Bit>; solved: boolean; height: number | null; view: View | null; vertical: boolean }
 
 type Src = { kind: "src"; id: string };
 type Snk = { kind: "snk"; to: string; pin: number };
@@ -209,17 +213,39 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   // A grid runs top to bottom (layout.ts): the gates sit in a band between
   // the last switch row and the bulb row, tall enough for a few gates
   // stacked per column of the sum.
-  const down = !!grid;
   const bandTop = grid ? 44 + grid.rows.length * GRID_ROW : 0;
-  // The height the problem asks for. The student may drag the canvas taller
-  // or shorter (saved with the work), down to hMin: room for the switches and
-  // bulbs to sit 44 units apart, or in a grid for a band of gates.
-  const H0 = props.height ?? (grid ? bandTop + Math.max(200, 160 * (gCols - 1)) + 90 : Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
-  const hMin = Math.min(H0, grid ? bandTop + 290 : Math.max(160, 44 * (Math.max(ins.length, outs.length) - 1) + 88));
   const inLabelW = Math.max(8, ...ins.map((i) => i.label.length * 8));
   const outLabelW = Math.max(8, ...outs.map((o) => o.label.length * 8));
   const switchX = Math.round(inLabelW + 30);
   const bulbX = Math.round(W - outLabelW - 30);
+  // Turned upright (no grid): one row of switches along the top with their
+  // labels above them, one row of bulbs along the bottom with their labels
+  // below, each row spread across the width on its own.
+  const V_SW_Y = 46;                                       // switch centres
+  const V_BULB_UP = 58;                                    // bulb centres sit this far above the bottom
+  const V_TOP = V_SW_Y + SWITCH_PIN_DOWN + 22;             // gates from here down
+  const V_FOOT = V_BULB_UP + BULB_PIN_DOWN + 22;           // and to this far above the bottom
+  // The flow of a circuit runs from the switch pins to the bulb pins: across
+  // the canvas when it lies flat, down it when it is turned.
+  const flowH = { f0: switchX + SWITCH_PIN, f1: bulbX - BULB_PIN };
+  const flowV = (h: number) => ({ f0: V_SW_Y + SWITCH_PIN_DOWN, f1: h - V_BULB_UP - BULB_PIN_DOWN });
+  // Heights, by the way the canvas runs. The height the problem asks for
+  // applies to the flat canvas. The student may drag the canvas taller or
+  // shorter (saved with the work), down to hMin: room for the switches and
+  // bulbs to sit 44 units apart, in a grid for a band of gates, and upright
+  // for a band of 160 units. Upright, the band is by default as long as the
+  // flat canvas's flow, so turning keeps the gates as far apart.
+  const H0For = (v: boolean) => (grid ? props.height ?? bandTop + Math.max(200, 160 * (gCols - 1)) + 90
+    : v ? Math.max(360, Math.round((flowH.f1 - flowH.f0 + (V_SW_Y + SWITCH_PIN_DOWN) + (V_BULB_UP + BULB_PIN_DOWN)) / 10) * 10)
+    : props.height ?? Math.max(240, 64 * Math.max(ins.length, outs.length) + 64));
+  const hMinFor = (v: boolean) => Math.min(H0For(v), grid ? bandTop + 290 : v ? V_TOP + 160 + V_FOOT : Math.max(160, 44 * (Math.max(ins.length, outs.length) - 1) + 88));
+  // n centres in a row across the width, at most 150 apart and centred,
+  // far enough in from the edges for labels lw wide.
+  const rowXs = (n: number, lw: number) => {
+    const L = Math.max(34, lw / 2 + 10), R = W - L;
+    const gap = n === 1 ? 0 : Math.min(150, (R - L) / (n - 1));
+    return Array.from({ length: n }, (_, k) => Math.round(W / 2 - (gap * (n - 1)) / 2 + k * gap));
+  };
   const colX = (c: number) => {
     // Columns at most 150 apart, the grid centred, as a sum is set out on paper.
     const L = inLabelW + 40, R = W - outLabelW - 34;
@@ -258,7 +284,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     gates: (start?.gates ?? []).map((g) => ({ id: g.id, type: g.type, x: g.x, y: g.y, n: g.type === "NOT" ? 1 : Math.max(2, g.inputs ?? 2) })),
     wires: (start?.wires ?? []).map((w) => ({ from: w.from, to: w.to, pin: w.pin ?? 0 })),
   }), [start]);
-  const fresh = (): Saved => ({ design: startDesign(), switches: Object.fromEntries(inIds.map((i) => [i, 0 as Bit])), solved: false, height: null, view: null });
+  const fresh = (): Saved => ({ design: startDesign(), switches: Object.fromEntries(inIds.map((i) => [i, 0 as Bit])), solved: false, height: null, view: null, vertical: false });
   const revive = (s: unknown): Saved | null => {
     const v = s as Saved;
     if (!v || !v.design || !Array.isArray(v.design.gates) || !Array.isArray(v.design.wires)) return null;
@@ -292,10 +318,16 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     const height = Number.isFinite(v.height) ? (v.height as number) : null;
     const vw = v.view;
     const view = vw && Number.isFinite(vw.cx) && Number.isFinite(vw.cy) && Number.isFinite(vw.z) ? { cx: vw.cx, cy: vw.cy, z: clampZ(vw.z) } : null;
-    return { design: { gates, wires }, switches, solved: !!v.solved, height, view };
+    // A grid already runs top to bottom and cannot be turned.
+    return { design: { gates, wires }, switches, solved: !!v.solved, height, view, vertical: !grid && v.vertical === true };
   };
   const [saved, setSaved, resetSaved] = usePersistent<Saved>(id, "builder", fresh, revive);
   const design = saved.design;
+  const vertical = !grid && saved.vertical;
+  // Drawn top to bottom: a grid always, any other canvas when turned upright.
+  const down = !!grid || vertical;
+  const H0 = H0For(vertical);
+  const hMin = hMinFor(vertical);
 
   // On full screen the canvas grows downward to fill a tall screen (a phone
   // held upright). The width never changes, so nothing moves sideways.
@@ -303,21 +335,25 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const H = expanded && area && area.w > 0 && area.h > 0 ? Math.min(H_MAX, Math.max(hPage, Math.floor((W * area.h) / area.w))) : hPage;
   const spread = (k: number, n: number) => (n === 1 ? H / 2 : 44 + (k * (H - 88)) / (n - 1));
   // Grid mode: column centres, switch rows from the top, the bulb row at the bottom.
-  const bulbRowY = H - 44;
+  const bulbRowY = H - (vertical ? V_BULB_UP : 44);
   const sw = useMemo(() => {
+    if (vertical) { const xs = rowXs(ins.length, inLabelW); return Object.fromEntries(ins.map((i, k) => [i.id, { x: xs[k], y: V_SW_Y }])); }
     if (!grid) return Object.fromEntries(ins.map((i, k) => [i.id, { x: switchX, y: Math.round(spread(k, ins.length)) }]));
     const m: Record<string, { x: number; y: number }> = {};
     grid.rows.forEach((row, r) => row.forEach((cell, c) => { if (typeof cell === "string") m[cell] = { x: colX(c), y: rowY(r) }; }));
     return m;
-  }, [ins, switchX, H, W, JSON.stringify(grid ?? null)]);
+  }, [ins, switchX, H, W, vertical, JSON.stringify(grid ?? null)]);
   const bl = useMemo(() => {
+    if (vertical) { const xs = rowXs(outs.length, outLabelW); return Object.fromEntries(outs.map((o, k) => [o.id, { x: xs[k], y: bulbRowY }])); }
     if (!grid) return Object.fromEntries(outs.map((o, k) => [o.id, { x: bulbX, y: Math.round(spread(k, outs.length)) }]));
     const m: Record<string, { x: number; y: number }> = {};
     grid.bulbs.forEach((id, c) => { if (id) m[id] = { x: colX(c), y: bulbRowY }; });
     return m;
-  }, [outs, bulbX, H, W, JSON.stringify(grid ?? null)]);
+  }, [outs, bulbX, H, W, vertical, JSON.stringify(grid ?? null)]);
   // Where gates may sit: their left edge from x0, their body between y0 and y1.
-  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - BULB_PIN_DOWN - 24 } : { x0: switchX + 34, y0: 6, y1: H - 6 };
+  const gateArea = grid ? { x0: 24, y0: bandTop, y1: bulbRowY - BULB_PIN_DOWN - 24 }
+    : vertical ? { x0: 24, y0: V_TOP, y1: H - V_FOOT }
+    : { x0: switchX + 34, y0: 6, y1: H - 6 };
   const gridError = (() => {
     if (!grid) return null;
     const cells = grid.rows.flat().filter((c): c is string => typeof c === "string");
@@ -489,8 +525,8 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
 
   const freeSpot = (size: { w: number; h: number }): { x: number; y: number } => {
     const e = ext(size);
-    let xMin = grid ? 40 - e.l : switchX + 50, xMax = grid ? W - 40 - e.r : bulbX - 60 - e.r;
-    let yMin = grid ? gateArea.y0 - e.t + 4 : 30, yMax = grid ? gateArea.y1 - e.b - 4 : H - 30;
+    let xMin = down ? 40 - e.l : switchX + 50, xMax = down ? W - 40 - e.r : bulbX - 60 - e.r;
+    let yMin = down ? gateArea.y0 - e.t + 4 : 30, yMax = down ? gateArea.y1 - e.b - 4 : H - 30;
     // When zoomed in, put the new gate where the student can see it.
     const vx0 = Math.max(xMin, view.x - e.l + 10), vx1 = Math.min(xMax, view.x + view.w - e.r - 10);
     const vy0 = Math.max(yMin, view.y - e.t + 10), vy1 = Math.min(yMax, view.y + view.h - e.b - 10);
@@ -805,7 +841,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
   const closeFull = () => {
     let low = 0;
     for (const g of design.gates) low = Math.max(low, g.y + ext(sizeOf(g)).b);
-    const need = Math.ceil((grid ? low + (H - gateArea.y1) : low + 6) / 10) * 10;
+    const need = Math.ceil((down ? low + (H - gateArea.y1) : low + 6) / 10) * 10;
     if (need > hPage) setSaved((s) => ({ ...s, height: Math.min(H_MAX, need) }));
     setExpanded(false);
     setArmed(null);
@@ -850,9 +886,54 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
     if (r.status === "wrong") setSaved((s) => ({ ...s, switches: r.setting }));
     if (r.status === "ok") setSaved((s) => ({ ...s, solved: true }));
   };
+  // ---- turning the canvas ----
+  // Each gate keeps its place along the flow, as a fraction of the way from
+  // the switch pins to the bulb pins, and its offset across the flow from the
+  // middle of the gates, so the circuit looks the same, turned. Its anchor
+  // turns with it (the middle of its input side). The new canvas is made
+  // tall enough to hold the gates. The view goes back to the whole canvas.
+  // A grid already runs top to bottom and is never turned.
+  const turned = (s: Saved, h: number, toV: boolean): Saved => {
+    const fromV = s.vertical;
+    if (grid || fromV === toV) return s;
+    const src = fromV ? flowV(h) : flowH;
+    const cross = (g: BGate) => (fromV ? g.x : g.y);
+    const cs = s.design.gates.map(cross);
+    const mid = cs.length ? (Math.min(...cs) + Math.max(...cs)) / 2 : 0;
+    const off = cs.length ? Math.max(...cs.map((c) => Math.abs(c - mid))) : 0;
+    let h2: number, k = 1;
+    if (toV) {
+      h2 = H0For(true);
+      k = Math.min(1, (W / 2 - 50) / Math.max(1, off));        // squeeze across only if the gates are wider than the canvas
+    } else {
+      h2 = Math.min(H_MAX, Math.max(hMinFor(false), s.height !== null && !fromV ? s.height : H0For(false), Math.ceil((2 * off + 100) / 10) * 10));
+      k = Math.min(1, (h2 / 2 - 40) / Math.max(1, off));
+    }
+    const dst = toV ? flowV(h2) : flowH;
+    const cMid = toV ? W / 2 : h2 / 2;
+    const snap = (q: number) => Math.round(q / SNAP) * SNAP;
+    const move = (d: Design): Design => ({
+      ...d,
+      gates: d.gates.map((g) => {
+        const t = ((fromV ? g.y : g.x) - src.f0) / (src.f1 - src.f0);
+        const f = snap(dst.f0 + t * (dst.f1 - dst.f0));
+        const c = snap(cMid + (cross(g) - mid) * k);
+        return toV ? { ...g, x: c, y: f } : { ...g, x: f, y: c };
+      }),
+    });
+    undo.current = undo.current.map(move);
+    return { ...s, design: move(s.design), vertical: toV, height: h2, view: null };
+  };
+  const turn = () => {
+    setSaved((s) => turned(s, H, !s.vertical));
+    setSel(null); setArmed(null); setHot(null); setResult(null); setNotice(null);
+  };
+  // Reset keeps the way the canvas runs.
   const reset = () => {
+    const wasV = vertical;
     resetSaved();
     undo.current = [];
+    if (wasV) setSaved((s) => turned(s, H0For(false), true));
     setSel(null); setArmed(null); setResult(null); setNotice(null);
   };
 
@@ -973,6 +1054,12 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
           <ViewButton onClick={() => zoomBy(1 / 1.25)} disabled={view.z <= Z_MIN + 1e-6} title={MSG.zoomOut}>−</ViewButton>
           <ViewButton onClick={() => zoomBy(1.25)} disabled={view.z >= Z_MAX - 1e-6} title={MSG.zoomIn}>+</ViewButton>
           <ViewButton onClick={fit} disabled={view.z <= Z_MIN + 1e-6} title={MSG.fitTitle}>{narrow ? MSG.fitShort : MSG.fit}</ViewButton>
+          {!grid && (
+            <ViewButton onClick={turn} pressed={vertical} title={vertical ? MSG.flatTitle : MSG.uprightTitle}>
+              <TurnIcon />
+              {narrow ? null : MSG.upright}
+            </ViewButton>
+          )}
           <ViewButton onClick={() => { if (expanded) closeFull(); else { setExpanded(true); setArmed(null); } }} pressed={expanded} title={expanded ? MSG.doneTitle : MSG.fullScreenTitle}>
             <FullScreenIcon collapse={expanded} />
             {expanded ? MSG.done : narrow ? null : MSG.fullScreen}
@@ -1042,7 +1129,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         {/* switches */}
         {ins.map((i) => (
           <g key={i.id} style={{ cursor: "pointer" }}>
-            <SwitchGlyph x={sw[i.id].x} y={sw[i.id].y} label={i.label} value={saved.switches[i.id]} down={down} />
+            <SwitchGlyph x={sw[i.id].x} y={sw[i.id].y} label={i.label} value={saved.switches[i.id]} down={down} labelAbove={vertical} />
           </g>
         ))}
 
@@ -1056,7 +1143,7 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         {/* bulbs */}
         {outs.map((o) => {
           const src = net.outputs.find((x) => x.id === o.id)!.source;
-          return <BulbGlyph key={o.id} x={bl[o.id].x} y={bl[o.id].y} label={o.label} value={src == null ? undefined : values[src]} mark={bulbMarks[o.id]} down={down} />;
+          return <BulbGlyph key={o.id} x={bl[o.id].x} y={bl[o.id].y} label={o.label} value={src == null ? undefined : values[src]} mark={bulbMarks[o.id]} down={down} labelBelow={vertical} />;
         })}
 
         {/* live digits */}
@@ -1184,6 +1271,16 @@ export default function CircuitBuilder(props: CircuitBuilderProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// A quarter-turn arrow, for turning the canvas upright or flat.
+function TurnIcon() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 14 14" aria-hidden="true">
+      <path d="M 2.5 7 A 4.5 4.5 0 1 0 7 2.5 H 4.5" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
+      <path d="M 6.5 0.5 L 4.3 2.5 L 6.5 4.5" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

@@ -246,10 +246,11 @@ export function BoxGlyphDown({
 // A toggle switch: up is 1, down is 0. value null shows the knob in the
 // middle, for a switch whose position is not yet on show.
 export function SwitchGlyph({
-  x, y, label, value, locked = false, bad = false, stub = true, down = false,
+  x, y, label, value, locked = false, bad = false, stub = true, down = false, labelAbove = false,
 }: {
   x: number; y: number; label?: string; value: Bit | null; locked?: boolean; bad?: boolean; stub?: boolean;
-  down?: boolean;   // the output pin is below the switch, not to its right
+  down?: boolean;        // the output pin is below the switch, not to its right
+  labelAbove?: boolean;  // the label sits centred above the switch (switches in a row)
 }) {
   const ky = value === 1 ? -SWITCH_H / 2 + 8 : value === 0 ? SWITCH_H / 2 - 8 : 0;
   return (
@@ -275,7 +276,7 @@ export function SwitchGlyph({
         </text>
       )}
       {label && (
-        <text x={-SWITCH_W / 2 - 7} y={5} fontSize={13} fontFamily={MONO} textAnchor="end" fill="var(--ink)">
+        <text x={labelAbove ? 0 : -SWITCH_W / 2 - 7} y={labelAbove ? -SWITCH_H / 2 - 6 : 5} fontSize={13} fontFamily={MONO} textAnchor={labelAbove ? "middle" : "end"} fill="var(--ink)">
           {label}
         </text>
       )}
@@ -290,14 +291,15 @@ export interface BulbMark { text: string; tone: "wrong" | "right" }
 // A bulb with its base on the left, where the wire comes in. value 1 is lit,
 // 0 is dark, null is a question mark, undefined is "not wired" (dashed).
 export function BulbGlyph({
-  x, y, label, value, mark, digit = false, stub = true, down = false,
+  x, y, label, value, mark, digit = false, stub = true, down = false, labelBelow = false,
 }: {
   x: number; y: number; label?: string;
   value: Bit | null | undefined;
   mark?: BulbMark;
   digit?: boolean;
   stub?: boolean;
-  down?: boolean;   // the base is on top, where the wire comes in from above
+  down?: boolean;        // the base is on top, where the wire comes in from above
+  labelBelow?: boolean;  // the label sits centred below the bulb (bulbs in a row), the mark under it
 }) {
   const lit = value === 1;
   return (
@@ -324,13 +326,13 @@ export function BulbGlyph({
       {mark && (
         <>
           <circle r={BULB_R + 6} fill="none" stroke={mark.tone === "wrong" ? WRONG : RIGHT} strokeWidth={2.2} strokeDasharray={mark.tone === "wrong" ? "4 3" : undefined} />
-          <text y={BULB_R + 20} fontSize={10.5} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={mark.tone === "wrong" ? WRONG : RIGHT}>
+          <text y={BULB_R + (labelBelow && label ? 32 : 20)} fontSize={10.5} fontFamily={SANS} fontWeight={600} textAnchor="middle" fill={mark.tone === "wrong" ? WRONG : RIGHT}>
             {mark.text}
           </text>
         </>
       )}
       {label && (
-        <text x={BULB_R + 7} y={5} fontSize={13} fontFamily={MONO} textAnchor="start" fill="var(--ink)">
+        <text x={labelBelow ? 0 : BULB_R + 7} y={labelBelow ? BULB_R + 17 : 5} fontSize={13} fontFamily={MONO} textAnchor={labelBelow ? "middle" : "start"} fill="var(--ink)">
           {label}
         </text>
       )}
